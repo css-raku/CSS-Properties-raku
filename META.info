@@ -1,0 +1,14 @@
+{
+    "name"        : "CSS::Node",
+    "version"     : "0.1",
+    "description" : "CSS Node Representations, including box model, inheritance and default handling",
+    "depends"     : [ ],
+    "source-url"  : "git://github.com/p6-css/perl6-CSS-Node.git",
+    "provides"    : {
+        "CSS::Node" : "lib/CSS/Node.pm",
+        "CSS::Node::Box" : "lib/CSS/Node/Box.pm",
+        "CSS::Node::Style" : "lib/CSS/Node/Style.pm"
+     }
+}
+
+ 
