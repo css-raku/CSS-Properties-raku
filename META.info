@@ -2,7 +2,7 @@
     "name"        : "CSS::Node",
     "version"     : "0.1",
     "description" : "CSS Node Representations, including box model, inheritance and default handling",
-    "depends"     : [ ],
+    "depends"     : [ "CSS::Module" ],
     "source-url"  : "git://github.com/p6-css/perl6-CSS-Node.git",
     "provides"    : {
         "CSS::Node" : "lib/CSS/Node.pm",
