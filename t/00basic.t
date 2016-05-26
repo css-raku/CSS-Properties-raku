@@ -11,6 +11,6 @@ is-deeply $sample-prop.name, 'background-image', '$prop.name';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, 'none', '$prop.default';
-is-deeply $sample-prop.default-ast, (:expr([{:ident("none")}])), '$prop.default-ast';
+is-deeply $sample-prop.default-ast, [{:keyw<none>},], '$prop.default-ast';
 
-done;
+done-testing;

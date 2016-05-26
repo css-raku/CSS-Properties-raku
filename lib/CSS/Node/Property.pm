@@ -1,7 +1,7 @@
 use v6;
 
 use CSS::Module::CSS3;
-use CSS::Module::CSS3::MetaData;
+use CSS::Module::CSS3::Metadata;
 
 class CSS::Node::Property {
 
@@ -9,14 +9,18 @@ class CSS::Node::Property {
     has Bool $.inherit;
     has Str $.synopsis;
     has Str $.default;
+    has $.default-ast;
     has Bool $.box;
 
-    BEGIN our %property-metadata = $CSS::Module::CSS3::MetaData::property.list;
-    BEGIN our $property-grammar = CSS::Module::CSS3;
-    BEGIN our $property-actions = CSS::Module::CSS3::Actions.new;
+    BEGIN our %property-metadata = $CSS::Module::CSS3::Metadata::property.list;
     our %property-expr;
 
-    multi submethod BUILD( Str :$!name!, :$!synopsis!, :$!default, :$!inherit = False, :$!box = False ) {
+    multi submethod BUILD( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, :$!box = False ) {
+        # second entry is the compiled default value
+         with $default {
+             $!default = $default[0];
+             $!default-ast = $default[1];
+         }
     }
 
     multi submethod BUILD(Str :$name!) {
@@ -27,20 +31,6 @@ class CSS::Node::Property {
             unless %property-metadata{$name}<synopsis>:exists;
 
         self.BUILD( :$name, |%( %property-metadata{$name} ) );
-    }
-
-    #| 'compiled' default value
-    method default-ast {
-        if $!default.defined {
-            unless %property-expr{$!default}:exists {
-                %property-expr{$!default} = do {
-                    $property-grammar.parse( $!default, :rule<expr>, :actions($property-actions) )
-                        or die "unable to parse default expression for property $!name: $!default"
-                };
-            }
-
-            %property-expr{$!default}.ast;
-        }
     }
 
 }
