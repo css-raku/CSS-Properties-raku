@@ -3,7 +3,7 @@ use v6;
 use CSS::Module::CSS3;
 use CSS::Module::CSS3::Metadata;
 
-class CSS::Node::Property {
+class CSS::Declarations::Property {
 
     has Str $.name;
     has Bool $.inherit;

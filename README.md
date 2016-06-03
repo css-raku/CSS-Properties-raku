@@ -1,2 +1,2 @@
-# perl6-CSS-Node
-CSS Node Representations, including box model, inheritance and default handling
+# perl6-CSS-Declarations
+CSS Property set representations, including box model, inheritance and default handling

@@ -1,6 +1,6 @@
 use v6;
 
-class CSS::Node::Box {
+class CSS::Declarations::Box {
     has Numeric $.top;
     has Numeric $.left;
     has Numeric $.bottom;
