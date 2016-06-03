@@ -12,25 +12,27 @@ class CSS::Node::Property {
     has $.default-ast;
     has Bool $.box;
 
-    BEGIN our %property-metadata = $CSS::Module::CSS3::Metadata::property.list;
-    our %property-expr;
+    our  %PropertyMetadata;
+    BEGIN {
+        %PropertyMetadata = %$CSS::Module::CSS3::Metadata::property;
+    }
 
     multi submethod BUILD( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, :$!box = False ) {
         # second entry is the compiled default value
          with $default {
-             $!default = $default[0];
-             $!default-ast = $default[1];
+             $!default = .[0];
+             $!default-ast = .[1];
          }
     }
 
     multi submethod BUILD(Str :$name!) {
         die "unknown property: $name"
-            unless %property-metadata{$name}:exists;
+            unless %PropertyMetadata{$name}:exists;
 
         die "malformed metadata for property $name"
-            unless %property-metadata{$name}<synopsis>:exists;
+            unless %PropertyMetadata{$name}<synopsis>:exists;
 
-        self.BUILD( :$name, |%( %property-metadata{$name} ) );
+        self.BUILD( :$name, |%PropertyMetadata{$name} );
     }
 
 }
