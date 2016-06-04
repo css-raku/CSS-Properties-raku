@@ -1,8 +1,13 @@
 use v6;
 
-class CSS::Declarations::Box {
-    has Numeric $.top;
-    has Numeric $.left;
-    has Numeric $.bottom;
-    has Numeric $.right;
+use CSS::Declarations::Property;
+
+class CSS::Declarations::Box
+    is CSS::Declarations::Property {
+    method box { True }
+
+    has CSS::Declarations::Property $.top;
+    has CSS::Declarations::Property $.left;
+    has CSS::Declarations::Property $.bottom;
+    has CSS::Declarations::Property $.right;
 }

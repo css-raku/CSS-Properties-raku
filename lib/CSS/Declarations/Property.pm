@@ -10,14 +10,17 @@ class CSS::Declarations::Property {
     has Str $.synopsis;
     has Str $.default;
     has $.default-ast;
-    has Bool $.box;
 
-    our  %PropertyMetadata;
+    method box { False }
+
+    our  %Metadata;
     BEGIN {
-        %PropertyMetadata = %$CSS::Module::CSS3::Metadata::property;
+        %Metadata = %$CSS::Module::CSS3::Metadata::property;
     }
 
-    multi submethod BUILD( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, :$!box = False ) {
+    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False ) {
+        die "$!name css property should be composed via CSS::Declarations::Box"
+            if $box && !self.box;
         # second entry is the compiled default value
          with $default {
              $!default = .[0];
@@ -25,14 +28,18 @@ class CSS::Declarations::Property {
          }
     }
 
-    multi submethod BUILD(Str :$name!) {
+    multi method build(Str :$name!) is default {
         die "unknown property: $name"
-            unless %PropertyMetadata{$name}:exists;
+            unless %Metadata{$name}:exists;
 
         die "malformed metadata for property $name"
-            unless %PropertyMetadata{$name}<synopsis>:exists;
+            unless %Metadata{$name}<synopsis>:exists;
 
-        self.BUILD( :$name, |%PropertyMetadata{$name} );
+        self.build( :$name, |%Metadata{$name} );
+    }
+
+    submethod BUILD(|c) {
+        self.build(|c)
     }
 
 }
