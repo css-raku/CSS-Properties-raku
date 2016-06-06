@@ -1,7 +1,7 @@
 use v6;
 
+use CSS::Module;
 use CSS::Module::CSS3;
-use CSS::Module::CSS3::Metadata;
 
 class CSS::Declarations::Property {
 
@@ -13,11 +13,6 @@ class CSS::Declarations::Property {
 
     method box { False }
 
-    our  %Metadata;
-    BEGIN {
-        %Metadata = %$CSS::Module::CSS3::Metadata::property;
-    }
-
     multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False ) {
         die "$!name css property should be composed via CSS::Declarations::Box"
             if $box && !self.box;
@@ -28,14 +23,15 @@ class CSS::Declarations::Property {
          }
     }
 
-    multi method build(Str :$name!) is default {
+    multi method build(Str :$name!, CSS::Module :$module = CSS::Module::CSS3.module) is default {
+        my %metadata = $module.property-metadata;
         die "unknown property: $name"
-            unless %Metadata{$name}:exists;
+            unless %metadata{$name}:exists;
 
         die "malformed metadata for property $name"
-            unless %Metadata{$name}<synopsis>:exists;
+            unless %metadata{$name}<synopsis>:exists;
 
-        self.build( :$name, |%Metadata{$name} );
+        self.build( :$name, |%metadata{$name} );
     }
 
     submethod BUILD(|c) {

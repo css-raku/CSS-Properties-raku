@@ -15,13 +15,14 @@ class CSS::Declarations {
     our %properties;   #| property definitions
     has Any %!values;  #| property values
 
-    BEGIN my %metadata = %CSS::Declarations::Property::Metadata;
+    BEGIN my $module = CSS::Module::CSS3.module;
 
     multi sub make-property( Str $name where { %properties{$name}:exists })  {
         %properties{$name}
     }
 
     multi sub make-property(Str $name) {
+        my %metadata = $module.property-metadata;
         if $name ~~ /^'@'/ {
             warn "todo: $name";
             return;
@@ -46,6 +47,7 @@ class CSS::Declarations {
 
     BEGIN {
         warn "making properties...";
+        my %metadata = $module.property-metadata;
         make-property($_)
             for %metadata.keys.sort;
     }
