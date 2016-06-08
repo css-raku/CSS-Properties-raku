@@ -10,10 +10,12 @@ class CSS::Declarations::Property {
     has Str $.synopsis;
     has Str $.default;
     has $.default-ast;
+    has Str $.parent;
+    has Str @.children;
 
     method box { False }
 
-    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False ) {
+    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :$!parent = Str, :@!children ) {
         die "$!name css property should be composed via CSS::Declarations::Box"
             if $box && !self.box;
         # second entry is the compiled default value

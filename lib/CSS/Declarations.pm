@@ -8,9 +8,9 @@ class CSS::Declarations {
     my enum Units « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
 
     #| contextual variables
-    has Numeric $.em = 16 * px;     #| font-size scaling factor, e.g.: 2em
-    has Numeric $.ex = 12 * px;     #| font x-height scaling factor, e.g.: ex
-    has Units $.length-units = px;  #| target units
+    has Numeric $.em;     #| font-size scaling factor, e.g.: 2em
+    has Numeric $.ex;     #| font x-height scaling factor, e.g.: ex
+    has Units $.length-units;  #| target units
 
     our %properties;   #| property definitions
     has Any %!values;  #| property values
@@ -36,7 +36,7 @@ class CSS::Declarations {
             $class = CSS::Declarations::Box;
             for %metadata{$name}<children>.list -> $side {
                 # these shouldn't nest or cycle
-                die "err, what are we building here? $side"
+                die "property has unexpected children: $side"
                     if %metadata{$side}<children>:exists
                     || $side eq $name;                         
                 %defs{$side} = make-property($side);
@@ -46,13 +46,61 @@ class CSS::Declarations {
     }
 
     BEGIN {
-        warn "making properties...";
         my %metadata = $module.property-metadata;
         make-property($_)
             for %metadata.keys.sort;
     }
 
-    submethod BUILD( :$!em, :$!ex ) {
-        # setup base property defaults
+    multi method from-ast(List $v) {
+        $v.elems == 1
+            ?? self.from-ast( $v[0] )
+            !! [ $v.map: {self.from-ast($_) } ];
+    }
+    #| { :int(42) } => :int(42)
+    multi method from-ast(Hash $v where .keys == 1) {
+        self.from-ast($v.values[0]);
+    }
+    multi method from-ast(Pair $v) {
+        given .key {
+            when 'pt'|'pc'|'px'|'mm'|'cm' {
+                self.length-units * $v.value / Units.enums{$_};
+            }
+            default {
+                warn "ignoring ast tag: $_";
+                self.from-ast($v.value);
+            }
+        }
+    }
+    multi method from-ast($v) is default {
+        $v
+    }
+
+    submethod BUILD( :$!em = 16 * px,
+                     :$!ex = 12 * px,
+                     :$!length-units = px,
+                     *@values ) {
+        # default any missing CSS values
+        my %prop-type = %properties.classify: {
+            .value.children ?? 'parent' !! 'item';
+        }
+        for %prop-type<item>.list {
+            %!values{.key} = self.from-ast( .value.default-ast );
+        }
+        for %prop-type<parent>.list {
+            # bind to the child values.
+            my @bound;
+            my $n;
+            for .value.children.list {
+                @bound[$n++] := %!values{$_};
+            }
+            %!values{.key} = @bound;
+        }
+        # todo apply values
+    }
+
+    method FALLBACK(Str $prop) {
+        nextsame unless %properties{$prop}:exists;
+        self.^add_method($prop,  method () { %!values{$prop} } );
+        self."$prop"();
     }
 }
