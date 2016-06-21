@@ -98,9 +98,9 @@ class CSS::Declarations {
         # todo apply values
     }
 
-    method FALLBACK(Str $prop) {
+    multi method FALLBACK(Str $prop) is rw {
         nextsame unless %properties{$prop}:exists;
-        self.^add_method($prop,  method () { %!values{$prop} } );
+        self.^add_method($prop,  method () is rw { %!values{$prop} } );
         self."$prop"();
     }
 }
