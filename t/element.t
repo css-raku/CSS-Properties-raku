@@ -4,10 +4,10 @@ use CSS::Declarations;
 use CSS::Declarations::Element;
 
 my $css = CSS::Declarations.new;
-# a bit painful at this early stage
-$css.padding-top = $css.padding-right = $css.padding-bottom = $css.padding-left = 5;
-$css.border-top = $css.border-right = $css.border-bottom = $css.border-left = 3;
-$css.margin-top = 1; $css.margin-right = 2; $css.margin-bottom = 3; $css.margin-left = 4;
+
+$css.padding = 5;
+$css.border = 3;
+$css.margin = [1,2,3,4];
 
 my $top    = 80;
 my $right  = 50;

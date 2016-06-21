@@ -16,13 +16,13 @@ class CSS::Declarations {
     has Any %!values;  #| property values
 
     BEGIN my $module = CSS::Module::CSS3.module;
+    BEGIN my %metadata = $module.property-metadata;
 
     multi sub make-property( Str $name where { %properties{$name}:exists })  {
         %properties{$name}
     }
 
     multi sub make-property(Str $name) {
-        my %metadata = $module.property-metadata;
         if $name ~~ /^'@'/ {
             warn "todo: $name";
             return;
@@ -46,7 +46,6 @@ class CSS::Declarations {
     }
 
     BEGIN {
-        my %metadata = $module.property-metadata;
         make-property($_)
             for %metadata.keys.sort;
     }
@@ -98,9 +97,32 @@ class CSS::Declarations {
         # todo apply values
     }
 
+    method !child-proxies(Str $prop, List $children) is rw {
+	Proxy.new(
+	    FETCH => sub ($) { %!values{$prop} },
+	    STORE => sub ($,$v) {
+		# expand and assign values to child properties
+		my @v = $v.isa(List) ?? $v.list !! [$v];
+		@v[1] //= @v[0];
+		@v[2] //= @v[0];
+		@v[3] //= @v[1];
+		my $n = 0;
+		%!values{$_} = @v[$n++]
+		    for $children.list;
+	    });
+    }
+
     multi method FALLBACK(Str $prop) is rw {
-        nextsame unless %properties{$prop}:exists;
-        self.^add_method($prop,  method () is rw { %!values{$prop} } );
+        nextsame unless %metadata{$prop}:exists;
+	my &meth =
+            do with %metadata{$prop}<children> {
+		method () is rw { self!child-proxies($prop, $_) }
+	    }
+	    else {
+		method () is rw { %!values{$prop} }
+	    }
+	
+	self.^add_method($prop,  &meth);
         self."$prop"();
     }
 }
