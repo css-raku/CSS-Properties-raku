@@ -3,6 +3,7 @@ use v6;
 use CSS::Declarations::Property;
 use CSS::Declarations::Box;
 
+
 class CSS::Declarations {
 
     my enum Units « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
@@ -11,9 +12,9 @@ class CSS::Declarations {
     has Numeric $.em;     #| font-size scaling factor, e.g.: 2em
     has Numeric $.ex;     #| font x-height scaling factor, e.g.: ex
     has Units $.length-units;  #| target units
+    has Any %!values;  #| property values
 
     our %properties;   #| property definitions
-    has Any %!values;  #| property values
 
     BEGIN my $module = CSS::Module::CSS3.module;
     BEGIN my %metadata = $module.property-metadata;
@@ -27,22 +28,29 @@ class CSS::Declarations {
             warn "todo: $name";
             return;
         }
-        die "unknown property: $name"
-            unless %metadata{$name}:exists;
-        my %defs = %metadata{$name};
-        my $class = CSS::Declarations::Property;
-        if %metadata{$name}<children>:exists {
-            # e.g. margin, comprised of margin-top, margin-rgit, margin-bottom, margin-left
-            $class = CSS::Declarations::Box;
-            for %metadata{$name}<children>.list -> $side {
-                # these shouldn't nest or cycle
-                die "property has unexpected children: $side"
-                    if %metadata{$side}<children>:exists
-                    || $side eq $name;                         
-                %defs{$side} = make-property($side);
+        with %metadata{$name} -> %defs {
+            with %defs<children> {
+                # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
+                for .list -> $side {
+                    # these shouldn't nest or cycle
+                    make-property($side);
+                    %defs{$side} = $_ with %properties{$side};
+                }
+                if %defs<box> {
+                    %properties{$name} = CSS::Declarations::Box.new( :$name, |%defs);
+                }
+                else {
+                    # ignore compound properties, e.g. background, font 
+                }
+            }
+            else {
+                %properties{$name} = CSS::Declarations::Property.new( :$name, |%defs );
             }
         }
-        %properties{$name} = $class.new( :$name, |%defs );
+        else {
+            die "unknown property: $name"
+        }
+
     }
 
     BEGIN {
@@ -80,12 +88,12 @@ class CSS::Declarations {
                      *@values ) {
         # default any missing CSS values
         my %prop-type = %properties.classify: {
-            .value.children ?? 'parent' !! 'item';
+            .value.box ?? 'box' !! 'item';
         }
         for %prop-type<item>.list {
             %!values{.key} = self.from-ast( .value.default-ast );
         }
-        for %prop-type<parent>.list {
+        for %prop-type<box>.list {
             # bind to the child values.
             my @bound;
             my $n;
@@ -97,7 +105,7 @@ class CSS::Declarations {
         # todo apply values
     }
 
-    method !child-proxies(Str $prop, List $children) is rw {
+    method !box-proxies(Str $prop, List $children) is rw {
 	Proxy.new(
 	    FETCH => sub ($) { %!values{$prop} },
 	    STORE => sub ($,$v) {
@@ -113,16 +121,17 @@ class CSS::Declarations {
     }
 
     multi method FALLBACK(Str $prop) is rw {
-        nextsame unless %metadata{$prop}:exists;
-	my &meth =
-            do with %metadata{$prop}<children> {
-		method () is rw { self!child-proxies($prop, $_) }
-	    }
-	    else {
-		method () is rw { %!values{$prop} }
-	    }
+        with %metadata{$prop} {
+            my &meth =
+                .<box>
+		    ?? method () is rw { self!box-proxies($prop, .<children>) }
+		    !! method () is rw { %!values{$prop} };
 	
-	self.^add_method($prop,  &meth);
-        self."$prop"();
+	    self.^add_method($prop,  &meth);
+            self."$prop"();
+        }
+        else {
+            nextsame;
+        }
     }
 }

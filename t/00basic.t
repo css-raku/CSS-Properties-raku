@@ -20,7 +20,5 @@ is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '[<length> | <percentage> | auto ]{1,4}', '$prop.synopsis';
-is-deeply $sample-prop.default, "0 0 0 0", '$prop.default';
-is-deeply $sample-prop.default-ast, [{:length(0)}, {:length(0)}, {:length(0)}, {:length(0)}], '$prop.default-ast';
 
 done-testing;

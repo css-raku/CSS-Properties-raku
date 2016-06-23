@@ -14,7 +14,7 @@ class CSS::Declarations::Element {
         $.enclose($.Array, $!css.padding);
     }
     method border returns Array {
-        $.enclose($.padding, $!css.border);
+        $.enclose($.padding, $!css.border-width);
     }
     method margin returns Array {
         $.enclose($.border, $!css.margin);

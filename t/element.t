@@ -6,7 +6,7 @@ use CSS::Declarations::Element;
 my $css = CSS::Declarations.new;
 
 $css.padding = 5;
-$css.border = 3;
+$css.border-width = 3;
 $css.margin = [1,2,3,4];
 
 my $top    = 80;
