@@ -3,59 +3,53 @@ use v6;
 use CSS::Declarations::Property;
 use CSS::Declarations::Box;
 
-
 class CSS::Declarations {
 
     my enum Units « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
+    use CSS::Module;
+    use CSS::Module::CSS3;
+    my %module-metadata{CSS::Module};     #| per-module metadata
+    my %module-properties{CSS::Module};   #| per-module property definitions
 
     #| contextual variables
-    has Numeric $.em;     #| font-size scaling factor, e.g.: 2em
-    has Numeric $.ex;     #| font x-height scaling factor, e.g.: ex
-    has Units $.length-units;  #| target units
-    has Any %!values;  #| property values
+    has Numeric $.em;         #| font-size scaling factor, e.g.: 2em
+    has Numeric $.ex;         #| font x-height scaling factor, e.g.: ex
+    has Units $.length-units; #| target units
+    has Any %!values;         #| property values
+    has CSS::Module $!module; #| associated module
 
-    our %properties;   #| property definitions
-
-    BEGIN my $module = CSS::Module::CSS3.module;
-    BEGIN my %metadata = $module.property-metadata;
-
-    multi sub make-property( Str $name where { %properties{$name}:exists })  {
-        %properties{$name}
+    multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
+        %module-properties{$m}{$name}
     }
 
-    multi sub make-property(Str $name) {
+    multi sub make-property(CSS::Module $m, Str $name) {
         if $name ~~ /^'@'/ {
             warn "todo: $name";
             return;
         }
-        with %metadata{$name} -> %defs {
+        with %module-metadata{$m}{$name} -> %defs {
             with %defs<children> {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
                 for .list -> $side {
                     # these shouldn't nest or cycle
-                    make-property($side);
-                    %defs{$side} = $_ with %properties{$side};
+                    make-property($m, $side);
+                    %defs{$side} = $_ with %module-properties{$m}{$side};
                 }
                 if %defs<box> {
-                    %properties{$name} = CSS::Declarations::Box.new( :$name, |%defs);
+                    %module-properties{$m}{$name} = CSS::Declarations::Box.new( :$name, |%defs);
                 }
                 else {
                     # ignore compound properties, e.g. background, font 
                 }
             }
             else {
-                %properties{$name} = CSS::Declarations::Property.new( :$name, |%defs );
+                %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
             }
         }
         else {
             die "unknown property: $name"
         }
 
-    }
-
-    BEGIN {
-        make-property($_)
-            for %metadata.keys.sort;
     }
 
     multi method from-ast(List $v) {
@@ -82,27 +76,37 @@ class CSS::Declarations {
         $v
     }
 
-    submethod BUILD( :$!em = 16 * px,
-                     :$!ex = 12 * px,
-                     :$!length-units = px,
-                     *@values ) {
+    method !build-defaults {
         # default any missing CSS values
-        my %prop-type = %properties.classify: {
-            .value.box ?? 'box' !! 'item';
+        my %prop-type = %module-metadata{$!module}.pairs.classify: {
+            .value<box> ?? 'box' !! 'item';
         }
         for %prop-type<item>.list {
-            %!values{.key} = self.from-ast( .value.default-ast );
+            my $default-ast = .value<default>[1];
+            %!values{.key} = self.from-ast( $default-ast );
         }
         for %prop-type<box>.list {
             # bind to the child values.
             my @bound;
             my $n;
-            for .value.children.list {
+            for .value<children>.list {
                 @bound[$n++] := %!values{$_};
             }
             %!values{.key} = @bound;
         }
-        # todo apply values
+    }
+
+    submethod BUILD( :$!em = 16 * px,
+                     :$!ex = 12 * px,
+                     :$!length-units = px,
+                     :$!module = CSS::Module::CSS3.module,
+                     *@values ) {
+        
+        %module-metadata{$!module} //= $!module.property-metadata;
+        die "module $!module lacks meta-data"
+            without %module-metadata{$!module};
+        
+        self!build-defaults;
     }
 
     method !box-proxies(Str $prop, List $children) is rw {
@@ -120,8 +124,14 @@ class CSS::Declarations {
 	    });
     }
 
+    method property(Str $prop) {
+        make-property($!module, $prop) without %module-properties{$!module}{$prop};
+        %module-properties{$!module}{$prop};
+    }
+
     multi method FALLBACK(Str $prop) is rw {
-        with %metadata{$prop} {
+        with %module-metadata{$!module}{$prop} {
+            self.property: $prop;
             my &meth =
                 .<box>
 		    ?? method () is rw { self!box-proxies($prop, .<children>) }
