@@ -155,8 +155,21 @@ class CSS::Declarations {
         %module-properties{$!module}{$prop};
     }
 
-    method important(Str $prop) {
-        %!important{$prop}
+    method !importance($children) is rw {
+        Proxy.new(
+            FETCH => sub ($) { [&&] $children.map: { %!important{$_} } },
+            STORE => sub ($,Bool $v) {
+                %!important{$_} = $v
+                    for $children.list;
+            });
+    }
+
+    method important(Str $prop) is rw {
+        with self.property($prop) {
+            .box
+                ?? self!importance( .children )
+                !! %!important{$prop}
+        }
     }
 
     multi method FALLBACK(Str $prop) is rw {
