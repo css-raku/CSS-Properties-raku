@@ -16,6 +16,7 @@ class CSS::Declarations {
     has Numeric $.ex;         #| font x-height scaling factor, e.g.: ex
     has Units $.length-units; #| target units
     has Any %!values;         #| property values
+    has Bool %!important;
     has CSS::Module $!module; #| associated module
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
@@ -96,10 +97,34 @@ class CSS::Declarations {
         }
     }
 
-    submethod BUILD( :$!em = 16 * px,
-                     :$!ex = 12 * px,
-                     :$!length-units = px,
-                     :$!module = CSS::Module::CSS3.module,
+    method !build-style(Str $style) {
+        my $rule = "declaration-list";
+        my $actions = $!module.actions.new;
+        $!module.grammar.parse($style, :$rule, :$actions)
+            or die "unable to parse CSS style declarations: $style";
+        my @declarations = $/.ast.list;
+
+        for @declarations {
+            my $decl = .value;
+            given .key {
+                when 'property' {
+                    my $prop = $decl<ident>;
+                    my $expr = $decl<expr>;
+                    self."$prop"() = $expr;
+                    %!important{$prop} = True if $decl<prio>;
+                }
+                default {
+                    warn "ignoring: $_ declaration";
+                }
+            }
+        }
+    }
+
+    submethod BUILD( Numeric:$!em = 16 * px,
+                     Numeric :$!ex = 12 * px,
+                     Numeric :$!length-units = px,
+                     CSS::Module :$!module = CSS::Module::CSS3.module,
+                     Str :$style,
                      *@values ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
@@ -107,6 +132,7 @@ class CSS::Declarations {
             without %module-metadata{$!module};
         
         self!build-defaults;
+        self!build-style($_) with $style;
     }
 
     method !box-proxies(Str $prop, List $children) is rw {
@@ -127,6 +153,10 @@ class CSS::Declarations {
     method property(Str $prop) {
         make-property($!module, $prop) without %module-properties{$!module}{$prop};
         %module-properties{$!module}{$prop};
+    }
+
+    method important(Str $prop) {
+        %!important{$prop}
     }
 
     multi method FALLBACK(Str $prop) is rw {
