@@ -17,13 +17,14 @@ class CSS::Declarations {
     has Units $.length-units; #| target units
     has Any %!values;         #| property values
     has Bool %!important;
+    has %!default;
     has CSS::Module $!module; #| associated module
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
     }
 
-    multi sub make-property(CSS::Module $m, Str $name) {
+    multi sub make-property(CSS::Module $m, Str $name) is default {
         if $name ~~ /^'@'/ {
             warn "todo: $name";
             return;
@@ -77,26 +78,6 @@ class CSS::Declarations {
         $v
     }
 
-    method !build-defaults {
-        # default any missing CSS values
-        my %prop-type = %module-metadata{$!module}.pairs.classify: {
-            .value<box> ?? 'box' !! 'item';
-        }
-        for %prop-type<item>.list {
-            my $default-ast = .value<default>[1];
-            %!values{.key} = self.from-ast( $default-ast );
-        }
-        for %prop-type<box>.list {
-            # bind to the child values.
-            my @bound;
-            my $n;
-            for .value<children>.list {
-                @bound[$n++] := %!values{$_};
-            }
-            %!values{.key} = @bound;
-        }
-    }
-
     method !build-style(Str $style) {
         my $rule = "declaration-list";
         my $actions = $!module.actions.new;
@@ -131,13 +112,13 @@ class CSS::Declarations {
         die "module $!module lacks meta-data"
             without %module-metadata{$!module};
         
-        self!build-defaults;
         self!build-style($_) with $style;
     }
 
-    method !box-proxies(Str $prop, List $children) is rw {
+    method !box-value(Str $prop, List $children) is rw {
+        
 	Proxy.new(
-	    FETCH => sub ($) { %!values{$prop} },
+	    FETCH => sub ($) { [ $children.map: {self!item-value($_)} ] },
 	    STORE => sub ($,$v) {
 		# expand and assign values to child properties
 		my @v = $v.isa(List) ?? $v.list !! [$v];
@@ -147,9 +128,21 @@ class CSS::Declarations {
 		my $n = 0;
 		%!values{$_} = @v[$n++]
 		    for $children.list;
-	    });
+	    }
+        );
+    }
+            
+    method !default($prop) {
+        %!default{$prop} //= self.from-ast( .<default>[1] )
+            with %module-metadata{$!module}{$prop};
     }
 
+    method !item-value(Str $prop) is rw {
+        Proxy.new(
+            FETCH => sub ($) { %!values{$prop} // self!default($prop) },
+            STORE => sub ($,$v) { %!values{$prop} = $v }
+        );
+    }
     method property(Str $prop) {
         make-property($!module, $prop) without %module-properties{$!module}{$prop};
         %module-properties{$!module}{$prop};
@@ -177,8 +170,8 @@ class CSS::Declarations {
             self.property: $prop;
             my &meth =
                 .<box>
-		    ?? method () is rw { self!box-proxies($prop, .<children>) }
-		    !! method () is rw { %!values{$prop} };
+		    ?? method () is rw { self!box-value($prop, .<children>) }
+		    !! method () is rw { self!item-value($prop) }
 	
 	    self.^add_method($prop,  &meth);
             self."$prop"();
