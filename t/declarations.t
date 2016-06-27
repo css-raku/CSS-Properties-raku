@@ -10,13 +10,13 @@ isa-ok $css.property('margin'), CSS::Declarations::Box, 'box property';
 isa-ok $css.property('margin-left'), CSS::Declarations::Property, 'simple property';
 
 is $css.azimuth, 'center', 'default azimuth';
-is-deeply $css.background-position, [0, 0], 'default background position';
-is-deeply $css.margin, [0, 0, 0, 0], 'default margin';
+is $css.background-position, [0, 0], 'default background position';
+is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
 
 $css.margin-top = 10;
 $css.margin[1] = 20;
 is $css.margin-right, 20, 'updated margin-right';
-is-deeply $css.margin, [10, 20, 0, 0], 'updated margin';
+is $css.margin, [10, 20, 0, 0], 'updated margin';
 
 done-testing;

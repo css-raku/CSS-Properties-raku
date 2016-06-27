@@ -5,7 +5,7 @@ use CSS::Declarations::Box;
 
 class CSS::Declarations {
 
-    my enum Units « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
+    my enum Units is export(:Units) « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
     use CSS::Module;
     use CSS::Module::CSS3;
     my %module-metadata{CSS::Module};     #| per-module metadata
@@ -14,11 +14,11 @@ class CSS::Declarations {
     #| contextual variables
     has Numeric $.em;         #| font-size scaling factor, e.g.: 2em
     has Numeric $.ex;         #| font x-height scaling factor, e.g.: ex
-    has Units $.length-units; #| target units
     has Any %!values;         #| property values
     has Bool %!important;
     has %!default;
     has CSS::Module $!module; #| associated module
+    has $!delegator handles <coerce>;
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
@@ -51,31 +51,6 @@ class CSS::Declarations {
         else {
             die "unknown property: $name"
         }
-
-    }
-
-    multi method from-ast(List $v) {
-        $v.elems == 1
-            ?? self.from-ast( $v[0] )
-            !! [ $v.map: {self.from-ast($_) } ];
-    }
-    #| { :int(42) } => :int(42)
-    multi method from-ast(Hash $v where .keys == 1) {
-        self.from-ast($v.values[0]);
-    }
-    multi method from-ast(Pair $v) {
-        given .key {
-            when 'pt'|'pc'|'px'|'mm'|'cm' {
-                self.length-units * $v.value / Units.enums{$_};
-            }
-            default {
-                warn "ignoring ast tag: $_";
-                self.from-ast($v.value);
-            }
-        }
-    }
-    multi method from-ast($v) is default {
-        $v
     }
 
     method !build-style(Str $style) {
@@ -90,7 +65,7 @@ class CSS::Declarations {
             given .key {
                 when 'property' {
                     my $prop = $decl<ident>;
-                    my $expr = $decl<expr>;
+                    my $expr = self.coerce: $decl<expr>;
                     self."$prop"() = $expr;
                     %!important{$prop} = True if $decl<prio>;
                 }
@@ -101,11 +76,18 @@ class CSS::Declarations {
         }
     }
 
+    sub default-delegator() {
+        with 'CSS::Declarations::Delegator' {
+            require ::($_);
+            ::($_);
+        }
+    }
+
     submethod BUILD( Numeric:$!em = 16 * px,
                      Numeric :$!ex = 12 * px,
-                     Numeric :$!length-units = px,
                      CSS::Module :$!module = CSS::Module::CSS3.module,
                      Str :$style,
+                     :$!delegator = default-delegator(),
                      *@values ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
@@ -141,7 +123,7 @@ class CSS::Declarations {
     }
             
     method !default($prop) {
-        %!default{$prop} //= self.from-ast( .<default>[1] )
+        %!default{$prop} //= self.coerce( .<default>[1] )
             with %module-metadata{$!module}{$prop};
     }
 
