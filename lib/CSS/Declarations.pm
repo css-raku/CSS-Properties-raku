@@ -118,7 +118,15 @@ class CSS::Declarations {
     method !box-value(Str $prop, List $children) is rw {
         
 	Proxy.new(
-	    FETCH => sub ($) { [ $children.map: {self!item-value($_)} ] },
+	    FETCH => sub ($) {
+                %!values{$prop} //= do {
+                    my $n = 0;
+                    my @bound;
+                    @bound[$n++] := self!item-value($_)
+                       for $children.list;
+                    @bound
+                }
+            },
 	    STORE => sub ($,$v) {
 		# expand and assign values to child properties
 		my @v = $v.isa(List) ?? $v.list !! [$v];
@@ -139,10 +147,11 @@ class CSS::Declarations {
 
     method !item-value(Str $prop) is rw {
         Proxy.new(
-            FETCH => sub ($) { %!values{$prop} // self!default($prop) },
+            FETCH => sub ($) { %!values{$prop} //= self!default($prop) },
             STORE => sub ($,$v) { %!values{$prop} = $v }
         );
     }
+
     method property(Str $prop) {
         make-property($!module, $prop) without %module-properties{$!module}{$prop};
         %module-properties{$!module}{$prop};
