@@ -8,7 +8,6 @@
     "provides"    : {
         "CSS::Declarations" : "lib/CSS/Declarations.pm",
         "CSS::Declarations::Box" : "lib/CSS/Declarations/Box.pm",
-        "CSS::Declarations::Delegator" : "lib/CSS/Declarations/Delegator.pm",
         "CSS::Declarations::Element" : "lib/CSS/Declarations/Element.pm",
         "CSS::Declarations::Style" : "lib/CSS/Declarations/Property.pm"
      }

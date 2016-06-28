@@ -18,17 +18,12 @@ class CSS::Declarations {
     has Bool %!important;
     has %!default;
     has CSS::Module $!module; #| associated module
-    has $!delegator handles <coerce>;
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
     }
 
     multi sub make-property(CSS::Module $m, Str $name) is default {
-        if $name ~~ /^'@'/ {
-            warn "todo: $name";
-            return;
-        }
         with %module-metadata{$m}{$name} -> %defs {
             with %defs<children> {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
@@ -101,18 +96,10 @@ class CSS::Declarations {
         }
     }
 
-    sub default-delegator() {
-        with 'CSS::Declarations::Delegator' {
-            require ::($_);
-            ::($_);
-        }
-    }
-
     submethod BUILD( Numeric:$!em = 16 * px,
                      Numeric :$!ex = 12 * px,
                      CSS::Module :$!module = CSS::Module::CSS3.module,
                      Str :$style,
-                     :$!delegator = default-delegator(),
                      *@values ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
@@ -179,6 +166,29 @@ class CSS::Declarations {
                 ?? self!importance( .children )
                 !! %!important{$prop}
         }
+    }
+
+    multi method from-ast(List $v) {
+        $v.elems == 1
+            ?? self.from-ast( $v[0] )
+            !! [ $v.map: {self.from-ast($_) } ];
+    }
+    #| { :int(42) } => :int(42)
+    multi method from-ast(Hash $v where .keys == 1) {
+        self.from-ast($v.pairs[0]);
+    }
+    multi method from-ast(Pair $v) {
+        my $val = self.from-ast($v.value)
+            does role { has Str $.key is rw };
+        $val.key = $v.key;
+        $val;
+    }
+    multi method from-ast($v) is default {
+        $v
+    }
+
+    method coerce($v) {
+        self.from-ast($v);
     }
 
     multi method FALLBACK(Str $prop) is rw {

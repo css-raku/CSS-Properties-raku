@@ -7,15 +7,15 @@ my $css = CSS::Declarations.new: :style("color: orange; text-align: center!impor
 is $css.color, [255, 165, 0];
 is $css.color.key, 'rgb';
 is $css.text-align, "center";
-is $css.margin, [1.5 xx 4];
-is $css.margin-top, 1.5;
-is $css.border-width, [1.0, 2.0, 2.25, 2.0];
+is $css.margin, [2 xx 4];
+is $css.margin-top, 2;
+is $css.margin-top.key, 'pt';
+is $css.border-width, [1, 2, 3, 2];
 
 ok $css.important("text-align"), "text-align is important";
-ok !$css.important("color"), "color is not important";
+nok $css.important("color"), "color is not important";
 
 $css = CSS::Declarations.new: :style("border: 2.5px");
-todo "compound declarations";
-is $css.border-width, [2.5, 2.5, 2.5, 2.5];
+is $css.border-width, [2.5 xx 4];
 
 done-testing;
