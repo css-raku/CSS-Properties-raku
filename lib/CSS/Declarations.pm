@@ -53,21 +53,46 @@ class CSS::Declarations {
         }
     }
 
+    method !get-props($decl) {
+        my $prop-name = $decl<ident>;
+        my @props;
+
+        with $decl<expr> {
+            my @expr;
+            for .list {
+                if $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
+                    # embedded property declaration
+                    @props.push: $0 => .values[0]
+                }
+                else {
+                    @expr.push: $_;
+                }
+            }
+            @props.push: $prop-name => @expr
+                if $prop-name && @expr;
+        }
+        @props;
+    }
+
     method !build-style(Str $style) {
         my $rule = "declaration-list";
         my $actions = $!module.actions.new;
         $!module.grammar.parse($style, :$rule, :$actions)
             or die "unable to parse CSS style declarations: $style";
+        
         my @declarations = $/.ast.list;
 
         for @declarations {
             my $decl = .value;
             given .key {
                 when 'property' {
-                    my $prop = $decl<ident>;
-                    my $expr = self.coerce: $decl<expr>;
-                    self."$prop"() = $expr;
-                    %!important{$prop} = True if $decl<prio>;
+                    my @props = self!get-props($decl);
+                    for @props {
+                        my $prop = .key;
+                        my $expr = .value;
+                        self."$prop"() = self.coerce: $expr;
+                        %!important{$prop} = True if $decl<prio>;
+                    }
                 }
                 default {
                     warn "ignoring: $_ declaration";

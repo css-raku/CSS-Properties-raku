@@ -14,8 +14,8 @@ is $css.border-width, [1.0, 2.0, 2.25, 2.0];
 ok $css.important("text-align"), "text-align is important";
 ok !$css.important("color"), "color is not important";
 
-$css = CSS::Declarations.new: :style("border: 1px 2px 3pt");
+$css = CSS::Declarations.new: :style("border: 2.5px");
 todo "compound declarations";
-is $css.border-width, [1.0, 2.0, 2.25, 2.0];
+is $css.border-width, [2.5, 2.5, 2.5, 2.5];
 
 done-testing;
