@@ -14,9 +14,11 @@ is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
 
-$css.margin-top = 10;
-$css.margin[1] = 20;
-is $css.margin-right, 20, 'updated margin-right';
+$css.margin-top = :pt(10);
+is $css.margin-top, 10, 'updated margin-right value';
+is $css.margin-top.key, 'pt', 'updated margin-right units';
+$css.margin[1] = :px(20);
+is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 
 done-testing;

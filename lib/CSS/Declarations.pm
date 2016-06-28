@@ -85,7 +85,7 @@ class CSS::Declarations {
                     for @props {
                         my $prop = .key;
                         my $expr = .value;
-                        self."$prop"() = self.coerce: $expr;
+                        self."$prop"() = $expr;
                         %!important{$prop} = True if $decl<prio>;
                     }
                 }
@@ -128,7 +128,7 @@ class CSS::Declarations {
 		@v[2] //= @v[0];
 		@v[3] //= @v[1];
 		my $n = 0;
-		%!values{$_} = @v[$n++]
+		%!values{$_} = self.coerce: @v[$n++]
 		    for $children.list;
 	    }
         );
@@ -141,8 +141,8 @@ class CSS::Declarations {
 
     method !item-value(Str $prop) is rw {
         Proxy.new(
-            FETCH => sub ($) { %!values{$prop} //= self!default($prop) },
-            STORE => sub ($,$v) { %!values{$prop} = $v }
+            FETCH => sub ($) { %!values{$prop} // self!default($prop) },
+            STORE => sub ($,$v) { %!values{$prop} = self.coerce: $v }
         );
     }
 
@@ -171,14 +171,14 @@ class CSS::Declarations {
     multi method from-ast(List $v) {
         $v.elems == 1
             ?? self.from-ast( $v[0] )
-            !! [ $v.map: {self.from-ast($_) } ];
+            !! [ $v.map: { self.from-ast($_) } ];
     }
     #| { :int(42) } => :int(42)
     multi method from-ast(Hash $v where .keys == 1) {
-        self.from-ast($v.pairs[0]);
+        self.from-ast( $v.pairs[0] );
     }
     multi method from-ast(Pair $v) {
-        my $val = self.from-ast($v.value)
+        my $val = self.from-ast( $v.value )
             does role { has Str $.key is rw };
         $val.key = $v.key;
         $val;
