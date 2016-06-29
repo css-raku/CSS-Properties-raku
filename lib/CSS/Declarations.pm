@@ -14,10 +14,13 @@ class CSS::Declarations {
     #| contextual variables
     has Numeric $.em;         #| font-size scaling factor, e.g.: 2em
     has Numeric $.ex;         #| font x-height scaling factor, e.g.: ex
-    has Any %!values;         #| property values
+    has Any %!values          #| property values
+        handles <keys>;
     has Bool %!important;
     has %!default;
-    has CSS::Module $!module; #| associated module
+    my subset Handling of Str where 'initial'|'inherit';
+    has Handling %!handling;
+    has CSS::Module $!module; #| associated CSS module
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
@@ -29,8 +32,7 @@ class CSS::Declarations {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
                 for .list -> $side {
                     # these shouldn't nest or cycle
-                    make-property($m, $side);
-                    %defs{$side} = $_ with %module-properties{$m}{$side};
+                    %defs{$side} = $_ with make-property($m, $side);
                 }
                 if %defs<box> {
                     %module-properties{$m}{$name} = CSS::Declarations::Box.new( :$name, |%defs);
@@ -45,6 +47,16 @@ class CSS::Declarations {
         }
         else {
             die "unknown property: $name"
+        }
+        %module-properties{$m}{$name};
+    }
+
+    method property(Str $prop) {
+        with %module-properties{$!module}{$prop} {
+            $_;
+        }
+        else {
+            make-property($!module, $prop);
         }
     }
 
@@ -85,7 +97,13 @@ class CSS::Declarations {
                     for @props {
                         my $prop = .key;
                         my $expr = .value;
-                        self."$prop"() = $expr;
+                        my $keyw = $expr[0]<keyw>;
+                        if $keyw ~~ Handling {
+                            %!handling{$prop} = $keyw;
+                        }
+                        else {
+                            self."$prop"() = $expr;
+                        }
                         %!important{$prop} = True if $decl<prio>;
                     }
                 }
@@ -99,14 +117,22 @@ class CSS::Declarations {
     submethod BUILD( Numeric:$!em = 16 * px,
                      Numeric :$!ex = 12 * px,
                      CSS::Module :$!module = CSS::Module::CSS3.module,
-                     Str :$style,
-                     *@values ) {
+                     :$style,
+                     CSS::Declarations :$inherit,
+                   ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
         die "module $!module lacks meta-data"
             without %module-metadata{$!module};
-        
-        self!build-style($_) with $style;
+
+        with $style {
+            when List {
+                self."{.key}"() = .value
+                for .list;
+            }
+            default { self!build-style($_) }
+        }
+        self.inherit($_) with $inherit;
     }
 
     method !box-value(Str $prop, List $children) is rw {
@@ -146,9 +172,9 @@ class CSS::Declarations {
         );
     }
 
-    method property(Str $prop) {
-        make-property($!module, $prop) without %module-properties{$!module}{$prop};
-        %module-properties{$!module}{$prop};
+    method handling(Str $prop --> Handling) {
+        self.property($prop);
+        %!handling{$prop};
     }
 
     method !importance($children) is rw {
@@ -191,6 +217,21 @@ class CSS::Declarations {
         self.from-ast($v);
     }
 
+    method inherit(CSS::Declarations $css) {
+        for $css.keys -> $name {
+            my $prop = self.property($name);
+            unless $prop.box {
+                with self.handling($name) {
+                    when 'initial' { %!values{$name}:delete }
+                    when 'inherit' { %!values{$name} = $css."$name"() }
+                }
+                elsif $prop.inherit {
+                    %!values{$name} //= $css."$name"()
+                }
+            }
+        }
+    }
+
     multi method FALLBACK(Str $prop) is rw {
         with %module-metadata{$!module}{$prop} {
             self.property: $prop;
@@ -203,7 +244,7 @@ class CSS::Declarations {
             self."$prop"();
         }
         else {
-            nextsame;
+            die "uknown property/method: $_";
         }
     }
 }
