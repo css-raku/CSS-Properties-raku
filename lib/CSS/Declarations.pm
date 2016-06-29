@@ -228,6 +228,9 @@ class CSS::Declarations {
                     when 'initial' { %!values{$name}:delete }
                     when 'inherit' { %!values{$name} = $css."$name"() }
                 }
+                elsif $css.important($name) {
+                    %!values{$name} = $css."$name"()
+                }
                 elsif $prop.inherit {
                     %!values{$name} //= $css."$name"()
                 }

@@ -2,7 +2,7 @@ use v6;
 use Test;
 use CSS::Declarations;
 
-my $inherit = CSS::Declarations.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255)");
+my $inherit = CSS::Declarations.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255)!important");
 
 my $css = CSS::Declarations.new( :style("margin-top:25pt; margin-right: initial; margin-left: inherit"), :$inherit );
 
@@ -25,7 +25,8 @@ $css = CSS::Declarations.new( :style("margin: inherit"), :$inherit);
 is $css.margin-top, 5, "inherited box value";
 is $css.margin-right, 10, "inherited value";
 
-$css = CSS::Declarations.new( :style("margin: initial"), :$inherit);
+$css = CSS::Declarations.new( :style("margin: initial; color:purple"), :$inherit);
 is $css.margin-top, 0, "initial box value";
+is $css.color, [0,0,255], "inheritable !important property";
 
 done-testing;
