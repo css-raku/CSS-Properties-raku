@@ -9,7 +9,8 @@
         "CSS::Declarations" : "lib/CSS/Declarations.pm",
         "CSS::Declarations::Box" : "lib/CSS/Declarations/Box.pm",
         "CSS::Declarations::Element" : "lib/CSS/Declarations/Element.pm",
-        "CSS::Declarations::Style" : "lib/CSS/Declarations/Property.pm"
+        "CSS::Declarations::Style" : "lib/CSS/Declarations/Property.pm",
+        "CSS::Declarations::Units" : "lib/CSS/Declarations/Units.pm"
      }
 }
 

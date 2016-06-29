@@ -2,22 +2,44 @@ use v6;
 
 class CSS::Declarations::Element {
     use CSS::Declarations;
+    use CSS::Declarations::Units;
     
-    has Numeric $.top    is rw;
-    has Numeric $.right  is rw;
-    has Numeric $.bottom is rw;
-    has Numeric $.left   is rw;
+    has Units $.units is rw = px;
+    has Length $.em = 16px;
+    has Length $.ex = 10px;
+
+    has Length $.top    is rw;
+    has Length $.right  is rw;
+    has Length $.bottom is rw;
+    has Length $.left   is rw;
  
     has CSS::Declarations $.css;
 
+    method !dim($_ --> Numeric) {
+        when 'em' { $!em }
+        when 'ex' { $!ex }
+        default   { Units.enums{$_}
+                    or die "unknown length unit: $_" }
+    }
+
+    method !length(Length $qty) {
+        $qty.key eq $.units.key
+            ?? $qty
+            !! $.units.value * $qty / self!dim($qty.key)
+    }
+
+    method !lengths(List $qtys) {
+        [ $qtys.map: { self!length($_) } ]
+    }
+
     method padding returns Array {
-        $.enclose($.Array, $!css.padding);
+        $.enclose(self!lengths($.Array), self!lengths($!css.padding));
     }
     method border returns Array {
-        $.enclose($.padding, $!css.border-width);
+        $.enclose($.padding, self!lengths($!css.border-width));
     }
     method margin returns Array {
-        $.enclose($.border, $!css.margin);
+        $.enclose($.border, self!lengths($!css.margin));
     }
 
     method enclose(List $inner, List $outer) {

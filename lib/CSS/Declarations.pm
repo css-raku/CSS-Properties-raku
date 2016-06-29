@@ -1,10 +1,10 @@
 use v6;
 
-use CSS::Declarations::Property;
-use CSS::Declarations::Box;
-
 class CSS::Declarations {
 
+    use CSS::Declarations::Property;
+    use CSS::Declarations::Box;
+    use CSS::Declarations::Units;
     use CSS::Module;
     use CSS::Module::CSS3;
     my %module-metadata{CSS::Module};     #| per-module metadata
@@ -209,10 +209,8 @@ class CSS::Declarations {
         self.from-ast( $v.pairs[0] );
     }
     multi method from-ast(Pair $v) {
-        my $val = self.from-ast( $v.value )
-            does role { has Str $.key is rw };
-        $val.key = $v.key;
-        $val;
+        self.from-ast( $v.value )
+            does CSS::Declarations::Units::Keyed[$v.key];
     }
     multi method from-ast($v) is default {
         $v

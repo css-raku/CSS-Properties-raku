@@ -3,6 +3,7 @@ use Test;
 use CSS::Declarations;
 use CSS::Declarations::Property;
 use CSS::Declarations::Box;
+use CSS::Declarations::Units;
 
 my $css = CSS::Declarations.new :style[ :border-top-color<red> ];
 is $css.border-top-color, 'red', ':values constructor';
@@ -15,10 +16,10 @@ is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
 
-$css.margin-top = :pt(10);
+$css.margin-top = 10pt;
 is $css.margin-top, 10, 'updated margin-right value';
 is $css.margin-top.key, 'pt', 'updated margin-right units';
-$css.margin[1] = :px(20);
+$css.margin[1] = 20px;
 is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 
