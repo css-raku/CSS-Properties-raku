@@ -96,7 +96,15 @@ class CSS::Declarations {
                         my $expr = .value;
                         my $keyw = $expr[0]<keyw>;
                         if $keyw ~~ Handling {
-                            %!handling{$prop} = $keyw;
+                            with self.property($prop) {
+                                if .box {
+                                    %!handling{$_} = $keyw
+                                        for .children.list;
+                                }
+                                else {
+                                    %!handling{$prop} = $keyw;
+                                }
+                            }
                         }
                         else {
                             self."$prop"() = $expr;
@@ -111,8 +119,10 @@ class CSS::Declarations {
         }
     }
 
+    my subset ListOrStr of Any where List|Str;
+
     submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
-                     :$style,
+                     ListOrStr :$style = [],
                      CSS::Declarations :$inherit,
                    ) {
         
@@ -167,7 +177,7 @@ class CSS::Declarations {
         );
     }
 
-    method handling(Str $prop --> Handling) {
+    method handling(Str $prop) {
         self.property($prop);
         %!handling{$prop};
     }

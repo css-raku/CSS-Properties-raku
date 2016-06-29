@@ -21,4 +21,11 @@ is $css.color, [0,0,255], "inheritable property";
 is $css.property("margin-bottom").inherit, False, 'margin-bottom inherit metadata';
 is $css.margin-bottom, 0, "non-inhertiable property";
 
+$css = CSS::Declarations.new( :style("margin: inherit"), :$inherit);
+is $css.margin-top, 5, "inherited box value";
+is $css.margin-right, 10, "inherited value";
+
+$css = CSS::Declarations.new( :style("margin: initial"), :$inherit);
+is $css.margin-top, 0, "initial box value";
+
 done-testing;
