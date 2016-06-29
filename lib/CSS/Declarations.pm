@@ -5,15 +5,12 @@ use CSS::Declarations::Box;
 
 class CSS::Declarations {
 
-    my enum Units is export(:Units) « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) »;
     use CSS::Module;
     use CSS::Module::CSS3;
     my %module-metadata{CSS::Module};     #| per-module metadata
     my %module-properties{CSS::Module};   #| per-module property definitions
 
     #| contextual variables
-    has Numeric $.em;         #| font-size scaling factor, e.g.: 2em
-    has Numeric $.ex;         #| font x-height scaling factor, e.g.: ex
     has Any %!values          #| property values
         handles <keys>;
     has Bool %!important;
@@ -114,9 +111,7 @@ class CSS::Declarations {
         }
     }
 
-    submethod BUILD( Numeric:$!em = 16 * px,
-                     Numeric :$!ex = 12 * px,
-                     CSS::Module :$!module = CSS::Module::CSS3.module,
+    submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
                      :$style,
                      CSS::Declarations :$inherit,
                    ) {
