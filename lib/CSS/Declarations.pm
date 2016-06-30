@@ -18,6 +18,7 @@ class CSS::Declarations {
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
     has CSS::Module $!module; #| associated CSS module
+    has @.warnings;
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
@@ -83,7 +84,7 @@ class CSS::Declarations {
         my $actions = $!module.actions.new;
         $!module.grammar.parse($style, :$rule, :$actions)
             or die "unable to parse CSS style declarations: $style";
-        
+        @!warnings = $actions.warnings;
         my @declarations = $/.ast.list;
 
         for @declarations {
@@ -113,7 +114,7 @@ class CSS::Declarations {
                     }
                 }
                 default {
-                    warn "ignoring: $_ declaration";
+                    die "ignoring: $_ declaration";
                 }
             }
         }

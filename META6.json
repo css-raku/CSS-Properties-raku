@@ -2,7 +2,7 @@
     "perl"        : "6c",
     "name"        : "CSS::Declarations",
     "version"     : "0.0.1",
-    "description" : "Objects and parsing tools for sets of CSS properties",
+    "description" : "Objects and parsing tools for CSS property sets",
     "depends"     : [ "CSS::Module" ],
     "source-url"  : "git://github.com/p6-css/perl6-CSS-Declarations.git",
     "provides"    : {
