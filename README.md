@@ -20,7 +20,7 @@ my $element = CSS::Declarations::Element.new( :top(80pt), :left(0pt), :bottom(0p
 say $element.margin;
 ```
 
-## Parsing of style rules 
+## Parsing of CSS style rules 
 
 ```
 use v6;
@@ -33,17 +33,61 @@ say $css.color;     # [255, 165, 0];
 say $css.color.key; # 'rgb';
 ```
 
+## Property Metadata
+
+The `.property` method returns a `CSS::Declarations::Property` object for property introspection.
+```
+use CSS::Declarations;
+my $css = CSS::Declarations.new;
+my $prop = $css.property("background-image");
+say "name:     {$prop.name}";
+sys "synopsis: {$prop.synopsis}";
+say "default:  {$prop.default}";
+say "inherit:  {$prop.inherit ?? 'Y' !! 'N'}";
+```
+
+## CSS Modules and Levels
+
+Processing defaults to CSS level 3. This can be altered via the :module option:
+
+```
+use CSS::Declarations;
+use CSS::Module::CSS1;
+use CSS::Module::CSS21;
+
+my $style = 'color: red; azimuth: left';
+
+my $module = CSS::Module::CSS1.module;
+my $css1 = CSS::Declarations.new( :$style, :$module);
+.say for $css1.warnings;
+## "dropping unknown property: azimuth"
+
+$module = CSS::Module::CSS21.module;
+my $css21 = CSS::Declarations.new( :$style, :$module);
+.say for $css21.warnings "";
+## (no warnings)
+```
+
 ## Inheritance
 
 ```
-my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255) !important");
+my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important");
 
 my $css = CSS::Declarations.new( :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css) );
+
+say $parent-css.important("color");
+## True
+say $css.handling("margin-left");
+## inherit
 ```
 
-This aims to be CSS conformant, including:
--- property default values
--- `initial` and `inherit` keywords, in the child class
--- `!important` properties in the parent class
--- property specific inheritance rules; e.g. as defined in https://www.w3.org/TR/CSS21/propidx.html#q24.0
+Inheritance aims to be CSS conformant, including:
+
+- setting property initial values
+
+- `initial` and `inherit` keywords, in the child class
+
+- `!important` properties in the parent class
+
+- property specific inheritance rules; e.g. as defined in https://www.w3.org/TR/CSS21/propidx.html#q24.0
 
