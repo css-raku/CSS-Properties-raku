@@ -7,6 +7,7 @@ class CSS::Declarations {
     use CSS::Declarations::Units;
     use CSS::Module;
     use CSS::Module::CSS3;
+    use CSS::Writer;
     my %module-metadata{CSS::Module};     #| per-module metadata
     my %module-properties{CSS::Module};   #| per-module property definitions
 
@@ -124,7 +125,7 @@ class CSS::Declarations {
 
     submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
                      ListOrStr :$style = [],
-                     CSS::Declarations :$inherit,
+                     :$inherit = [],
                    ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
@@ -138,7 +139,7 @@ class CSS::Declarations {
             }
             default { self!build-style($_) }
         }
-        self.inherit($_) with $inherit;
+        self.inherit($_) for $inherit.list;
     }
 
     method !box-value(Str $prop, List $children) is rw {
@@ -200,6 +201,10 @@ class CSS::Declarations {
         }
     }
 
+    multi method from-ast(Pair $v) {
+        self.from-ast( $v.value )
+            does CSS::Declarations::Units::Keyed[$v.key];
+    }
     multi method from-ast(List $v) {
         $v.elems == 1
             ?? self.from-ast( $v[0] )
@@ -209,10 +214,6 @@ class CSS::Declarations {
     multi method from-ast(Hash $v where .keys == 1) {
         self.from-ast( $v.pairs[0] );
     }
-    multi method from-ast(Pair $v) {
-        self.from-ast( $v.value )
-            does CSS::Declarations::Units::Keyed[$v.key];
-    }
     multi method from-ast($v) is default {
         $v
     }
@@ -221,10 +222,47 @@ class CSS::Declarations {
         self.from-ast($v);
     }
 
+    method to-ast($v, :$get = True) {
+        my $key = $v.key
+            if $v.can('key') && $get;
+
+        my $val = do given $v {
+            when Pair {.value}
+            when List { .elems == 1
+                        ?? self.to-ast( .[0] )
+                        !! [ .map: { self.to-ast($_) } ];
+                      }
+            default {
+                $key
+                    ?? self.to-ast($_, :!get)
+                    !! $_;
+            }
+        }
+
+        $key
+            ?? ($key => $val)
+            !! $val;
+    }
+
+    multi method xxto-ast(Pair $v) {
+        $v.key => self.to-ast($v.value);
+    }
+    multi method xxto-ast($v where .can('key') , :$skip where not *.so) {
+        $v.key => self.to-ast($v, :skip);
+    }
+    multi method xxto-ast(List $v) {
+        $v.elems == 1
+            ?? self.to-ast( $v[0] )
+            !! [ $v.map: { self.to-ast($_) } ];
+    }
+    multi method xxto-ast($v) is default {
+        $v;
+    }
+
     method inherit(CSS::Declarations $css) {
         for $css.keys -> $name {
-            my $prop = self.property($name);
-            unless $prop.box {
+            my $info = self.property($name);
+            unless $info.box {
                 with self.handling($name) {
                     when 'initial' { %!values{$name}:delete }
                     when 'inherit' { %!values{$name} = $css."$name"() }
@@ -232,11 +270,56 @@ class CSS::Declarations {
                 elsif $css.important($name) {
                     %!values{$name} = $css."$name"()
                 }
-                elsif $prop.inherit {
+                elsif $info.inherit {
                     %!values{$name} //= $css."$name"()
                 }
             }
         }
+    }
+
+    method !optimize-ast( %prop-ast ) {
+        for %prop-ast.keys -> $prop {
+            my $info = self.property($prop);
+            with %prop-ast{$prop}<expr> {
+                %prop-ast{$prop}:delete
+                    if +$_ == 1 && .[0] eqv $info.default-ast;
+            }
+        }
+        # todo: consolidate box properties with common values
+    }
+
+    method ast {
+        my %parents;
+        my %prop-ast;
+        for %!important.keys.grep: { %!important{$_} } {
+            %prop-ast{$_}<prio> = 'important';
+        }
+        for %!handling.keys {
+            %prop-ast{$_}<expr> = [ :keyw(%!handling{$_}) ];
+        }
+
+        #| find properties with useful values
+        for %!values.keys.sort -> $prop {
+            my $ast = self.to-ast: %!values{$prop};
+            %prop-ast{$prop}<expr> = [ $ast ];
+        }
+
+        self!optimize-ast: %prop-ast;
+
+        #| assemble property list
+        my @declaration-list = %prop-ast.keys.sort.map: -> $prop {
+            my %ast = %prop-ast{$prop};
+            %ast.push: 'ident' => $prop;
+            %ast;
+        };
+        
+        # todo: consolidation of identical box properties;
+        :@declaration-list;
+    }
+
+    method write {
+        my $writer = CSS::Writer.new: :terse;
+        $writer.write: self.ast;
     }
 
     multi method FALLBACK(Str $prop) is rw {
