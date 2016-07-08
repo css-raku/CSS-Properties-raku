@@ -98,20 +98,13 @@ class CSS::Declarations {
                         my $expr = .value;
                         my $keyw = $expr[0]<keyw>;
                         if $keyw ~~ Handling {
-                            with self.property($prop) {
-                                if .box {
-                                    %!handling{$_} = $keyw
-                                        for .children.list;
-                                }
-                                else {
-                                    %!handling{$prop} = $keyw;
-                                }
-                            }
+                            self.handling($prop) = $keyw;
                         }
                         else {
                             self."$prop"() = $expr;
+                            self.important($prop) = True
+                                if $decl<prio>;
                         }
-                        %!important{$prop} = True if $decl<prio>;
                     }
                 }
                 default {
@@ -179,12 +172,24 @@ class CSS::Declarations {
         );
     }
 
-    method handling(Str $prop) {
-        self.property($prop);
-        %!handling{$prop};
+    method !child-handling(List $children) is rw {
+        Proxy.new(
+            FETCH => sub ($) { [&&] $children.map: { %!handling{$_} } },
+            STORE => sub ($,Str $h) {
+                %!handling{$_} = $h
+                    for $children.list;
+            });
     }
 
-    method !importance($children) is rw {
+    method handling(Str $prop) is rw {
+        with self.property($prop) {
+            .children
+                ?? self!child-handling( .children )
+                !! %!handling{$prop}
+        }
+    }
+
+    method !child-importance(List $children) is rw {
         Proxy.new(
             FETCH => sub ($) { [&&] $children.map: { %!important{$_} } },
             STORE => sub ($,Bool $v) {
@@ -195,8 +200,8 @@ class CSS::Declarations {
 
     method important(Str $prop) is rw {
         with self.property($prop) {
-            .box
-                ?? self!importance( .children )
+            .children
+                ?? self!child-importance( .children )
                 !! %!important{$prop}
         }
     }
@@ -279,13 +284,35 @@ class CSS::Declarations {
 
     method !optimize-ast( %prop-ast ) {
         for %prop-ast.keys -> $prop {
+            # delete properties that match the default value
             my $info = self.property($prop);
             with %prop-ast{$prop}<expr> {
                 %prop-ast{$prop}:delete
                     if +$_ == 1 && .[0] eqv $info.default-ast;
             }
         }
-        # todo: consolidate box properties with common values
+        # consolidate box properties with common values
+        # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
+        my %edges;
+        for %prop-ast.keys -> $prop {
+            my $info = self.property($prop);
+            %edges{$info.parent}++ if $info.parent;
+        }
+        for %edges.keys -> $prop {
+            my $info = self.property($prop);
+            next unless $info.box;
+            my @children = $info.children;
+            my @asts = @children.map: { %prop-ast{$_} };
+            # we just handle the simplest case at the moment. Consolidate,
+            # if all four properties are present, and have the same value
+            # todo: should be eqv
+            if [eq] @asts {
+                %prop-ast{$_}:delete for @children;
+                %prop-ast{$prop} = @asts[0];
+            }
+        }
+        # todo: further consolidation
+        # border-color: red; bother-width: 1pt => border: 1pt red;
     }
 
     method ast {

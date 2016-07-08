@@ -10,8 +10,19 @@ my $ast = $css.ast;
 is $ast, (:declaration-list[
                    {:expr[:keyw<repeat-x>], :ident<background-repeat>},
                    {:expr[:keyw<inherit>], :ident<border-left-style>},
-                   {:expr[:rgb($[:num(255), :num(0), :num(0)])], :ident<color>, :prio<important> }
+                   {:expr[:rgb[:num(255), :num(0), :num(0)]], :ident<color>, :prio<important> }
                ]), 'ast';
 is $writer.write( $ast ), 'background-repeat: repeat-x; border-left-style: inherit; color: rgb(255, 0, 0) !important;', 'style rebuilt';
+
+$css = CSS::Declarations.new( :style("border-style: groove !important") );
+is $writer.write( $css.ast ), "border-style: groove !important;", "round-trip of edge property";
+
+$css = CSS::Declarations.new( :style("margin-top: 1pt; margin-left: 1pt; margin-bottom: 1pt; margin-right: 1pt;") );
+
+is $writer.write($css.ast), "margin: 1pt;", "consolidation of edge properties";
+
+$css = CSS::Declarations.new( :style("margin-bottom: 1pt; margin-left: 2pt; margin-right: 3pt; margin-top: 4pt;") );
+
+is $writer.write($css.ast), "margin-bottom: 1pt; margin-left: 2pt; margin-right: 3pt; margin-top: 4pt;", "consolidation of edge properties";
 
 done-testing;
