@@ -282,13 +282,15 @@ class CSS::Declarations {
         }
     }
 
+    sub same {$^a.perl eqv $^b.perl ?? $^a !! False}
+
     method !optimize-ast( %prop-ast ) {
         for %prop-ast.keys -> $prop {
             # delete properties that match the default value
             my $info = self.property($prop);
             with %prop-ast{$prop}<expr> {
                 %prop-ast{$prop}:delete
-                    if +$_ == 1 && .[0] eqv $info.default-ast;
+                    if +$_ == 1 && same(.[0], $info.default-ast);
             }
         }
         # consolidate box properties with common values
@@ -305,8 +307,7 @@ class CSS::Declarations {
             my @asts = @children.map: { %prop-ast{$_} };
             # we just handle the simplest case at the moment. Consolidate,
             # if all four properties are present, and have the same value
-            # todo: should be eqv
-            if [eq] @asts {
+            if [[&same]] @asts {
                 %prop-ast{$_}:delete for @children;
                 %prop-ast{$prop} = @asts[0];
             }
