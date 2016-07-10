@@ -2,14 +2,19 @@ use v6;
 use Test;
 use CSS::Declarations;
 use CSS::Declarations::Property;
-use CSS::Declarations::Box;
+use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
 
 my $css = CSS::Declarations.new :style[ :border-top-color<red> ];
 is $css.border-top-color, 'red', ':values constructor';
 
-isa-ok $css.property('margin'), CSS::Declarations::Box, 'box property';
-isa-ok $css.property('margin-left'), CSS::Declarations::Property, 'simple property';
+my $margin-info = $css.property('margin');
+isa-ok $margin-info, CSS::Declarations::Edges, 'box property';
+is-deeply [$margin-info.edges], ["margin-top", "margin-right", "margin-bottom", "margin-left"], 'edges property';
+
+my $margin-left-info = $css.property('margin-left');
+isa-ok $margin-left-info, CSS::Declarations::Property, 'simple property';
+is $margin-left-info.edge, 'margin', 'margin-left is a margin edge';
 
 is $css.azimuth, 'center', 'default azimuth';
 is $css.background-position, [0, 0], 'default background position';

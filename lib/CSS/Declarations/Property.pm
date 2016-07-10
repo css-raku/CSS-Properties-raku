@@ -12,11 +12,13 @@ class CSS::Declarations::Property {
     has $.default-ast;
     has Str $.parent;
     has Str @.children;
+    has Str $.edge;
+    has Str @.edges;
 
     method box { False }
 
-    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :$!parent = Str, :@!children ) {
-        die "$!name css property should be composed via CSS::Declarations::Box"
+    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :$!parent = Str, :@!children, :$!edge = Str, :@!edges ) {
+        die "$!name css property should be composed via CSS::Declarations::Edges"
             if $box && !self.box;
         # second entry is the compiled default value
          with $default {
@@ -33,7 +35,7 @@ class CSS::Declarations::Property {
         die "malformed metadata for property $name"
             unless %metadata{$name}<synopsis>:exists;
 
-        self.build( :$name, |%metadata{$name} );
+        self.build( :$name, :from-meta-data, |%metadata{$name} );
     }
 
     submethod BUILD(|c) {

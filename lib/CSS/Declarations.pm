@@ -3,7 +3,7 @@ use v6;
 class CSS::Declarations {
 
     use CSS::Declarations::Property;
-    use CSS::Declarations::Box;
+    use CSS::Declarations::Edges;
     use CSS::Declarations::Units;
     use CSS::Module;
     use CSS::Module::CSS3;
@@ -27,14 +27,14 @@ class CSS::Declarations {
 
     multi sub make-property(CSS::Module $m, Str $name) is default {
         with %module-metadata{$m}{$name} -> %defs {
-            with %defs<children> {
+            with %defs<edges> {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
                 for .list -> $side {
                     # these shouldn't nest or cycle
                     %defs{$side} = $_ with make-property($m, $side);
                 }
                 if %defs<box> {
-                    %module-properties{$m}{$name} = CSS::Declarations::Box.new( :$name, |%defs);
+                    %module-properties{$m}{$name} = CSS::Declarations::Edges.new( :$name, |%defs);
                 }
                 else {
                     # ignore compound properties, e.g. background, font 
@@ -135,7 +135,7 @@ class CSS::Declarations {
         self.inherit($_) for $inherit.list;
     }
 
-    method !box-value(Str $prop, List $children) is rw {
+    method !box-value(Str $prop, List $edges) is rw {
         
 	Proxy.new(
 	    FETCH => sub ($) {
@@ -143,7 +143,7 @@ class CSS::Declarations {
                     my $n = 0;
                     my @bound;
                     @bound[$n++] := self!item-value($_)
-                       for $children.list;
+                       for $edges.list;
                     @bound
                 }
             },
@@ -155,14 +155,16 @@ class CSS::Declarations {
 		@v[3] //= @v[1];
 		my $n = 0;
 		%!values{$_} = self.coerce: @v[$n++]
-		    for $children.list;
+		    for $edges.list;
 	    }
         );
     }
+
+    method !metadata { %module-metadata{$!module} }
             
     method !default($prop) {
         %!default{$prop} //= self.coerce( .<default>[1] )
-            with %module-metadata{$!module}{$prop};
+            with self!metadata{$prop};
     }
 
     method !item-value(Str $prop) is rw {
@@ -183,8 +185,8 @@ class CSS::Declarations {
 
     method handling(Str $prop) is rw {
         with self.property($prop) {
-            .children
-                ?? self!child-handling( .children )
+            .edges
+                ?? self!child-handling( .edges )
                 !! %!handling{$prop}
         }
     }
@@ -200,8 +202,8 @@ class CSS::Declarations {
 
     method important(Str $prop) is rw {
         with self.property($prop) {
-            .children
-                ?? self!child-importance( .children )
+            .edges
+                ?? self!child-importance( .edges )
                 !! %!important{$prop}
         }
     }
@@ -249,21 +251,6 @@ class CSS::Declarations {
             !! $val;
     }
 
-    multi method xxto-ast(Pair $v) {
-        $v.key => self.to-ast($v.value);
-    }
-    multi method xxto-ast($v where .can('key') , :$skip where not *.so) {
-        $v.key => self.to-ast($v, :skip);
-    }
-    multi method xxto-ast(List $v) {
-        $v.elems == 1
-            ?? self.to-ast( $v[0] )
-            !! [ $v.map: { self.to-ast($_) } ];
-    }
-    multi method xxto-ast($v) is default {
-        $v;
-    }
-
     method inherit(CSS::Declarations $css) {
         for $css.keys -> $name {
             my $info = self.property($name);
@@ -298,17 +285,17 @@ class CSS::Declarations {
         my %edges;
         for %prop-ast.keys -> $prop {
             my $info = self.property($prop);
-            %edges{$info.parent}++ if $info.parent;
+            %edges{$info.edge}++ if $info.edge;
         }
         for %edges.keys -> $prop {
             my $info = self.property($prop);
             next unless $info.box;
-            my @children = $info.children;
-            my @asts = @children.map: { %prop-ast{$_} };
+            my @edges = $info.edges;
+            my @asts = @edges.map: { %prop-ast{$_} };
             # we just handle the simplest case at the moment. Consolidate,
             # if all four properties are present, and have the same value
             if [[&same]] @asts {
-                %prop-ast{$_}:delete for @children;
+                %prop-ast{$_}:delete for @edges;
                 %prop-ast{$prop} = @asts[0];
             }
         }
@@ -317,7 +304,6 @@ class CSS::Declarations {
     }
 
     method ast {
-        my %parents;
         my %prop-ast;
         for %!important.keys.grep: { %!important{$_} } {
             %prop-ast{$_}<prio> = 'important';
@@ -351,11 +337,11 @@ class CSS::Declarations {
     }
 
     multi method FALLBACK(Str $prop) is rw {
-        with %module-metadata{$!module}{$prop} {
+        with self!metadata{$prop} {
             self.property: $prop;
             my &meth =
                 .<box>
-		    ?? method () is rw { self!box-value($prop, .<children>) }
+		    ?? method () is rw { self!box-value($prop, .<edges>) }
 		    !! method () is rw { self!item-value($prop) }
 	
 	    self.^add_method($prop,  &meth);

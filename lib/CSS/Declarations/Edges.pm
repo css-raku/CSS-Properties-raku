@@ -2,7 +2,7 @@ use v6;
 
 use CSS::Declarations::Property;
 
-class CSS::Declarations::Box
+class CSS::Declarations::Edges
     is CSS::Declarations::Property {
     method box { True }
 

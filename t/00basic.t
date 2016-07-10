@@ -1,7 +1,7 @@
 use v6;
 use Test;
 use CSS::Declarations::Property;
-use CSS::Declarations::Box;
+use CSS::Declarations::Edges;
 
 pass('compiles');
 
@@ -14,7 +14,7 @@ is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, "none", '$prop.default';
 is-deeply $sample-prop.default-ast, [{:keyw<none>},], '$prop.default-ast';
 
-$sample-prop = CSS::Declarations::Box.new( :name<margin> );
+$sample-prop = CSS::Declarations::Edges.new( :name<margin> );
 
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';

@@ -18,11 +18,13 @@ $css = CSS::Declarations.new( :style("border-style: groove !important") );
 is $writer.write( $css.ast ), "border-style: groove !important;", "round-trip of edge property";
 
 $css = CSS::Declarations.new( :style("margin-top: 1pt; margin-left: 1pt; margin-bottom: 1pt; margin-right: 1pt;") );
-
 is $writer.write($css.ast), "margin: 1pt;", "consolidation of edge properties";
 
 $css = CSS::Declarations.new( :style("margin-bottom: 1pt; margin-left: 2pt; margin-right: 3pt; margin-top: 4pt;") );
-
 is $writer.write($css.ast), "margin-bottom: 1pt; margin-left: 2pt; margin-right: 3pt; margin-top: 4pt;", "consolidation of edge properties";
+
+todo "consolidation of compound properties";
+$css = CSS::Declarations.new( :style("border-color: red; border-width: 2pt") );
+is $writer.write($css.ast), "border: rgb(255, 0, 0) 2pt;", "consolidation of compound properties";
 
 done-testing;
