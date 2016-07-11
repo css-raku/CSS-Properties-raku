@@ -379,8 +379,11 @@ class CSS::Declarations {
         :@declaration-list;
     }
 
-    method write(Bool :$optimize = True, Bool :$terse = True, |c) {
-        my $writer = CSS::Writer.new( :$terse, |c);
+    method write(Bool :$optimize = True,
+                 Bool :$terse = True,
+                 Bool :$color-names = True,
+                 |c) {
+        my $writer = CSS::Writer.new( :$terse, :$color-names, |c);
         $writer.write: self.ast(:$optimize);
     }
 

@@ -93,8 +93,8 @@ Parent styles can be inherited one at a time, eithing using by the `:inherit` co
 
 ```
 use CSS::Declarations;
-$css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt; margin: inherit") );
-say $css.write;  # "border: groove 2pt; margin: inherit;"
+$css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt; color: rgb(255,0,0);") );
+say $css.write;  # "border: groove 2pt; color: red;"
 ```
 
 ## CSS Elements & Units
