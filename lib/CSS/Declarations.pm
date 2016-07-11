@@ -68,7 +68,7 @@ class CSS::Declarations {
             for .list {
                 if $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
                     # embedded property declaration
-                    @props.push: $0 => .values[0]
+                    @props.push: ~$0 => .values[0]
                 }
                 else {
                     @expr.push: $_;
@@ -103,7 +103,7 @@ class CSS::Declarations {
                         else {
                             self."$prop"() = $expr;
                             self.important($prop) = True
-                                if $decl<prio>;
+                                if $decl<prio> ~~ 'important';
                         }
                     }
                 }
@@ -272,6 +272,9 @@ class CSS::Declarations {
     sub same {$^a.perl eqv $^b.perl ?? $^a !! False}
 
     method !optimize-ast( %prop-ast ) {
+        my $metadata = self!metadata;
+        my @compound-properties = $metadata.keys.sort.grep: {$metadata{$_}<children>};
+
         for %prop-ast.keys -> $prop {
             # delete properties that match the default value
             my $info = self.property($prop);
@@ -280,6 +283,7 @@ class CSS::Declarations {
                     if +$_ == 1 && same(.[0], $info.default-ast);
             }
         }
+
         # consolidate box properties with common values
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
         my %edges;
@@ -288,6 +292,7 @@ class CSS::Declarations {
             %edges{$info.edge}++ if $info.edge;
         }
         for %edges.keys -> $prop {
+            # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
             my $info = self.property($prop);
             next unless $info.box;
             my @edges = $info.edges;
@@ -299,11 +304,54 @@ class CSS::Declarations {
                 %prop-ast{$prop} = @asts[0];
             }
         }
-        # todo: further consolidation
-        # border-color: red; bother-width: 1pt => border: 1pt red;
+        for @compound-properties -> $prop {
+            # top-down aggregation of compound properties. e.g. border-width, border-style => border
+            
+            my @children = $metadata{$prop}<children>.list.grep: {
+                %prop-ast{$_}:exists
+            }
+
+            # take the simple approach of building the compound property, iff
+            # all children are consistant
+            # -- if child properties are 'initial', or 'inherit', they all
+            #    need to be present and the same
+            # -- otherwise they need to all need to have or lack
+            #    the !important indicator
+
+            my @child-types = @children.map: {
+                given %prop-ast{$_} {
+                    when .<keyw> ~~ 'initial'|'inherit' {.<keyw>}
+                    when .<prio> ~~ 'important' { 'important' }
+                    default { 'normal' }
+                }
+            }
+
+            if +(@child-types.unique) == 1 {
+                # all of the same type
+                given @child-types[0] {
+                    when 'initial'|'inherit' {
+                        if .Num == $metadata{$prop}<children> {
+                            # all child properties need to be present
+                            %prop-ast{$_}:delete for @children;
+                            %prop-ast{$prop} = { expr => [ :keyw($_) ] };
+                        }
+                    }
+                    when 'important'|'normal' {
+                        my %ast = expr => [ @children.map: {
+                            my $sub-prop = %prop-ast{$_}:delete;
+                            'expr:'~$_ => $sub-prop<expr>;
+                        } ];
+                        %ast<prio> = $_
+                            when $_ ~~ 'important';
+                        %prop-ast{$prop} = %ast;
+                    }
+                }
+            }
+
+        }
     }
 
-    method ast {
+    method ast(Bool :$optimize = True) {
         my %prop-ast;
         for %!important.keys.grep: { %!important{$_} } {
             %prop-ast{$_}<prio> = 'important';
@@ -318,22 +366,22 @@ class CSS::Declarations {
             %prop-ast{$prop}<expr> = [ $ast ];
         }
 
-        self!optimize-ast: %prop-ast;
+        self!optimize-ast: %prop-ast
+            if $optimize;
 
         #| assemble property list
         my @declaration-list = %prop-ast.keys.sort.map: -> $prop {
-            my %ast = %prop-ast{$prop};
-            %ast.push: 'ident' => $prop;
-            %ast;
+            my %property = %prop-ast{$prop};
+            %property.push: 'ident' => $prop;
+            %property;
         };
         
-        # todo: consolidation of identical box properties;
         :@declaration-list;
     }
 
-    method write {
-        my $writer = CSS::Writer.new: :terse;
-        $writer.write: self.ast;
+    method write(Bool :$optimize = True, Bool :$terse = True, |c) {
+        my $writer = CSS::Writer.new( :$terse, |c);
+        $writer.write: self.ast(:$optimize);
     }
 
     multi method FALLBACK(Str $prop) is rw {

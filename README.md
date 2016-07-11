@@ -89,6 +89,14 @@ Parent styles can be inherited one at a time, eithing using by the `:inherit` co
 
 - property specific inheritance rules; e.g. as defined in https://www.w3.org/TR/CSS21/propidx.html#q24.0
 
+## Serialization
+
+```
+use CSS::Declarations;
+$css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt; margin: inherit") );
+say $css.write;  # "border: groove 2pt; margin: inherit;"
+```
+
 ## CSS Elements & Units
 
 `CSS::Declaration::Element` is a base class for computing sizes of CSS elements, based on the CSS Box module.
