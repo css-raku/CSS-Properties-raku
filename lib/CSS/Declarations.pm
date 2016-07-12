@@ -313,6 +313,7 @@ class CSS::Declarations {
             my @children = $metadata{$prop}<children>.list.grep: {
                 %prop-ast{$_}:exists
             }
+            next unless @children >= 2;
 
             # take the simple approach of building the compound property, iff
             # all children are consistant
@@ -350,7 +351,6 @@ class CSS::Declarations {
                     }
                 }
             }
-
         }
     }
 

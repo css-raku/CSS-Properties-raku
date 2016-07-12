@@ -13,6 +13,9 @@ $css.padding = 5pt;  # set padding on all 4 sides
 $css.border-width = 3pt;
 $css.margin = [5pt, 2pt, 5pt, 2pt];
 
+# output the style
+say $css.write;
+
 # create an element, giving the vertices of the content-box
 my $element = CSS::Declarations::Element.new( :top(80pt), :left(0pt), :bottom(0pt), :right(50pt), :$css, :units(in));
 
