@@ -269,7 +269,10 @@ class CSS::Declarations {
         }
     }
 
-    sub same {$^a.perl eqv $^b.perl ?? $^a !! False}
+    my subset ZeroAssoc of Associative where {.values[0] ~~ Numeric && .values[0] =~= 0};
+    multi sub same(ZeroAssoc $a, ZeroAssoc $) { $a } # e.g. 0pt :== 0mm
+    multi sub same(Associative $a, Associative $b) {$a.pairs.perl eqv $b.pairs.perl ?? $a !! False}
+    multi sub same($a, $b) is default {$a.perl eqv $b.perl ?? $a !! False}
 
     method !optimize-ast( %prop-ast ) {
         my $metadata = self!metadata;
@@ -280,7 +283,7 @@ class CSS::Declarations {
             my $info = self.property($prop);
             with %prop-ast{$prop}<expr> {
                 %prop-ast{$prop}:delete
-                    if +$_ == 1 && same(.[0], $info.default-ast);
+                    if +$_ == 1 && same(.[0], $info.default-ast[0]);
             }
         }
 
