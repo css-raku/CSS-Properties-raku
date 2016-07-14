@@ -33,15 +33,15 @@ class CSS::Declarations {
                     # these shouldn't nest or cycle
                     %defs{$side} = $_ with make-property($m, $side);
                 }
-                if %defs<box> {
-                    %module-properties{$m}{$name} = CSS::Declarations::Edges.new( :$name, |%defs);
-                }
-                else {
-                    # ignore compound properties, e.g. background, font 
-                }
+                %module-properties{$m}{$name} = CSS::Declarations::Edges.new( :$name, |%defs);
             }
             else {
-                %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
+                with %defs<children> {
+                    die "compound property not implemented: $name. please use constituant properties: .<children>";
+                }
+                else {
+                    %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
+                }
             }
         }
         else {

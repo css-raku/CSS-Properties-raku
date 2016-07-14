@@ -28,4 +28,6 @@ $css.margin[1] = 20px;
 is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 
+dies-ok { $css.property("background"); }, "compound declaration - nyi";
+
 done-testing;

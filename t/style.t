@@ -12,8 +12,8 @@ is $css.margin-top, 2;
 is $css.margin-top.key, 'pt';
 is $css.border-width, [1, 2, 3, 2];
 
-ok $css.important("text-align"), "text-align is important";
-nok $css.important("color"), "color is not important";
+ok $css.important("text-align"), "important property";
+nok $css.important("color"), "unimportant property";
 
 $css = CSS::Declarations.new: :style("border: 2.5px");
 is $css.border-width, [2.5 xx 4];
