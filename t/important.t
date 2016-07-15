@@ -29,7 +29,6 @@ $css = CSS::Declarations.new( :style("border-top: 1px red !important"));
 $css.important("border-top-width") = False;
 ok $css.important("border-top-color");
 nok $css.important("border-top-width");
-todo "box sub-property of an edge";
 nok $css.important("border-right-color");
 
 done-testing;
