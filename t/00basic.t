@@ -19,6 +19,6 @@ $sample-prop = CSS::Declarations::Edges.new( :name<margin> );
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
-is-deeply $sample-prop.synopsis, '[<length> | <percentage> | auto ]{1,4}', '$prop.synopsis';
+is-deeply $sample-prop.synopsis, '<margin-width>{1,4}', '$prop.synopsis';
 
 done-testing;
