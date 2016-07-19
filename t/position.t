@@ -1,7 +1,7 @@
 use v6;
 use Test;
 use CSS::Declarations::Units;
-use CSS::Declarations::Element;
+use CSS::Declarations::Position;
 
 my $css = CSS::Declarations.new;
 
@@ -14,7 +14,7 @@ my $right  = 50pt;
 my $bottom = 0pt;
 my $left   = 0pt;
 
-my $element = CSS::Declarations::Element.new( :$top, :$left, :$bottom, :$right, :$css, :units(pt));
+my $element = CSS::Declarations::Position.new( :$top, :$left, :$bottom, :$right, :$css, :units(pt));
 
 is-deeply $element.Array, [$top, $right, $bottom, $left];
 is-deeply $element.padding, [$top+5, $right+5, $bottom-5, $left-5];

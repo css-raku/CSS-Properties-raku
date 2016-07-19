@@ -8,8 +8,8 @@
     "provides"    : {
         "CSS::Declarations" : "lib/CSS/Declarations.pm",
         "CSS::Declarations::Edges" : "lib/CSS/Declarations/Edges.pm",
-        "CSS::Declarations::Element" : "lib/CSS/Declarations/Element.pm",
         "CSS::Declarations::Style" : "lib/CSS/Declarations/Property.pm",
+        "CSS::Declarations::Position" : "lib/CSS/Declarations/Position.pm",
         "CSS::Declarations::Units" : "lib/CSS/Declarations/Units.pm"
      }
 }

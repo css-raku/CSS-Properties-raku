@@ -1,6 +1,6 @@
 use v6;
 
-class CSS::Declarations::Element {
+class CSS::Declarations::Position {
     use CSS::Declarations;
     use CSS::Declarations::Units;
     
