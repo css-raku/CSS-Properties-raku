@@ -2,14 +2,13 @@
     "perl"        : "6c",
     "name"        : "CSS::Declarations",
     "version"     : "0.0.1",
-    "description" : "Objects and parsing tools for CSS property sets",
+    "description" : "Basic CSS rule-set manipulation",
     "depends"     : [ "CSS::Module", "CSS::Writer" ],
     "source-url"  : "git://github.com/p6-css/perl6-CSS-Declarations.git",
     "provides"    : {
         "CSS::Declarations" : "lib/CSS/Declarations.pm",
         "CSS::Declarations::Edges" : "lib/CSS/Declarations/Edges.pm",
         "CSS::Declarations::Style" : "lib/CSS/Declarations/Property.pm",
-        "CSS::Declarations::Position" : "lib/CSS/Declarations/Position.pm",
         "CSS::Declarations::Units" : "lib/CSS/Declarations/Units.pm"
      }
 }
