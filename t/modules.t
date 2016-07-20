@@ -3,16 +3,29 @@ use Test;
 use CSS::Declarations;
 use CSS::Module::CSS1;
 use CSS::Module::CSS21;
+use CSS::Module::CSS3;
 
 my $style = 'color: red; azimuth: left';
 my $module = CSS::Module::CSS1.module;
 my $css1 = CSS::Declarations.new( :$style, :$module);
-dies-ok { $css1.property("azimuth") }, "azimuth is unknown in CSS1";
+dies-ok { $css1.info("azimuth") }, "azimuth is unknown in CSS1";
 is $css1.warnings, "dropping unknown property: azimuth", 'CSS1 warnings';
 
 $module = CSS::Module::CSS21.module;
 my $css21 = CSS::Declarations.new( :$style, :$module);
-lives-ok { $css21.property("azimuth") }, "azimuth is known in CSS21";
-is $css21.warnings, "", 'Css21 warnings';
+lives-ok { $css21.info("azimuth") }, "azimuth is known in CSS21";
+is $css21.warnings, "", 'CSS21 warnings';
+
+$module = CSS::Module::CSS3.module;
+my $css3 = CSS::Declarations.new( :$style, :$module);
+lives-ok { $css3.info("azimuth") }, "azimuth is known in CSS3";
+is $css21.warnings, "", 'CSS3 warnings';
+
+$style = 'src: url(gentium.ttf); azimuth: left';
+$module = CSS::Module::CSS3.module.sub-module<@font-face>;
+my $css-at-fontface = CSS::Declarations.new( :$style, :$module);
+lives-ok { $css-at-fontface.info("src") }, 'src is known in @font-face';
+dies-ok { $css-at-fontface.info("azimuth") }, 'azimuth is unknown in @font-face';
+is $css-at-fontface.warnings, "dropping unknown property: azimuth", '@fontface warnings';
 
 done-testing;

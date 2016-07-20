@@ -15,10 +15,10 @@ is $css.margin-right, 0, "'initial'";
 is $css.handling("margin-left"), "inherit", "'inherit'";
 is $css.margin-left, 15, "'inherit'";
 
-is $css.property("color").inherit, True, 'color inherit metadata';
+is $css.info("color").inherit, True, 'color inherit metadata';
 is $css.color, [0,0,255], "inheritable property";
 
-is $css.property("margin-bottom").inherit, False, 'margin-bottom inherit metadata';
+is $css.info("margin-bottom").inherit, False, 'margin-bottom inherit metadata';
 is $css.margin-bottom, 0, "non-inhertiable property";
 
 $css = CSS::Declarations.new( :style("margin: inherit"), :$inherit);

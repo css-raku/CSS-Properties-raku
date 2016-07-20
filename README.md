@@ -1,5 +1,5 @@
 # perl6-CSS-Declarations
-CSS Property set representations, including box model, inheritance and default handling
+CSS rul-set representations, including inheritance, default handling and serialization
 
 ## Basic Construction
 ```
@@ -7,20 +7,14 @@ use v6;
 use CSS::Declarations::Units;
 use CSS::Declarations::Element;
 
-my $css = CSS::Declarations.new;
+my $style = "color: red";
+my $css = CSS::Declarations.new( :$style );
 
 $css.padding = 5pt;  # set padding on all 4 sides
-$css.border-width = 3pt;
 $css.margin = [5pt, 2pt, 5pt, 2pt];
 
 # output the style
 say $css.write;
-
-# create an element, giving the vertices of the content-box
-my $element = CSS::Declarations::Element.new( :top(80pt), :left(0pt), :bottom(0pt), :right(50pt), :$css, :units(in));
-
-# display margin box (in inches)
-say $element.margin;
 ```
 
 ## Parsing of CSS style rules 
@@ -33,7 +27,6 @@ my $css = CSS::Declarations.new: :style("color: orange; text-align: center; marg
 say $css.color;     # [255, 165, 0];
 say $css.color.key; # 'rgb';
 ```
-
 ## Property Metadata
 
 The `.property` method returns a `CSS::Declarations::Property` object for property introspection.
@@ -69,6 +62,26 @@ my $css21 = CSS::Declarations.new( :$style, :$module);
 ## (no warnings)
 ```
 
+### '@font-face' Declarations
+
+`@font-face` is a sub-module of `CSS3`. To process a ruleset, such as:
+
+```
+@font-face {
+    font-family: myFirstFont;
+    src: url(sansation_light.woff);
+}
+```
+
+```
+use CSS::Declarations;
+use CSS::Module::CSS3;
+
+my $style = "font-family: myFirstFont; src: url(sansation_light.woff)";
+my $module = CSS::Module::CSS3.module.sub-module<@font-face>;
+my $font-face-css = CSS::Declarations.new( :$style, :$module);
+```
+
 ## Inheritance
 
 ```
@@ -82,7 +95,7 @@ say $css.handling("margin-left");
 ## inherit
 ```
 
-Parent styles can be inherited one at a time, eithing using by the `:inherit` construction option, or the `inherit` method. Inheritance aims to be CSS conformant, including:
+Parent styles can be inherited one at a time, either using by the `:inherit` construction option, or the `inherit` method. Inheritance aims to be CSS conformant, including:
 
 - setting property initial values
 
@@ -94,45 +107,55 @@ Parent styles can be inherited one at a time, eithing using by the `:inherit` co
 
 ## Serialization
 
+Properties are optimized and normalized during serialization. E.g.:
+
 ```
 use CSS::Declarations;
 $css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt; color: rgb(255,0,0);") );
-say $css.write;  # "border: groove 2pt; color: red;"
+say $css.write;  # "border: 2pt; color: red;"
 ```
 
-## CSS Elements & Units
+`$.write` Options include:
 
-`CSS::Declaration::Element` is a base class for computing sizes of CSS elements, based on the CSS Box module.
+- `:!optimize` - turn off optmization. Don't, combine simple properties into compound properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`).
 
-Basically an element consists of a core content box, surrounded by
-concentric `padding`, `border` and `margin` boxes.
+- `:!terse` - enable multi-line output
+
+- `:!color-names` - don't translate RGB values to color-names
+
+## Introspection
+
+The `properties` method, gives a list of current property names.
+
+The attributes of a parsed quantity can be accessed via the `.key` method:
 
 ```
 use CSS::Declarations;
-use CSS::Declarations::Units;
-use CSS::Declarations::Element;
 
-my $css = CSS::Declarations.new: :style("padding:5pt; border:3pt; margin: 1pt 2pt 3pt 4pt");
+my $style = "margin-top: 10%; margin-right: 5mm; margin-bottom: auto";
+my $css = CSS::Declarations.new: :$style;
 
-# style a content box between [0, 0] and [50, 80]
-# rendering units are 'pt'
+for $css.properties -> $prop {
+    my $val = $css."$prop"();
+    say "$prop: $val {$val.key}";
+}
 
-my $top    = 80pt;
-my $right  = 50pt;
-my $bottom = 0pt;
-my $left   = 0pt;
-my $units  = pt;
-
-my $element = CSS::Declarations::Element.new( :$top, :$left, :$bottom, :$right, :$css, :$units);
-
-# determine coordinates of padding and margin boxes (pt)
-say $element.padding; # [85 55 -5 -5]
-say $element.margin;  # [89 60 -11 -12]
-
-# also show padding coordinates in pixels
-$element.units = Units::px;
-say $element.padding; # [63.75 41.25 -3.75 -3.75]
+```
+Gives:
+```
+margin-top: 10 percent
+margin-bottom: auto keyw
+margin-right: 5 mm
 ```
 
+Note that properties are broken down into simple components, `margin` will alway be broken down into individual properties, for example.
 
+The `info` method gives property specific metadata, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
 
+```
+use CSS::Declarations;
+my $css = CSS::Declarations.new;
+my $margin-info = $css.info("margin");
+say $margin-info.synopsis; # <margin-width>{1,4}
+say $margin-info.edges;    # [margin-top margin-right margin-bottom margin-left]
+say $margin-info.inherit;  # True (property is inherited)

@@ -12,8 +12,7 @@ class CSS::Declarations {
     my %module-properties{CSS::Module};   #| per-module property definitions
 
     #| contextual variables
-    has Any %!values          #| property values
-        handles <keys>;
+    has Any %!values;         #| property values
     has Bool %!important;
     has %!default;
     my subset Handling of Str where 'initial'|'inherit';
@@ -50,7 +49,7 @@ class CSS::Declarations {
         %module-properties{$m}{$name};
     }
 
-    method property(Str $prop) {
+    method info(Str $prop) {
         with %module-properties{$!module}{$prop} {
             $_;
         }
@@ -184,7 +183,7 @@ class CSS::Declarations {
     }
 
     method handling(Str $prop) is rw {
-        with self.property($prop) {
+        with self.info($prop) {
             .edges
                 ?? self!child-handling( .edges )
                 !! %!handling{$prop}
@@ -201,7 +200,7 @@ class CSS::Declarations {
     }
 
     method important(Str $prop) is rw {
-        with self.property($prop) {
+        with self.info($prop) {
             .edges
                 ?? self!child-importance( .edges )
                 !! %!important{$prop}
@@ -252,8 +251,8 @@ class CSS::Declarations {
     }
 
     method inherit(CSS::Declarations $css) {
-        for $css.keys -> $name {
-            my $info = self.property($name);
+        for $css.properties -> $name {
+            my $info = self.info($name);
             unless $info.box {
                 with self.handling($name) {
                     when 'initial' { %!values{$name}:delete }
@@ -280,7 +279,7 @@ class CSS::Declarations {
 
         for %prop-ast.keys -> $prop {
             # delete properties that match the default value
-            my $info = self.property($prop);
+            my $info = self.info($prop);
             with %prop-ast{$prop}<expr> {
                 %prop-ast{$prop}:delete
                     if +$_ == 1 && same(.[0], $info.default-ast[0]);
@@ -291,12 +290,12 @@ class CSS::Declarations {
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
         my %edges;
         for %prop-ast.keys -> $prop {
-            my $info = self.property($prop);
+            my $info = self.info($prop);
             %edges{$info.edge}++ if $info.edge;
         }
         for %edges.keys -> $prop {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
-            my $info = self.property($prop);
+            my $info = self.info($prop);
             next unless $info.box;
             my @edges = $info.edges;
             my @asts = @edges.map: { %prop-ast{$_} };
@@ -390,9 +389,13 @@ class CSS::Declarations {
         $writer.write: self.ast(:$optimize);
     }
 
+    method properties {
+        keys %!values;
+    }
+
     multi method FALLBACK(Str $prop) is rw {
         with self!metadata{$prop} {
-            self.property: $prop;
+            self.info: $prop;
             my &meth =
                 .<box>
 		    ?? method () is rw { self!box-value($prop, .<edges>) }

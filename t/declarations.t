@@ -8,11 +8,11 @@ use CSS::Declarations::Units;
 my $css = CSS::Declarations.new :style[ :border-top-color<red> ];
 is $css.border-top-color, 'red', ':values constructor';
 
-my $margin-info = $css.property('margin');
+my $margin-info = $css.info('margin');
 isa-ok $margin-info, CSS::Declarations::Edges, 'box property';
 is-deeply [$margin-info.edges], ["margin-top", "margin-right", "margin-bottom", "margin-left"], 'edges property';
 
-my $margin-left-info = $css.property('margin-left');
+my $margin-left-info = $css.info('margin-left');
 isa-ok $margin-left-info, CSS::Declarations::Property, 'simple property';
 is $margin-left-info.edge, 'margin', 'margin-left is a margin edge';
 
@@ -28,6 +28,6 @@ $css.margin[1] = 20px;
 is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 
-dies-ok { $css.property("background"); }, "compound declaration - nyi";
+dies-ok { $css.info("background"); }, "compound declaration - nyi";
 
 done-testing;
