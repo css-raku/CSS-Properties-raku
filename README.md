@@ -27,19 +27,6 @@ my $css = CSS::Declarations.new: :style("color: orange; text-align: center; marg
 say $css.color;     # [255, 165, 0];
 say $css.color.key; # 'rgb';
 ```
-## Property Metadata
-
-The `.property` method returns a `CSS::Declarations::Property` object for property introspection.
-```
-use CSS::Declarations;
-my $css = CSS::Declarations.new;
-my $prop = $css.property("background-image");
-say "name:     {$prop.name}";
-sys "synopsis: {$prop.synopsis}";
-say "default:  {$prop.default}";
-say "inherit:  {$prop.inherit ?? 'Y' !! 'N'}";
-```
-
 ## CSS Modules and Levels
 
 Processing defaults to CSS level 3. This can be altered via the :module option:
@@ -123,7 +110,33 @@ say $css.write;  # "border: 2pt; color: red;"
 
 - `:!color-names` - don't translate RGB values to color-names
 
-## Introspection
+## Property Metadata
+
+The `.property` method returns a `CSS::Declarations::Property` object for property introspection.
+```
+use CSS::Declarations;
+my $css = CSS::Declarations.new;
+my $prop = $css.property("background-image");
+say "name:     {$prop.name}";
+sys "synopsis: {$prop.synopsis}";
+say "default:  {$prop.default}";
+say "inherit:  {$prop.inherit ?? 'Y' !! 'N'}";
+```
+
+Note that properties are broken down into simple components, For example `margin` is broken down into `margin-top`, `margin-right`, `margin-bottom`, `margin-left`. It is only reassembled during serialization.
+
+The `info` method gives property specific metadata, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
+
+```
+use CSS::Declarations;
+my $css = CSS::Declarations.new;
+my $margin-info = $css.info("margin");
+say $margin-info.synopsis; # <margin-width>{1,4}
+say $margin-info.edges;    # [margin-top margin-right margin-bottom margin-left]
+say $margin-info.inherit;  # True (property is inherited)
+```
+
+## Data Introspection
 
 The `properties` method, gives a list of current property names.
 
@@ -148,14 +161,3 @@ margin-bottom: auto keyw
 margin-right: 5 mm
 ```
 
-Note that properties are broken down into simple components, `margin` will alway be broken down into individual properties, for example.
-
-The `info` method gives property specific metadata, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
-
-```
-use CSS::Declarations;
-my $css = CSS::Declarations.new;
-my $margin-info = $css.info("margin");
-say $margin-info.synopsis; # <margin-width>{1,4}
-say $margin-info.edges;    # [margin-top margin-right margin-bottom margin-left]
-say $margin-info.inherit;  # True (property is inherited)
