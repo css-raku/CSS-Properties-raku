@@ -10,4 +10,12 @@ module CSS::Declarations::Units {
     sub postfix:<mm>(Numeric $v) is rw is export { $v does Keyed['mm']  };
     sub postfix:<cm>(Numeric $v) is rw is export { $v does Keyed['cm']  };
     sub postfix:<in>(Numeric $v) is rw is export { $v does Keyed['in']  };
+    multi sub infix:<+>(Length $v, Length $n) is export {
+        my $r = $v.key eq $n.key ?? 1 !! Units.enums{$v.key} / Units.enums{$n.key};
+        ($v.Numeric  +  $r * $n.Numeric) does Keyed[$v.key];
+    }
+    multi sub infix:<->(Length $v, Length $n) is export {
+        my $r = $v.key eq $n.key ?? 1 !! Units.enums{$v.key} / Units.enums{$n.key};
+        ($v.Numeric  -  $r * $n.Numeric) does Keyed[$v.key];
+    }
 }

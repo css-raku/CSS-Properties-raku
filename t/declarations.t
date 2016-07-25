@@ -5,7 +5,7 @@ use CSS::Declarations::Property;
 use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
 
-my $css = CSS::Declarations.new :style[ :border-top-color<red> ];
+my $css = CSS::Declarations.new :style[ :border-top-color( :keyw<red> ) ];
 is $css.border-top-color, 'red', ':values constructor';
 
 my $margin-info = $css.info('margin');

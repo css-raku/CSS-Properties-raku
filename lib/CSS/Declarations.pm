@@ -224,8 +224,11 @@ class CSS::Declarations {
         $v
     }
 
-    method coerce($v) {
-        self.from-ast($v);
+    method coerce($a) {
+        my $v = self.from-ast($a);
+        die "CSS operand doesn't have a .key method: {$a.perl}"
+            unless $v ~~ List || $v.can('key');
+        $v;
     }
 
     method to-ast($v, :$get = True) {
