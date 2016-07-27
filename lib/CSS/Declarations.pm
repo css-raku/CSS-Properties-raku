@@ -276,23 +276,19 @@ class CSS::Declarations {
     multi sub same(Associative $a, Associative $b) {$a.pairs.perl eqv $b.pairs.perl ?? $a !! False}
     multi sub same($a, $b) is default {$a.perl eqv $b.perl ?? $a !! False}
 
-    multi method adjust('font', :@children) {
-        # These serializations won't parse correctly:
-        #     font: bold;
-        #     font: bold Helvetica;
-        # Adjust to this:
-        #     font: bold medium Helvetica;
-        my $c = set @children;
-        if 'font-weight' ∈ $c && 'font-size' ∉ $c {
-            # add font-size
-            @children = self!metadata<font><children>.grep: {
-                $_ ∈ $c || $_ eq 'font-size';
-            }
-        }
+    # Avoid these optmizations, which won't parse correctly:
+    #     font: bold;
+    #     font: bold Helvetica;
+    # Need a font-size to disambiguate, e.g.: 
+    #     font: bold medium Helvetica;
+    multi method optimizable('font', :@children! where {
+                                    my $s = .Set;
+                                    'font-weight' ∈ $s && 'font-size' ∉ $s }) {
+        False;
     }
 
-    multi method adjust($prop, :@children) is default {
-        $!module.?adjust($prop, :@children);
+    multi method optimizable($, :@children) is default {
+        @children >= 2;
     }
 
     method !optimize-ast( %prop-ast ) {
@@ -334,7 +330,8 @@ class CSS::Declarations {
             my @children = $metadata{$prop}<children>.list.grep: {
                 %prop-ast{$_}:exists
             }
-            next unless @children >= 2;
+
+            next unless $.optimizable($prop, :@children);
 
             # take the simple approach of building the compound property, iff
             # all children are consistant
@@ -362,9 +359,8 @@ class CSS::Declarations {
                         }
                     }
                     when 'important'|'normal' {
-                        $.adjust($prop, :@children);
                         my %ast = expr => [ @children.map: {
-                            my $sub-prop = %prop-ast{$_}:delete // :expr( $.info($_).default-ast );
+                            my $sub-prop = %prop-ast{$_}:delete;
                             'expr:'~$_ => $sub-prop<expr>;
                         } ];
                         %ast<prio> = $_

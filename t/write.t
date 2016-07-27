@@ -41,6 +41,9 @@ $css = CSS::Declarations.new( :style("cue-after: url('bar')") );
 is  $css.write, "cue-after: url('bar');";
 
 $css = CSS::Declarations.new( :style("font-weight:bold; font-family:Helvetica") );
-is  $css.write, "font: bold medium Helvetica;";
+is  $css.write, "font-family: Helvetica; font-weight: bold;";
+
+$css = CSS::Declarations.new( :style("font-weight:bold; font-size: 12pt; font-family:Helvetica") );
+is  $css.write, "font: bold 12pt Helvetica;";
 
 done-testing;
