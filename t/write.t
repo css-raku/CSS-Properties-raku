@@ -38,6 +38,9 @@ $css = CSS::Declarations.new( :style("cue-before: url(foo); cue-after: url(bar)"
 is  $css.write, "cue: url('foo') url('bar');";             
 
 $css = CSS::Declarations.new( :style("cue-after: url('bar')") );
-is  $css.write, "cue-after: url('bar');";             
+is  $css.write, "cue-after: url('bar');";
+
+$css = CSS::Declarations.new( :style("font-weight:bold; font-family:Helvetica") );
+is  $css.write, "font: bold medium Helvetica;";
 
 done-testing;

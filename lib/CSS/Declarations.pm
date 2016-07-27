@@ -36,7 +36,7 @@ class CSS::Declarations {
             }
             else {
                 with %defs<children> {
-                    die "compound property not implemented: $name. please use constituant properties: .<children>";
+                    die "compound property not implemented: $name. please use constituant properties: $_";
                 }
                 else {
                     %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
@@ -276,6 +276,25 @@ class CSS::Declarations {
     multi sub same(Associative $a, Associative $b) {$a.pairs.perl eqv $b.pairs.perl ?? $a !! False}
     multi sub same($a, $b) is default {$a.perl eqv $b.perl ?? $a !! False}
 
+    multi method adjust('font', :@children) {
+        # These serializations won't parse correctly:
+        #     font: bold;
+        #     font: bold Helvetica;
+        # Adjust to this:
+        #     font: bold medium Helvetica;
+        my $c = set @children;
+        if 'font-weight' ∈ $c && 'font-size' ∉ $c {
+            # add font-size
+            @children = self!metadata<font><children>.grep: {
+                $_ ∈ $c || $_ eq 'font-size';
+            }
+        }
+    }
+
+    multi method adjust($prop, :@children) is default {
+        $!module.?adjust($prop, :@children);
+    }
+
     method !optimize-ast( %prop-ast ) {
         my $metadata = self!metadata;
         my @compound-properties = $metadata.keys.sort.grep: {$metadata{$_}<children>};
@@ -343,8 +362,9 @@ class CSS::Declarations {
                         }
                     }
                     when 'important'|'normal' {
+                        $.adjust($prop, :@children);
                         my %ast = expr => [ @children.map: {
-                            my $sub-prop = %prop-ast{$_}:delete;
+                            my $sub-prop = %prop-ast{$_}:delete // :expr( $.info($_).default-ast );
                             'expr:'~$_ => $sub-prop<expr>;
                         } ];
                         %ast<prio> = $_
