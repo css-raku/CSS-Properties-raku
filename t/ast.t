@@ -9,7 +9,7 @@ is $css.ast(:!optimize), (:declaration-list[
                    {:expr[:keyw<inherit>], :ident<border-left-style>},
                    {:expr[:rgb[:num(255), :num(0), :num(0)]], :ident<color>, :prio<important> }
                ]), 'ast';
-is $css.write(:!optimize), 'background-position: center; background-repeat: repeat-x; border-left-style: inherit; color: red !important;', 'style unoptimized';
+is $css.write(:!optimize), 'background-position:center; background-repeat:repeat-x; border-left-style:inherit; color:red!important;', 'style unoptimized';
 
 my $ast = $css.ast;
 is $ast, (:declaration-list[
@@ -17,6 +17,6 @@ is $ast, (:declaration-list[
                    {:expr[:keyw<inherit>], :ident<border-left-style>},
                    {:expr[:rgb[:num(255), :num(0), :num(0)]], :ident<color>, :prio<important> }
                ]), 'ast';
-is $css.write , 'background: repeat-x center; border-left-style: inherit; color: red !important;', 'style optimized';
+is $css.write , 'background:repeat-x center; border-left-style:inherit; color:red!important;', 'style optimized';
 
 done-testing;
