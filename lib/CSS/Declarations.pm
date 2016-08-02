@@ -227,7 +227,7 @@ class CSS::Declarations {
     method coerce($a) {
         my $v = self.from-ast($a);
         die "CSS operand doesn't have a .key method: {$a.perl}"
-            unless $v ~~ List || $v.can('key');
+            unless $v ~~ List || !$v.defined || $v.can('key');
         $v;
     }
 
@@ -276,14 +276,15 @@ class CSS::Declarations {
     multi sub same(Associative $a, Associative $b) {$a.pairs.perl eqv $b.pairs.perl ?? $a !! False}
     multi sub same($a, $b) is default {$a.perl eqv $b.perl ?? $a !! False}
 
-    # Avoid these optmizations, which won't parse correctly:
+    # Avoid these serialization optimizations, which won't parse correctly:
     #     font: bold;
     #     font: bold Helvetica;
     # Need a font-size to disambiguate, e.g.: 
     #     font: bold medium Helvetica;
     multi method optimizable('font', :@children! where {
-                                    my $s = .Set;
-                                    'font-weight' ∈ $s && 'font-size' ∉ $s }) {
+                                    my \props = .Set;
+                                    'font-weight' ∈ props && 'font-size' ∉ props }
+                            ) {
         False;
     }
 
@@ -411,6 +412,17 @@ class CSS::Declarations {
     method properties {
         keys %!values;
     }
+    method delete(Str $prop) {
+        with self!metadata{$prop} {
+            if .<box> {
+                $.delete($_) for .<edges>.list
+            }
+            if .<children> {
+                $.delete($_) for .<children>.list
+            }
+            %!values{$prop}:delete;
+        }
+    }
 
     multi method FALLBACK(Str $prop) is rw {
         with self!metadata{$prop} {
@@ -424,7 +436,7 @@ class CSS::Declarations {
             self."$prop"();
         }
         else {
-            die "uknown property/method: $_";
+            die "unknown property/method: $prop";
         }
     }
 }
