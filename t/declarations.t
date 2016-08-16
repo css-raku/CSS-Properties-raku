@@ -27,6 +27,8 @@ is $css.margin-top.key, 'pt', 'updated margin-right units';
 $css.margin[1] = 20px;
 is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
+$css.border-color = [ :color[10,20,30], :color<red> ];
+is $css.border-color, [[10, 20, 30], [255, 0, 0], [10, 20, 30], [255, 0, 0]], 'named and rgb colors';
 
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
 

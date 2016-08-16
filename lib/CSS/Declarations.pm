@@ -207,6 +207,15 @@ class CSS::Declarations {
         }
     }
 
+    my subset NamedColor of Pair where {.key eq 'color' && .value.isa(Str) }
+
+    # e.g. :color<red>
+    multi method from-ast(NamedColor $v) {
+        die "NYI hex colors: {$.v.value}" if $v.value ~~ /^'#'/;
+        my Array $rgb = $!module.colors{$v.value.lc}
+            or die "uknown color name: {.$v.value}";
+        $rgb does CSS::Declarations::Units::Keyed[$v.key];
+    }
     multi method from-ast(Pair $v) {
         self.from-ast( $v.value )
             does CSS::Declarations::Units::Keyed[$v.key];
