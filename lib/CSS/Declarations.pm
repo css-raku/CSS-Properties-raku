@@ -214,7 +214,7 @@ class CSS::Declarations {
         die "NYI hex colors: {$.v.value}" if $v.value ~~ /^'#'/;
         my Array $rgb = $!module.colors{$v.value.lc}
             or die "uknown color name: {.$v.value}";
-        $rgb does CSS::Declarations::Units::Keyed[$v.key];
+        [$rgb.map: { .clone does CSS::Declarations::Units::Keyed['num'] }] does CSS::Declarations::Units::Keyed['rgb'];
     }
     multi method from-ast(Pair $v) {
         self.from-ast( $v.value )
