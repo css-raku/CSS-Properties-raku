@@ -30,6 +30,13 @@ is $css.margin, [10, 20, 0, 0], 'updated margin';
 $css.border-color = [ :color[10,20,30], :color<red> ];
 is $css.border-color, [[10, 20, 30], [255, 0, 0], [10, 20, 30], [255, 0, 0]], 'named and rgb colors';
 
+$css.border-color = 'green';
+$css.border-top-color = 'blue';
+is $css.border-color, [[0, 0, 255], [0, 128, 0],  [0, 128, 0],  [0, 128, 0], ], 'border-color string coercement';
+
+todo "assigment to compound property";
+lives-ok {$css.border = '1pt dashed blue'};
+
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
 
 done-testing;

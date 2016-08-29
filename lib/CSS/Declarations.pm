@@ -17,7 +17,7 @@ class CSS::Declarations {
     has %!default;
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
-    has CSS::Module $!module; #| associated CSS module
+    has CSS::Module $.module; #| associated CSS module
     has @.warnings;
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
@@ -152,9 +152,10 @@ class CSS::Declarations {
 		@v[1] //= @v[0];
 		@v[2] //= @v[0];
 		@v[3] //= @v[1];
+
 		my $n = 0;
-		%!values{$_} = self.coerce: @v[$n++]
-		    for $edges.list;
+		%!values{$_} = self.coerce( @v[$n++], :prop($_) )
+                    for $edges.list;
 	    }
         );
     }
@@ -169,7 +170,7 @@ class CSS::Declarations {
     method !item-value(Str $prop) is rw {
         Proxy.new(
             FETCH => sub ($) { %!values{$prop} // self!default($prop) },
-            STORE => sub ($,$v) { %!values{$prop} = self.coerce: $v }
+            STORE => sub ($,$v) { %!values{$prop} = self.coerce( $v, :$prop ) }
         );
     }
 
@@ -233,11 +234,13 @@ class CSS::Declarations {
         $v
     }
 
-    method coerce($a) {
-        my $v = self.from-ast($a);
-        die "CSS operand doesn't have a .key method: {$a.perl}"
-            unless $v ~~ List || !$v.defined || $v.can('key');
-        $v;
+    method coerce($val, Str :$prop) {
+        my Bool \do-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key') ;
+        my $expr = do-parse
+            ?? $.module.parse-property($prop, $val.Str)
+            !! $val;
+
+        self.from-ast($expr);
     }
 
     method to-ast($v, :$get = True) {
