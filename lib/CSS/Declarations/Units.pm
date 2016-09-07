@@ -13,11 +13,15 @@ module CSS::Declarations::Units {
     constant &Add = &infix:<+>;
     constant &Sub = &infix:<->;
     multi sub infix:<+>(Length $v, Length $n) is export {
-        my $r = $v.key eq $n.key ?? 1 !! Units.enums{$v.key} / Units.enums{$n.key};
-        &Add($v.Numeric, $r * $n.Numeric) does Keyed[$v.key];
+        my \scale = $v.key eq $n.key
+            ?? 1
+            !! Units.enums{$n.key} / Units.enums{$v.key};
+        &Add($v.Numeric, scale * $n.Numeric) does Keyed[$v.key];
     }
     multi sub infix:<->(Length $v, Length $n) is export {
-        my $r = $v.key eq $n.key ?? 1 !! Units.enums{$v.key} / Units.enums{$n.key};
-        &Sub($v.Numeric, $r * $n.Numeric) does Keyed[$v.key];
+        my \scale = $v.key eq $n.key
+            ?? 1
+            !! Units.enums{$n.key} / Units.enums{$v.key};
+        &Sub($v.Numeric, scale * $n.Numeric) does Keyed[$v.key];
     }
 }

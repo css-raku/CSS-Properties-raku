@@ -34,8 +34,8 @@ $css.border-color = 'green';
 $css.border-top-color = 'blue';
 is $css.border-color, [[0, 0, 255], [0, 128, 0],  [0, 128, 0],  [0, 128, 0], ], 'border-color string coercement';
 
-todo "assigment to compound property";
-lives-ok {$css.border = '1pt dashed blue'};
+todo "assignment to compound property";
+lives-ok { $css.border = '1pt dashed blue'};
 
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
 

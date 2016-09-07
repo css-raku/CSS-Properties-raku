@@ -234,10 +234,11 @@ class CSS::Declarations {
         $v
     }
 
+    has %!prop-cache; # cache, for performance
     method coerce($val, Str :$prop) {
-        my Bool \do-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key') ;
-        my $expr = do-parse
-            ?? $.module.parse-property($prop, $val.Str)
+        my Bool $needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key') ;
+        my $expr = $needs-parse
+            ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
             !! $val;
 
         self.from-ast($expr);
@@ -266,19 +267,22 @@ class CSS::Declarations {
     }
 
     method inherit(CSS::Declarations $css) {
-        for $css.properties -> $name {
-            my $info = self.info($name);
-            unless $info.box {
-                with self.handling($name) {
-                    when 'initial' { %!values{$name}:delete }
-                    when 'inherit' { %!values{$name} = $css."$name"() }
+        for $css.properties -> \name {
+            my \info = self.info(name);
+            unless info.box {
+                my $inherit = False;
+                with self.handling(name) {
+                    when 'initial' { %!values{name}:delete }
+                    when 'inherit' { $inherit = True }
                 }
-                elsif $css.important($name) {
-                    %!values{$name} = $css."$name"()
+                elsif $css.important(name) {
+                    $inherit = True;
                 }
-                elsif $info.inherit {
-                    %!values{$name} //= $css."$name"()
+                elsif info.inherit {
+                    $inherit = True without %!values{name};
                 }
+                %!values{name} = $css."{name}"()
+                    if $inherit;
             }
         }
     }
@@ -300,51 +304,50 @@ class CSS::Declarations {
         False;
     }
 
-    multi method optimizable($, :@children) is default {
+    multi method optimizable(Str $, :@children) is default {
         @children >= 2;
     }
 
     method !optimize-ast( %prop-ast ) {
-        my $metadata = self!metadata;
-        my @compound-properties = $metadata.keys.sort.grep: {$metadata{$_}<children>};
+        my \metadata = self!metadata;
+        my @compound-properties = metadata.keys.sort.grep: { metadata{$_}<children> };
+        my %edges;
 
-        for %prop-ast.keys -> $prop {
+        for %prop-ast.keys -> \prop {
             # delete properties that match the default value
-            my $info = self.info($prop);
-            with %prop-ast{$prop}<expr> {
-                %prop-ast{$prop}:delete
-                    if +$_ == 1 && same(.[0], $info.default-ast[0]);
+            my \info = self.info(prop);
+            with %prop-ast{prop}<expr> {
+                if +$_ == 1 && same(.[0], info.default-ast[0]) {
+                    %prop-ast{prop}:delete;
+                    next;
+                }
             }
+            %edges{info.edge}++ if info.edge;
         }
 
         # consolidate box properties with common values
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
-        my %edges;
-        for %prop-ast.keys -> $prop {
-            my $info = self.info($prop);
-            %edges{$info.edge}++ if $info.edge;
-        }
-        for %edges.keys -> $prop {
+        for %edges.keys -> \prop {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
-            my $info = self.info($prop);
-            next unless $info.box;
-            my @edges = $info.edges;
+            my \info = self.info(prop);
+            next unless info.box;
+            my @edges = info.edges;
             my @asts = @edges.map: { %prop-ast{$_} };
             # we just handle the simplest case at the moment. Consolidate,
             # if all four properties are present, and have the same value
             if [[&same]] @asts {
                 %prop-ast{$_}:delete for @edges;
-                %prop-ast{$prop} = @asts[0];
+                %prop-ast{prop} = @asts[0];
             }
         }
-        for @compound-properties -> $prop {
+        for @compound-properties -> \prop {
             # top-down aggregation of compound properties. e.g. border-width, border-style => border
             
-            my @children = $metadata{$prop}<children>.list.grep: {
+            my @children = metadata{prop}<children>.list.grep: {
                 %prop-ast{$_}:exists
             }
 
-            next unless $.optimizable($prop, :@children);
+            next unless $.optimizable(prop, :@children);
 
             # take the simple approach of building the compound property, iff
             # all children are consistant
@@ -356,7 +359,7 @@ class CSS::Declarations {
             my @child-types = @children.map: {
                 given %prop-ast{$_} {
                     when .<keyw> ~~ 'initial'|'inherit' {.<keyw>}
-                    when .<prio> ~~ 'important' { 'important' }
+                    when .<prio> ~~ 'important' {.<prio>}
                     default { 'normal' }
                 }
             }
@@ -365,20 +368,20 @@ class CSS::Declarations {
                 # all of the same type
                 given @child-types[0] {
                     when 'initial'|'inherit' {
-                        if .Num == $metadata{$prop}<children> {
+                        if .Num == metadata{prop}<children> {
                             # all child properties need to be present
                             %prop-ast{$_}:delete for @children;
-                            %prop-ast{$prop} = { expr => [ :keyw($_) ] };
+                            %prop-ast{prop} = { expr => [ :keyw($_) ] };
                         }
                     }
                     when 'important'|'normal' {
                         my %ast = expr => [ @children.map: {
-                            my $sub-prop = %prop-ast{$_}:delete;
-                            'expr:'~$_ => $sub-prop<expr>;
+                            my \sub-prop = %prop-ast{$_}:delete;
+                            'expr:'~$_ => sub-prop<expr>;
                         } ];
                         %ast<prio> = $_
                             when $_ ~~ 'important';
-                        %prop-ast{$prop} = %ast;
+                        %prop-ast{prop} = %ast;
                     }
                 }
             }
@@ -395,18 +398,18 @@ class CSS::Declarations {
         }
 
         #| find properties with useful values
-        for %!values.keys.sort -> $prop {
-            my $ast = self.to-ast: %!values{$prop};
-            %prop-ast{$prop}<expr> = [ $ast ];
+        for %!values.keys.sort -> \prop {
+            my \ast = self.to-ast: %!values{prop};
+            %prop-ast{prop}<expr> = [ ast ];
         }
 
         self!optimize-ast: %prop-ast
             if $optimize;
 
         #| assemble property list
-        my @declaration-list = %prop-ast.keys.sort.map: -> $prop {
-            my %property = %prop-ast{$prop};
-            %property.push: 'ident' => $prop;
+        my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
+            my %property = %prop-ast{prop};
+            %property.push: 'ident' => prop;
             %property;
         };
         
@@ -417,8 +420,8 @@ class CSS::Declarations {
                  Bool :$terse = True,
                  Bool :$color-names = True,
                  |c) {
-        my $writer = CSS::Writer.new( :$terse, :$color-names, |c);
-        $writer.write: self.ast(:$optimize);
+        my \writer = CSS::Writer.new( :$terse, :$color-names, |c);
+        writer.write: self.ast(:$optimize);
     }
 
     method properties {
@@ -437,8 +440,8 @@ class CSS::Declarations {
     }
 
     multi method FALLBACK(Str $prop) is rw {
+        self.info: $prop;
         with self!metadata{$prop} {
-            self.info: $prop;
             my &meth =
                 .<box>
 		    ?? method () is rw { self!box-value($prop, .<edges>) }
@@ -446,9 +449,6 @@ class CSS::Declarations {
 	
 	    self.^add_method($prop,  &meth);
             self."$prop"();
-        }
-        else {
-            die "unknown property/method: $prop";
         }
     }
 }
