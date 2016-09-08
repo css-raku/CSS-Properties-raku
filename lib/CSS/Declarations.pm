@@ -13,6 +13,7 @@ class CSS::Declarations {
 
     #| contextual variables
     has Any %!values;         #| property values
+    has Array %!box;
     has Bool %!important;
     has %!default;
     my subset Handling of Str where 'initial'|'inherit';
@@ -138,12 +139,12 @@ class CSS::Declarations {
         
 	Proxy.new(
 	    FETCH => sub ($) {
-                %!values{$prop} //= do {
+                %!box{$prop} //= do {
                     my $n = 0;
                     my @bound;
                     @bound[$n++] := self!item-value($_)
-                       for $edges.list;
-                    @bound
+                        for $edges.list;
+                    @bound;
                 }
             },
 	    STORE => sub ($,$v) {
@@ -167,9 +168,13 @@ class CSS::Declarations {
             with self!metadata{$prop};
     }
 
-    method !item-value(Str $prop) is rw {
+    method !item-value(Str $prop) {
         Proxy.new(
-            FETCH => sub ($) { %!values{$prop} // self!default($prop) },
+            FETCH => sub ($) {
+                %!values{$prop} = self!default($prop)
+                    unless %!values{$prop}:exists;
+                %!values{$prop};
+            },
             STORE => sub ($,$v) { %!values{$prop} = self.coerce( $v, :$prop ) }
         );
     }
@@ -297,10 +302,9 @@ class CSS::Declarations {
     #     font: bold Helvetica;
     # Need a font-size to disambiguate, e.g.: 
     #     font: bold medium Helvetica;
-    multi method optimizable('font', :@children! where {
-                                    my \props = .Set;
-                                    'font-weight' ∈ props && 'font-size' ∉ props }
-                            ) {
+    #     font: medium Helvetica;
+    multi method optimizable('font', :@children!
+                              where <font-size font-family> ⊈ .Set ) {
         False;
     }
 
@@ -317,10 +321,8 @@ class CSS::Declarations {
             # delete properties that match the default value
             my \info = self.info(prop);
             with %prop-ast{prop}<expr> {
-                if +$_ == 1 && same(.[0], info.default-ast[0]) {
-                    %prop-ast{prop}:delete;
-                    next;
-                }
+                %prop-ast{prop}:delete
+                    if +$_ == 1 && same(.[0], info.default-ast[0]);
             }
             %edges{info.edge}++ if info.edge;
         }
@@ -399,8 +401,10 @@ class CSS::Declarations {
 
         #| find properties with useful values
         for %!values.keys.sort -> \prop {
-            my \ast = self.to-ast: %!values{prop};
-            %prop-ast{prop}<expr> = [ ast ];
+            with %!values{prop} -> \value {
+                my \ast = self.to-ast: value;
+                %prop-ast{prop}<expr> = [ ast ];
+            }
         }
 
         self!optimize-ast: %prop-ast

@@ -46,4 +46,8 @@ is  $css.write, "font-family:Helvetica; font-weight:bold;";
 $css = CSS::Declarations.new( :style("font-weight:bold; font-size: 12pt; font-family:Helvetica") );
 is  $css.write, "font:bold 12pt Helvetica;";
 
+$css = CSS::Declarations.new( :style("padding: 0pt 0em 0px 0in; width:10pt") );
+is $css.padding, [0,0,0,0];
+is  $css.write, "width:10pt;";
+
 done-testing;
