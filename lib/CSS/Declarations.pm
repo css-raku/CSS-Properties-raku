@@ -114,25 +114,24 @@ class CSS::Declarations {
         }
     }
 
-    my subset ListOrStr of Any where List|Str;
-
     submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
-                     ListOrStr :$style = [],
-                     :$inherit = [],
+                     Str :$style, :$inherit = [], *%props,
                    ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
         die "module $!module lacks meta-data"
             without %module-metadata{$!module};
 
-        with $style {
-            when List {
-                self."{.key}"() = .value
-                for .list;
-            }
-            default { self!build-style($_) }
-        }
+        self!build-style($_) with $style;
         self.inherit($_) for $inherit.list;
+        for %props.pairs {
+            if %module-metadata{$!module}{.key} {
+                self."{.key}"() = .value;
+            }
+            else {
+                warn "unknown property/option: {.key}";
+            }
+        }
     }
 
     method !box-value(Str $prop, List $edges) is rw {

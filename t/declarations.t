@@ -5,8 +5,8 @@ use CSS::Declarations::Property;
 use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
 
-my $css = CSS::Declarations.new :style[ :border-top-color( :keyw<red> ) ];
-is $css.border-top-color, 'red', ':values constructor';
+my $css = CSS::Declarations.new :border-top-color<red>;
+is $css.border-top-color, [255, 0, 0], ':values constructor';
 
 my $margin-info = $css.info('margin');
 isa-ok $margin-info, CSS::Declarations::Edges, 'box property';

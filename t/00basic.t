@@ -2,6 +2,8 @@ use v6;
 use Test;
 use CSS::Declarations::Property;
 use CSS::Declarations::Edges;
+use CSS::Declarations;
+use CSS::Declarations::Units;
 
 pass('compiles');
 
@@ -20,5 +22,10 @@ is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<margin-width>{1,4}', '$prop.synopsis';
+
+my $css = CSS::Declarations.new: :margin(5pt), :width(4px);
+is $css.write, 'margin:5pt; width:4px;', 'construction';
+$css = CSS::Declarations.new: :style("margin:5pt; width:4px");
+is $css.write, 'margin:5pt; width:4px;', 'construction';
 
 done-testing;
