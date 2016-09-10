@@ -80,6 +80,18 @@ class CSS::Declarations {
         @props;
     }
 
+    method !build-property($prop, $expr, :$important) {
+        my \keyw = $expr[0]<keyw>;
+        if keyw ~~ Handling {
+            self.handling($prop) = keyw;
+        }
+        else {
+            self."$prop"() = $expr;
+            self.important($prop) = $_
+                with $important;
+        }
+    }
+
     method !build-style(Str $style) {
         my $rule = "declaration-list";
         my $actions = $!module.actions.new;
@@ -89,23 +101,13 @@ class CSS::Declarations {
         my @declarations = $/.ast.list;
 
         for @declarations {
-            my $decl = .value;
+            my \decl = .value;
             given .key {
                 when 'property' {
-                    my @props = self!get-props($decl);
-                    for @props {
-                        my $prop = .key;
-                        my $expr = .value;
-                        my $keyw = $expr[0]<keyw>;
-                        if $keyw ~~ Handling {
-                            self.handling($prop) = $keyw;
-                        }
-                        else {
-                            self."$prop"() = $expr;
-                            self.important($prop) = True
-                                if $decl<prio> ~~ 'important';
-                        }
-                    }
+                    my $important = True
+                        if decl<prio> ~~ 'important';
+                    self!build-property( .key, .value, :$important)
+                        for self!get-props(decl).list;
                 }
                 default {
                     die "ignoring: $_ declaration";
