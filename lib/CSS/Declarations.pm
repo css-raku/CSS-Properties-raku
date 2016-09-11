@@ -242,12 +242,12 @@ class CSS::Declarations {
 
     has %!prop-cache; # cache, for performance
     method coerce($val, Str :$prop) {
-        my Bool $needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key') ;
-        my $expr = $needs-parse
+        my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key');
+        my \expr = needs-parse
             ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
             !! $val;
 
-        self.from-ast($expr);
+        self.from-ast(expr);
     }
 
     method to-ast($v, :$get = True) {
@@ -428,6 +428,8 @@ class CSS::Declarations {
         my \writer = CSS::Writer.new( :$terse, :$color-names, |c);
         writer.write: self.ast(:$optimize);
     }
+
+    method Str { self.write }
 
     method properties {
         keys %!values;
