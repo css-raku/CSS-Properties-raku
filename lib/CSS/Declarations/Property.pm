@@ -23,7 +23,7 @@ class CSS::Declarations::Property {
         # second entry is the compiled default value
          with $default {
              $!default = .[0];
-             $!default-ast = .[1];
+             $!default-ast = [ .[1].map: { $_ ~~ Hash && .keys == 1 ?? .pairs[0] !! $_ } ];
          }
     }
 
