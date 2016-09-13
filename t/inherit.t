@@ -16,7 +16,7 @@ is $css.handling("margin-left"), "inherit", "'inherit'";
 is $css.margin-left, 15, "'inherit'";
 
 is $css.info("color").inherit, True, 'color inherit metadata';
-is $css.color, [0,0,255], "inheritable property";
+is $css.color, '#0000FF', "inheritable property";
 
 is $css.info("margin-bottom").inherit, False, 'margin-bottom inherit metadata';
 is $css.margin-bottom, 0, "non-inhertiable property";
@@ -27,6 +27,6 @@ is $css.margin-right, 10, "inherited value";
 
 $css = CSS::Declarations.new( :style("margin: initial; color:purple"), :$inherit);
 is $css.margin-top, 0, "initial box value";
-is $css.color, [0,0,255], "inheritable !important property";
+is $css.color, '#0000FF', "inheritable !important property";
 
 done-testing;

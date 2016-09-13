@@ -4,7 +4,7 @@ use Test;
 
 my $css = CSS::Declarations.new: :style("color: orange; text-align: center!important; margin: 2pt; border-width: 1px 2px 3pt");
 
-is $css.color, [255, 165, 0];
+is $css.color, '#FFA500';
 is $css.color.key, 'rgb';
 is $css.text-align, "center";
 is $css.margin, [2 xx 4];

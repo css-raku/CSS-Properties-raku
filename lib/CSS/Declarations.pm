@@ -8,6 +8,7 @@ class CSS::Declarations {
     use CSS::Module;
     use CSS::Module::CSS3;
     use CSS::Writer;
+    use Color;
     my %module-metadata{CSS::Module};     #| per-module metadata
     my %module-properties{CSS::Module};   #| per-module property definitions
 
@@ -214,14 +215,14 @@ class CSS::Declarations {
         }
     }
 
-    my subset NamedColor of Pair where {.key eq 'color' && .value.isa(Str) }
+    my subset ColorAST of Pair where {.key eq 'rgb'|'rgba'|'hsl'|'hsla'}
 
-    # e.g. :color<red>
-    multi method from-ast(NamedColor $v) {
-        die "NYI hex colors: {$.v.value}" if $v.value ~~ /^'#'/;
-        my Array $rgb = $!module.colors{$v.value.lc}
-            or die "uknown color name: {.$v.value}";
-        [$rgb.map: { .clone does CSS::Declarations::Units::Keyed['num'] }] does CSS::Declarations::Units::Keyed['rgb'];
+    multi method from-ast(ColorAST $v) {
+        my @channels = $v.value.map: {self.from-ast: $_};
+        @channels[*-1] *= 100
+            if $v.key eq 'rgba'|'hsla';
+        my Color $color .= new: |( $v.key =>  @channels);
+        $color does CSS::Declarations::Units::Keyed[$v.key];
     }
     multi method from-ast(Pair $v) {
         self.from-ast( $v.value )
@@ -246,7 +247,6 @@ class CSS::Declarations {
         my \expr = needs-parse
             ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
             !! $val;
-
         self.from-ast(expr);
     }
 
@@ -255,11 +255,24 @@ class CSS::Declarations {
             if $v.can('key') && $get;
 
         my $val = do given $v {
-            when Pair {.value}
-            when List { .elems == 1
-                        ?? self.to-ast( .[0] )
-                        !! [ .map: { self.to-ast($_) } ];
-                      }
+            when Color {
+                if $v.key eq 'hsl' {
+                    my (\h, \s, \l) = .hsl;
+                    [ :num(h), :percent(s), :percent(l) ];
+                }
+                elsif $v.key eq 'rgba' {
+                    my (\r, \g, \b, \a) = .rgba;
+                    [ :num(r), :num(g), :num(b), :num(a/100) ];
+                }
+                else {
+                    [ $v."$key"().map: -> $num { :$num } ]
+                }
+            }
+            when Pair  { .value }
+            when List  { .elems == 1
+                         ?? self.to-ast( .[0] )
+                         !! [ .map: { self.to-ast($_) } ];
+                       }
             default {
                 $key
                     ?? self.to-ast($_, :!get)
@@ -295,8 +308,8 @@ class CSS::Declarations {
 
     my subset ZeroAssoc of Associative where {.values[0] ~~ Numeric && .values[0] =~= 0};
     multi sub same(ZeroAssoc $a, ZeroAssoc $) { $a } # e.g. 0pt :== 0mm
-    multi sub same(Associative $a, Associative $b) {$a.pairs.perl eqv $b.pairs.perl ?? $a !! False}
-    multi sub same($a, $b) is default {$a.perl eqv $b.perl ?? $a !! False}
+    multi sub same(Associative $a, Associative $b) {$a.pairs.perl eq $b.pairs.perl ?? $a !! False}
+    multi sub same($a, $b) is default {$a eqv $b ?? $a !! False}
 
     # Avoid these serialization optimizations, which won't parse correctly:
     #     font: bold;

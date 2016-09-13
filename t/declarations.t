@@ -6,7 +6,7 @@ use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
 
 my $css = CSS::Declarations.new :border-top-color<red>;
-is $css.border-top-color, [255, 0, 0], ':values constructor';
+is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
 isa-ok $margin-info, CSS::Declarations::Edges, 'box property';
@@ -27,12 +27,12 @@ is $css.margin-top.key, 'pt', 'updated margin-right units';
 $css.margin[1] = 20px;
 is $css.margin-right.key, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
-$css.border-color = [ :color[10,20,30], :color<red> ];
-is $css.border-color, [[10, 20, 30], [255, 0, 0], [10, 20, 30], [255, 0, 0]], 'named and rgb colors';
+$css.border-color = [ :rgb[10,20,30], :color<red> ];
+is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
 
 $css.border-color = 'green';
 $css.border-top-color = 'blue';
-is $css.border-color, [[0, 0, 255], [0, 128, 0],  [0, 128, 0],  [0, 128, 0], ], 'border-color string coercement';
+is $css.border-color, <#0000FF #008000 #008000 #008000>, 'border-color string coercement';
 
 todo "assignment to compound property";
 lives-ok { $css.border = '1pt dashed blue'};
