@@ -219,9 +219,20 @@ class CSS::Declarations {
 
     multi method from-ast(ColorAST $v) {
         my @channels = $v.value.map: {self.from-ast: $_};
-        @channels[*-1] *= 100
-            if $v.key eq 'rgba'|'hsla';
-        my Color $color .= new: |( $v.key =>  @channels);
+        my Color $color;
+        my $type = $v.key;
+        @channels[*-1] *= 256
+            if $type eq 'rgba'|'hsla';
+        if $type eq 'hsla' {
+            my Numeric \a = @channels.pop;
+            my %rgba = hsl2rgb(@channels);
+            %rgba<a> = a;
+            $color .= new: |%rgba;
+        }
+        else {
+            $color .= new: |($type => @channels);
+        }
+
         $color does CSS::Declarations::Units::Keyed[$v.key];
     }
     multi method from-ast(Pair $v) {
@@ -256,16 +267,20 @@ class CSS::Declarations {
 
         my $val = do given $v {
             when Color {
-                if $v.key eq 'hsl' {
+                if .key eq 'hsl' {
                     my (\h, \s, \l) = .hsl;
                     [ :num(h), :percent(s), :percent(l) ];
                 }
-                elsif $v.key eq 'rgba' {
+                elsif .key eq 'hsla' {
+                    my (\h, \s, \l) = .hsl;
+                    [ :num(h), :percent(s), :percent(l), :num(.a / 256) ];
+                }
+                elsif .key eq 'rgba' {
                     my (\r, \g, \b, \a) = .rgba;
-                    [ :num(r), :num(g), :num(b), :num(a/100) ];
+                    [ :num(r), :num(g), :num(b), :num(a/256) ];
                 }
                 else {
-                    [ $v."$key"().map: -> $num { :$num } ]
+                     [ $v."$key"().map: -> $num { :$num } ]
                 }
             }
             when Pair  { .value }

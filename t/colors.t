@@ -23,7 +23,9 @@ isa-ok $css.border-top-color, Color, ':values constructor';
 is $css.border-top-color, '#00FF00', ':values constructor';
 is ~$css, 'border-top-color:hsl(120, 100%, 50%);', 'serialization';
 
-todo "hsla colors";
-lives-ok {$css = CSS::Declarations.new :border-top-color<hsla(120,100%,50%,.5)>}, 'hsla';
+$css = CSS::Declarations.new :border-top-color<hsla(120,100%,50%,.5)>;
+isa-ok $css.border-top-color, Color, ':values constructor';
+is $css.border-top-color, '#00FF00', ':values constructor';
+is ~$css, 'border-top-color:hsla(120, 100%, 50%, 0.5);', 'serialization';
 
 done-testing;
