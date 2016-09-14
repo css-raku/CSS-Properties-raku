@@ -34,8 +34,20 @@ $css.border-color = 'green';
 $css.border-top-color = 'blue';
 is $css.border-color, <#0000FF #008000 #008000 #008000>, 'border-color string coercement';
 
-todo "assignment to compound property";
-lives-ok { $css.border = '1pt dashed blue'};
+lives-ok { $css.border-top = '1pt dashed blue'}, 'struct str assignment';
+my %border-top = $css.border-top;
+is +%border-top, 3, 'border top';
+is $css.border-top-width, 1pt, 'border top width';
+is %border-top<border-top-width>, 1pt, 'border top width';
+is %border-top<border-top-style>, 'dashed', 'border top color';
+is %border-top<border-top-color>, '#0000FF', 'border top color';
+%border-top<border-top-width> = 2pt;
+%border-top<border-top-style> = :keyw<dashed>;
+lives-ok { $css.border-top = %border-top}, 'struct hash assigment';
+%border-top = $css.border-top;
+is %border-top<border-top-width>, 2pt, 'border top width';
+is %border-top<border-top-style>, 'dashed', 'border top color';
+is %border-top<border-top-color>, '#0000FF', 'border top color';
 
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
 

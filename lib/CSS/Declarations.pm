@@ -15,6 +15,7 @@ class CSS::Declarations {
     #| contextual variables
     has Any %!values;         #| property values
     has Array %!box;
+    has Hash %!struct;
     has Bool %!important;
     has %!default;
     my subset Handling of Str where 'initial'|'inherit';
@@ -60,24 +61,22 @@ class CSS::Declarations {
         }
     }
 
-    method !get-props($decl) {
-        my $prop-name = $decl<ident>;
+    method !get-props(Str $prop-name, List $expr) {
         my @props;
 
-        with $decl<expr> {
-            my @expr;
-            for .list {
-                if $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
-                    # embedded property declaration
-                    @props.push: ~$0 => .values[0]
-                }
-                else {
-                    @expr.push: $_;
-                }
+        my @expr;
+        for $expr.list {
+            if $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
+                # embedded property declaration
+                @props.push: ~$0 => .values[0]
             }
-            @props.push: $prop-name => @expr
-                if $prop-name && @expr;
+            else {
+                @expr.push: $_;
+            }
         }
+        @props.push: $prop-name => @expr
+            if @expr;
+
         @props;
     }
 
@@ -105,10 +104,13 @@ class CSS::Declarations {
             my \decl = .value;
             given .key {
                 when 'property' {
-                    my $important = True
-                        if decl<prio> ~~ 'important';
-                    self!build-property( .key, .value, :$important)
-                        for self!get-props(decl).list;
+                    with decl<expr> -> \expr {
+                        my $important = True
+                            if decl<prio> ~~ 'important';
+
+                        self!build-property( .key, .value, :$important)
+                            for self!get-props(decl<ident>, expr).list;
+                    }
                 }
                 default {
                     die "ignoring: $_ declaration";
@@ -138,7 +140,6 @@ class CSS::Declarations {
     }
 
     method !box-value(Str $prop, List $edges) is rw {
-        
 	Proxy.new(
 	    FETCH => sub ($) {
                 %!box{$prop} //= do {
@@ -161,6 +162,41 @@ class CSS::Declarations {
                     for $edges.list;
 	    }
         );
+    }
+
+    method !struct-value(Str $prop, List $children) is rw {
+	Proxy.new(
+	    FETCH => sub ($) {
+                %!struct{$prop} //= do {
+                    my $n = 0;
+                    my %bound;
+                    %bound{$_} := self!item-value($_)
+                        for $children.list;
+                    %bound;
+                }
+            },
+	    STORE => sub ($, $rval where Str|Associative) {
+                my %vals;
+                if $rval ~~ Str {
+                    my @props = self!get-props($prop, self.module.parse-property($prop, $rval));
+                    %vals{.key} = .value for @props;
+                }
+                else {
+                    %vals = %$rval;
+                }
+
+                for $children.list -> $prop {
+                    with %vals{$prop}:delete {
+                        %!values{$prop} = self.coerce($_, :$prop);
+                    }
+                    else {
+                        %!values{$prop}:delete
+                    }
+	        }
+                note "unknown child properties of $prop: {%vals.keys}"
+                    if %vals
+            }
+            );
     }
 
     method !metadata { %module-metadata{$!module} }
@@ -233,11 +269,13 @@ class CSS::Declarations {
             $color .= new: |($type => @channels);
         }
 
-        $color does CSS::Declarations::Units::Keyed[$v.key];
+        $color does CSS::Declarations::Units::Keyed[$type];
     }
     multi method from-ast(Pair $v) {
-        self.from-ast( $v.value )
-            does CSS::Declarations::Units::Keyed[$v.key];
+        my $r = self.from-ast( $v.value );
+        $r does CSS::Declarations::Units::Keyed[$v.key]
+            unless $r ~~ CSS::Declarations::Units::Keyed;
+        $r
     }
     multi method from-ast(List $v) {
         $v.elems == 1
@@ -475,12 +513,13 @@ class CSS::Declarations {
     }
 
     multi method FALLBACK(Str $prop) is rw {
-        self.info: $prop;
         with self!metadata{$prop} {
-            my &meth =
-                .<box>
-		    ?? method () is rw { self!box-value($prop, .<edges>) }
-		    !! method () is rw { self!item-value($prop) }
+            my &meth = .<box>
+                ?? method () is rw { self!box-value($prop, .<edges>) }
+                !! ( .<children>
+                     ?? method () is rw { self!struct-value($prop, .<children>) }
+	             !! method () is rw { self!item-value($prop) }
+                   );
 	
 	    self.^add_method($prop,  &meth);
             self."$prop"();
