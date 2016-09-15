@@ -170,7 +170,7 @@ class CSS::Declarations {
                 %!struct{$prop} //= do {
                     my $n = 0;
                     my %bound;
-                    %bound{$_} := self!item-value($_)
+                    %bound{$_} := self."$_"()
                         for $children.list;
                     %bound;
                 }
@@ -187,10 +187,10 @@ class CSS::Declarations {
 
                 for $children.list -> $prop {
                     with %vals{$prop}:delete {
-                        %!values{$prop} = self.coerce($_, :$prop);
+                        self."$prop"() = self.coerce($_, :$prop);
                     }
                     else {
-                        %!values{$prop}:delete
+                        self.delete($prop);
                     }
 	        }
                 note "unknown child properties of $prop: {%vals.keys}"
@@ -514,10 +514,10 @@ class CSS::Declarations {
 
     multi method FALLBACK(Str $prop) is rw {
         with self!metadata{$prop} {
-            my &meth = .<box>
-                ?? method () is rw { self!box-value($prop, .<edges>) }
-                !! ( .<children>
-                     ?? method () is rw { self!struct-value($prop, .<children>) }
+            my &meth = .<children>
+                ?? method () is rw { self!struct-value($prop, .<children>) }
+                !! ( .<box>
+                     ?? method () is rw { self!box-value($prop, .<edges>) }
 	             !! method () is rw { self!item-value($prop) }
                    );
 	

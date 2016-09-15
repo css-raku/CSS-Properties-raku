@@ -48,7 +48,8 @@ lives-ok { $css.border-top = %border-top}, 'struct hash assigment';
 is %border-top<border-top-width>, 2pt, 'border top width';
 is %border-top<border-top-style>, 'dashed', 'border top color';
 is %border-top<border-top-color>, '#0000FF', 'border top color';
-
+enum Edges <Top Left Bottom Right>;
+is $css.border<border-color>[Top], '#0000FF', 'border top color';
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
 
 done-testing;
