@@ -272,10 +272,10 @@ class CSS::Declarations {
         $color does CSS::Declarations::Units::Keyed[$type];
     }
     multi method from-ast(Pair $v) {
-        my $r = self.from-ast( $v.value );
-        $r does CSS::Declarations::Units::Keyed[$v.key]
-            unless $r ~~ CSS::Declarations::Units::Keyed;
-        $r
+        my \r = self.from-ast( $v.value );
+        r ~~ CSS::Declarations::Units::Keyed
+            ?? r
+            !! r does CSS::Declarations::Units::Keyed[$v.key]
     }
     multi method from-ast(List $v) {
         $v.elems == 1
@@ -359,10 +359,15 @@ class CSS::Declarations {
         }
     }
 
-    my subset ZeroAssoc of Associative where {.values[0] ~~ Numeric && .values[0] =~= 0};
-    multi sub same(ZeroAssoc $a, ZeroAssoc $) { $a } # e.g. 0pt :== 0mm
-    multi sub same(Associative $a, Associative $b) {$a.pairs.perl eq $b.pairs.perl ?? $a !! False}
-    multi sub same($a, $b) is default {$a eqv $b ?? $a !! False}
+    my subset ZeroNum of Numeric where {$_ =~= 0};
+
+    multi sub same(Associative \a, Associative \b) {
+        my \p1 = a.pairs[0];
+        my \p2 = b.pairs[0];
+        ((p1.value ~~ ZeroNum && p2.value ~~ ZeroNum)
+         || p1.perl eq p2.perl) ?? a !! False;
+    }
+    multi sub same(\a, \b) is default {a eqv b ?? a !! False}
 
     # Avoid these serialization optimizations, which won't parse correctly:
     #     font: bold;
@@ -459,11 +464,12 @@ class CSS::Declarations {
 
     method ast(Bool :$optimize = True) {
         my %prop-ast;
-        for %!important.keys.grep: { %!important{$_} } {
-            %prop-ast{$_}<prio> = 'important';
+        for %!important.pairs {
+            %prop-ast{.key}<prio> = 'important'
+                if .value;
         }
-        for %!handling.keys {
-            %prop-ast{$_}<expr> = [ :keyw(%!handling{$_}) ];
+        for %!handling.pairs {
+            %prop-ast{.key}<expr> = [ :keyw(.value) ];
         }
 
         #| find properties with useful values
