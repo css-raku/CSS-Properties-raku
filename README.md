@@ -1,5 +1,5 @@
 # perl6-CSS-Declarations
-CSS rul-set representations, including inheritance, default handling and serialization
+CSS rule-set representations, including inheritance, default handling and serialization.
 
 ## Basic Construction
 ```
@@ -12,6 +12,7 @@ my $css = CSS::Declarations.new( :$style );
 
 $css.padding = 5pt;  # set padding on all 4 sides
 $css.margin = [5pt, 2pt, 5pt, 2pt];
+$css.border-color = 'red';
 
 # output the style
 say $css.write;
@@ -24,7 +25,7 @@ use CSS::Declarations;
 
 my $css = CSS::Declarations.new: :style("color: orange; text-align: center; margin: 2pt; border-width: 1px 2px 3pt");
 
-say $css.color;     # [255, 165, 0];
+say $css.color.hex; # (FF A5 00)
 say $css.color.key; # 'rgb';
 ```
 ## CSS Modules and Levels

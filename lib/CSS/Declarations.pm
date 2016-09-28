@@ -271,6 +271,12 @@ class CSS::Declarations {
 
         $color does CSS::Declarations::Units::Keyed[$type];
     }
+    multi method from-ast(Pair $v is copy where .key eq 'keyw') {
+        if $v.value eq 'transparent' {
+            $v = 'rgba' => Color.new: :r(0), :g(0), :b(0), :a(0)
+        }
+        $v.value does CSS::Declarations::Units::Keyed[$v.key]
+    }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
         r ~~ CSS::Declarations::Units::Keyed
@@ -299,6 +305,12 @@ class CSS::Declarations {
         self.from-ast(expr);
     }
 
+    sub alpha($a) {
+        # convert 0 .. 255  =>  0.0 .. 1.0
+        # round to 2 decimal places
+        :num(($a * 100/256).round / 100);
+    }
+
     method to-ast($v, :$get = True) {
         my $key = $v.key
             if $v.can('key') && $get;
@@ -311,11 +323,11 @@ class CSS::Declarations {
                 }
                 elsif .key eq 'hsla' {
                     my (\h, \s, \l) = .hsl;
-                    [ :num(h), :percent(s), :percent(l), :num(.a / 256) ];
+                    [ :num(h), :percent(s), :percent(l), alpha(.a) ];
                 }
                 elsif .key eq 'rgba' {
                     my (\r, \g, \b, \a) = .rgba;
-                    [ :num(r), :num(g), :num(b), :num(a/256) ];
+                    [ :num(r), :num(g), :num(b), alpha(a) ];
                 }
                 else {
                      [ $v."$key"().map: -> $num { :$num } ]
@@ -360,7 +372,7 @@ class CSS::Declarations {
     }
 
     my subset ZeroNum of Numeric where {$_ =~= 0};
-
+    our proto sub same(\a, \b) {*}
     multi sub same(Associative \a, Associative \b) {
         my \p1 = a.pairs[0];
         my \p2 = b.pairs[0];
