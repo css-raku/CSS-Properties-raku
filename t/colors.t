@@ -39,6 +39,6 @@ $css = CSS::Declarations.new :background-color<transparent>;
 isa-ok $css.background-color, Color, ':values constructor';
 is $css.background-color, '#000000', ':values constructor';
 is-approx $css.background-color.a, 0, ':values constructor';
-is ~$css, 'background-color:transparent;', 'serialization';
+is ~$css, '', 'serialization';
 
 done-testing;

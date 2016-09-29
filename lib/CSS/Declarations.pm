@@ -405,8 +405,13 @@ class CSS::Declarations {
             # delete properties that match the default value
             my \info = self.info(prop);
             with %prop-ast{prop}<expr> {
+                my \val = .[0];
+                my \default = self.to-ast: self!default(prop);
+
                 %prop-ast{prop}:delete
-                    if +$_ == 1 && same(.[0], info.default-ast[0]);
+                    if (val.elems == 1
+                        ?? same(val, default[0])
+                        !! same(val, default));
             }
             %edges{info.edge}++ if info.edge;
         }
