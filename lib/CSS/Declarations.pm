@@ -17,9 +17,9 @@ class CSS::Declarations {
     has Array %!box;
     has Hash %!struct;
     has Bool %!important;
-    has %!default;
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
+    has %!default;
     has CSS::Module $.module; #| associated CSS module
     has @.warnings;
 
@@ -120,7 +120,7 @@ class CSS::Declarations {
     }
 
     submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
-                     Str :$style, :$inherit = [], *%props,
+                     Str :$style, :$inherit = [], :$copy, *%props,
                    ) {
         
         %module-metadata{$!module} //= $!module.property-metadata;
@@ -129,6 +129,7 @@ class CSS::Declarations {
 
         self!build-style($_) with $style;
         self.inherit($_) for $inherit.list;
+        self.copy($_) with $copy;
         for %props.pairs {
             if %module-metadata{$!module}{.key} {
                 self."{.key}"() = .value;
@@ -371,6 +372,11 @@ class CSS::Declarations {
         }
     }
 
+    method copy(CSS::Declarations $css) {
+        %!values{$_} = $css."$_"()
+            for $css.properties;
+    }
+
     my subset ZeroNum of Numeric where {$_ =~= 0};
     our proto sub same(\a, \b) {*}
     multi sub same(Associative \a, Associative \b) {
@@ -535,7 +541,7 @@ class CSS::Declarations {
         }
     }
 
-    multi method FALLBACK(Str $prop) is rw {
+    method FALLBACK(Str $prop) is rw {
         with self!metadata{$prop} {
             my &meth = .<children>
                 ?? method () is rw { self!struct-value($prop, .<children>) }
@@ -546,6 +552,9 @@ class CSS::Declarations {
 	
 	    self.^add_method($prop,  &meth);
             self."$prop"();
+}
+        else {
+            die "unknown property/method: $prop";
         }
     }
 }

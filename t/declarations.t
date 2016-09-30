@@ -46,7 +46,7 @@ is %border-top<border-top-style>, 'dashed', 'border top color';
 is %border-top<border-top-color>, '#0000FF', 'border top color';
 %border-top<border-top-width> = 2pt;
 %border-top<border-top-style> = :keyw<dashed>;
-lives-ok { $css.border-top = %border-top}, 'struct hash assigment';
+lives-ok { $css.border-top = %border-top}, 'struct hash assignment';
 %border-top = $css.border-top;
 is %border-top<border-top-width>, 2pt, 'border top width';
 is %border-top<border-top-style>, 'dashed', 'border top color';
@@ -54,5 +54,13 @@ is %border-top<border-top-color>, '#0000FF', 'border top color';
 enum Edges <Top Left Bottom Right>;
 is $css.border<border-color>[Top], '#0000FF', 'border top color';
 dies-ok { $css.info("background"); }, "compound declaration - nyi";
+
+$css = CSS::Declarations.new: :style("border-top-color:red");
+my $original-css = $css;
+$css = CSS::Declarations.new: :copy($css);
+is ~$css, "border-top-color:red;", 'copied css';
+$css.border-color = 'blue';
+is ~$css, "border-color:blue;", 'copied css';
+is ~$original-css, "border-top-color:red;", 'original css';
 
 done-testing;
