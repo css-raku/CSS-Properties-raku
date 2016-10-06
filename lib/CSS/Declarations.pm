@@ -129,7 +129,7 @@ class CSS::Declarations {
 
         self!build-style($_) with $style;
         self.inherit($_) for $inherit.list;
-        self.copy($_) with $copy;
+        self!copy($_) with $copy;
         for %props.pairs {
             if %module-metadata{$!module}{.key} {
                 self."{.key}"() = .value;
@@ -372,9 +372,13 @@ class CSS::Declarations {
         }
     }
 
-    method copy(CSS::Declarations $css) {
+    method !copy(CSS::Declarations $css) {
         %!values{$_} = $css."$_"()
             for $css.properties;
+    }
+
+    method clone {
+        self.new( :copy(self), :$!module );
     }
 
     my subset ZeroNum of Numeric where {$_ =~= 0};

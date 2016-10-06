@@ -57,10 +57,10 @@ dies-ok { $css.info("background"); }, "compound declaration - nyi";
 
 $css = CSS::Declarations.new: :style("border-top-color:red");
 my $original-css = $css;
-$css = CSS::Declarations.new: :copy($css);
-is ~$css, "border-top-color:red;", 'copied css';
+$css = $css.clone;
+is ~$css, "border-top-color:red;", 'cloned css';
 $css.border-color = 'blue';
-is ~$css, "border-color:blue;", 'copied css';
+is ~$css, "border-color:blue;", 'cloned css';
 is ~$original-css, "border-top-color:red;", 'original css';
 
 done-testing;
