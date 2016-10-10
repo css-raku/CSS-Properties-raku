@@ -1,7 +1,7 @@
 use v6;
 
 module CSS::Declarations::Units {
-    my enum Units is export « :pt(1.0) :pc(12.0) :px(.75) :mm(28.346) :cm(2.8346) :in(1/72) »;
+    my enum Units is export « :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) »;
     role Keyed[$key] { method key{$key} }
     subset Length of Keyed is export where .key eq 'pt'|'pc'|'px'|'mm'|'cm'|'in';
     sub postfix:<pt>(Numeric $v) is rw is export { $v does Keyed['pt']  };
