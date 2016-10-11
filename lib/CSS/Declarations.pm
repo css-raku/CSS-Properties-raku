@@ -122,7 +122,6 @@ class CSS::Declarations {
     submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
                      Str :$style, :$inherit = [], :$copy, *%props,
                    ) {
-        
         %module-metadata{$!module} //= $!module.property-metadata;
         die "module $!module lacks meta-data"
             without %module-metadata{$!module};
@@ -130,14 +129,7 @@ class CSS::Declarations {
         self!build-style($_) with $style;
         self.inherit($_) for $inherit.list;
         self!copy($_) with $copy;
-        for %props.pairs {
-            if %module-metadata{$!module}{.key} {
-                self."{.key}"() = .value;
-            }
-            else {
-                warn "unknown property/option: {.key}";
-            }
-        }
+        self.set-properties(|%props);
     }
 
     method !box-value(Str $prop, List $edges) is rw {
@@ -377,8 +369,22 @@ class CSS::Declarations {
             for $css.properties;
     }
 
-    method clone {
-        self.new( :copy(self), :$!module );
+    method set-properties(*%props) {
+        for %props.pairs {
+            if %module-metadata{$!module}{.key} {
+                self."{.key}"() = .value;
+            }
+            else {
+                warn "unknown property/option: {.key}";
+            }
+        }
+    }
+
+    #| create a deep copy of a CSS declarations object
+    method clone(*%props) {
+        my $obj = self.new( :copy(self), :$!module );
+        $obj.set-properties(|%props);
+        $obj;
     }
 
     my subset ZeroNum of Numeric where {$_ =~= 0};
