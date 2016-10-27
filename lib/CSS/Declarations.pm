@@ -71,9 +71,11 @@ class CSS::Declarations {
                 @props.push: ~$0 => .values[0]
             }
             else {
-                @expr.push: $_;
+                @expr.push: $_
+                    unless $prop-name eq 'font' && .<op> eqv '/';
             }
         }
+
         @props.push: $prop-name => @expr
             if @expr;
 
@@ -497,15 +499,17 @@ class CSS::Declarations {
 
     method ast(Bool :$optimize = True) {
         my %prop-ast;
+        # '!important'
         for %!important.pairs {
             %prop-ast{.key}<prio> = 'important'
                 if .value;
         }
+        # 'initial', 'inherit'
         for %!handling.pairs {
             %prop-ast{.key}<expr> = [ :keyw(.value) ];
         }
 
-        #| find properties with useful values
+        #| expressions
         for %!values.keys.sort -> \prop {
             with %!values{prop} -> \value {
                 my \ast = self.to-ast: value;
@@ -515,6 +519,14 @@ class CSS::Declarations {
 
         self!optimize-ast: %prop-ast
             if $optimize;
+
+        with %prop-ast<font> {
+            # reinsert font '/' operator if needed...
+            with .<expr> {
+                # e.g.: font: italic bold 10pt/12pt times-roman;
+                $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ];
+            }
+        }
 
         #| assemble property list
         my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
