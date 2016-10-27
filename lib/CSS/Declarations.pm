@@ -563,20 +563,30 @@ class CSS::Declarations {
         }
     }
 
-    method FALLBACK(Str $prop) is rw {
-        with self!metadata{$prop} {
-            my &meth = .<children>
-                ?? method () is rw { self!struct-value($prop, .<children>) }
-                !! ( .<box>
-                     ?? method () is rw { self!box-value($prop, .<edges>) }
-	             !! method () is rw { self!item-value($prop) }
-                   );
+    method can(Str \name) {
+        my @meth = callsame;
+        unless @meth {
+            with self!metadata{name} {
+                @meth.push: (
+                    .<children>
+                        ?? method () is rw { self!struct-value(name, .<children>) }
+                        !! ( .<box>
+                             ?? method () is rw { self!box-value(name, .<edges>) }
+                             !! method () is rw { self!item-value(name) }
+                           )
+                      );
 	
-	    self.^add_method($prop,  &meth);
-            self."$prop"();
-}
-        else {
-            die "unknown property/method: $prop";
+	        self.^add_method(name,  @meth[0]);
+            }
         }
+        @meth;
+    }
+    method dispatch:<.?>(\name, |c) is raw {
+        self.can(name) ?? self."{name}"(|c) !! Nil
+    }
+    method FALLBACK(Str \name, |c) {
+        self.can(name)
+            ?? self."{name}"(|c)
+            !! die die X::Method::NotFound.new( :method(name), :typename(self.^name) );
     }
 }
