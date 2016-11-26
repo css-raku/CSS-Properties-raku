@@ -20,8 +20,9 @@ class CSS::Declarations {
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
     has %!default;
-    has CSS::Module $.module; #| associated CSS module
+    has CSS::Module $.module = CSS::Module::CSS3.module; #| associated CSS module
     has @.warnings;
+    has Bool $.warn = True;
 
     multi sub make-property(CSS::Module $m, Str $name where { %module-properties{$m}{$name}:exists })  {
         %module-properties{$m}{$name}
@@ -100,6 +101,9 @@ class CSS::Declarations {
         $!module.grammar.parse($style, :$rule, :$actions)
             or die "unable to parse CSS style declarations: $style";
         @!warnings = $actions.warnings;
+        if $!warn {
+            note .message for @!warnings;
+        }
         my @declarations = $/.ast.list;
 
         for @declarations {
@@ -121,9 +125,7 @@ class CSS::Declarations {
         }
     }
 
-    submethod BUILD( CSS::Module :$!module = CSS::Module::CSS3.module,
-                     Str :$style, :$inherit = [], :$copy, *%props,
-                   ) {
+    submethod TWEAK( Str :$style, :$inherit = [], :$copy, :$module, :$tweak, :$warn, *%props, ) {
         %module-metadata{$!module} //= $!module.property-metadata;
         die "module $!module lacks meta-data"
             without %module-metadata{$!module};
@@ -372,12 +374,12 @@ class CSS::Declarations {
     }
 
     method set-properties(*%props) {
-        for %props.pairs {
-            if %module-metadata{$!module}{.key} {
-                self."{.key}"() = .value;
+        for %props.pairs -> \p {
+            if %module-metadata{$!module}{p.key} {
+                self."{p.key}"() = $_ with p.value;
             }
             else {
-                warn "unknown property/option: {.key}";
+                warn "unknown property/option: {p.key}";
             }
         }
     }

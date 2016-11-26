@@ -7,7 +7,7 @@ use CSS::Module::CSS3;
 
 my $style = 'color: red; azimuth: left';
 my $module = CSS::Module::CSS1.module;
-my $css1 = CSS::Declarations.new( :$style, :$module);
+my $css1 = CSS::Declarations.new( :$style, :$module, :!warn);
 dies-ok { $css1.info("azimuth") }, "azimuth is unknown in CSS1";
 is $css1.warnings, "dropping unknown property: azimuth", 'CSS1 warnings';
 
@@ -23,7 +23,7 @@ is $css21.warnings, "", 'CSS3 warnings';
 
 $style = 'src: url(gentium.ttf); azimuth: left';
 $module = CSS::Module::CSS3.module.sub-module<@font-face>;
-my $css-at-fontface = CSS::Declarations.new( :$style, :$module);
+my $css-at-fontface = CSS::Declarations.new( :$style, :$module, :!warn);
 lives-ok { $css-at-fontface.info("src") }, 'src is known in @font-face';
 dies-ok { $css-at-fontface.info("azimuth") }, 'azimuth is unknown in @font-face';
 is $css-at-fontface.warnings, "dropping unknown property: azimuth", '@fontface warnings';
