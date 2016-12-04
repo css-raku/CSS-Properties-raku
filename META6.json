@@ -2,7 +2,8 @@
     "perl"        : "6c",
     "name"        : "CSS::Declarations",
     "version"     : "0.0.1",
-    "description" : "Basic manipulation of CSS rule-sets",
+    "auth"        : "github:p6-css",
+    "description" : "Basic manipulation of CSS properties",
     "depends"     : [ "CSS::Module", "CSS::Writer", "Color" ],
     "source-url"  : "git://github.com/p6-css/perl6-CSS-Declarations.git",
     "provides"    : {
