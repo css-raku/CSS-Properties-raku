@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 9;
+
 use CSS::Declarations;
 use CSS::Module::CSS1;
 use CSS::Module::CSS21;

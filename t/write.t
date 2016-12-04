@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 19;
+
 use CSS::Declarations;
 
 my $css = CSS::Declarations.new( :style("border-style: groove!important") );

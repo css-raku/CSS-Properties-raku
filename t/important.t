@@ -1,6 +1,8 @@
 use v6;
-use CSS::Declarations;
 use Test;
+plan 14;
+
+use CSS::Declarations;
 
 my $css = CSS::Declarations.new;
 

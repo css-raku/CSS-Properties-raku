@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 5;
+
 use CSS::Declarations;
 
 my $style = 'font:italic bold 10pt/12pt times-roman;';

@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 4;
+
 use CSS::Declarations;
 
 my $css = CSS::Declarations.new( :style("color:red !important; background-repeat: repeat-x; background-position: center; border-left-style: inherit") );

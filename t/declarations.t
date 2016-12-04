@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 33;
+
 use CSS::Declarations;
 use CSS::Declarations::Property;
 use CSS::Declarations::Edges;

@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 24;
+
 use CSS::Declarations;
 use Color;
 
