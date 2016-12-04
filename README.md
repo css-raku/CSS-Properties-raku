@@ -1,11 +1,11 @@
 # perl6-CSS-Declarations
-CSS rule-set representations, including inheritance, default handling and serialization.
+CSS::Declarations is class for managing property lists, including parsing, inheritance, default handling and serialization.
 
 ## Basic Construction
 ```
 use v6;
 use CSS::Declarations::Units;
-use CSS::Declarations::Element;
+use CSS::Declarations;
 
 my $style = "color: red";
 my $css = CSS::Declarations.new( :$style );
@@ -26,11 +26,11 @@ use CSS::Declarations;
 my $css = CSS::Declarations.new: :style("color: orange; text-align: center; margin: 2pt; border-width: 1px 2px 3pt");
 
 say $css.color.hex; # (FF A5 00)
-say $css.color.key; # 'rgb';
+say $css.color.key; # 'rgb'
 ```
 ## CSS Modules and Levels
 
-Processing defaults to CSS level 3. This can be altered via the :module option:
+Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be altered via the :module option:
 
 ```
 use CSS::Declarations;
@@ -41,12 +41,10 @@ my $style = 'color: red; azimuth: left';
 
 my $module = CSS::Module::CSS1.module;
 my $css1 = CSS::Declarations.new( :$style, :$module);
-.say for $css1.warnings;
-## "dropping unknown property: azimuth"
+## warnings: dropping unknown property: azimuth
 
 $module = CSS::Module::CSS21.module;
 my $css21 = CSS::Declarations.new( :$style, :$module);
-.say for $css21.warnings "";
 ## (no warnings)
 ```
 
@@ -70,7 +68,28 @@ my $module = CSS::Module::CSS3.module.sub-module<@font-face>;
 my $font-face-css = CSS::Declarations.new( :$style, :$module);
 ```
 
+## Default values
+
+Most properties have a default value. If a property is reset to its default value it will be omitted from stringification:
+
+    ```
+    my $css = (require CSS::Declarations).new;
+    say $css.background-image; # none
+    $css.background-image = 'url(camellia.png)';
+    say ~$css; # "background-image: url(camellia.png);"
+    $css.background-image = $css.info("background-image").default;
+    say ~$css; # ""
+    ```
+
 ## Inheritance
+
+A child class can inherit from one or more parent classes. This is applied in a CSS conformant manner:
+
+- heritability is property specific. For example `color` is inherited, but `margin` is not.
+
+- the `inherit` keyword can be used in the child property to force inheritance.
+
+- the `!important` modifier can be used in parent properties to force inheritance to the child. The property remains 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
 
 ```
 my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important");
@@ -83,23 +102,17 @@ say $css.handling("margin-left");
 ## inherit
 ```
 
-Parent styles can be inherited one at a time, either using by the `:inherit` construction option, or the `inherit` method. Inheritance aims to be CSS conformant, including:
-
-- setting property initial values
-
-- `initial` and `inherit` keywords, in the child class
-
-- `!important` properties in the parent class
-
-- property specific inheritance rules; e.g. as defined in https://www.w3.org/TR/CSS21/propidx.html#q24.0
-
 ## Serialization
 
-Properties are optimized and normalized during serialization. E.g.:
+Properties are optimized and normalized during serialization, including:
+
+- omission of properties with default values, and
+
+- consolidation of compound properties. E.g.:
 
 ```
 use CSS::Declarations;
-$css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt; color: rgb(255,0,0);") );
+my $css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
 say $css.write;  # "border: 2pt; color: red;"
 ```
 
@@ -113,20 +126,7 @@ say $css.write;  # "border: 2pt; color: red;"
 
 ## Property Metadata
 
-The `.property` method returns a `CSS::Declarations::Property` object for property introspection.
-```
-use CSS::Declarations;
-my $css = CSS::Declarations.new;
-my $prop = $css.property("background-image");
-say "name:     {$prop.name}";
-sys "synopsis: {$prop.synopsis}";
-say "default:  {$prop.default}";
-say "inherit:  {$prop.inherit ?? 'Y' !! 'N'}";
-```
-
-Note that properties are broken down into simple components, For example `margin` is broken down into `margin-top`, `margin-right`, `margin-bottom`, `margin-left`. It is only reassembled during serialization.
-
-The `info` method gives property specific metadata, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
+The `info` method gives property specific meta-data, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
 
 ```
 use CSS::Declarations;
