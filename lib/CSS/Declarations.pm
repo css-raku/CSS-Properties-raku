@@ -126,9 +126,12 @@ class CSS::Declarations {
     }
 
     submethod TWEAK( Str :$style, :$inherit = [], :$copy, :$module, :$tweak, :$warn, *%props, ) {
-        %module-metadata{$!module} //= $!module.property-metadata;
-        die "module $!module lacks meta-data"
-            without %module-metadata{$!module};
+        %module-metadata{$!module} //= do with $!module.property-metadata {
+            $_
+        }
+        else {
+            die "module {$!module.name} lacks meta-data"
+        };
 
         self!build-style($_) with $style;
         self.inherit($_) for $inherit.list;
@@ -352,18 +355,23 @@ class CSS::Declarations {
             my \info = self.info(name);
             unless info.box {
                 my $inherit = False;
+                my $important = False;
                 with self.handling(name) {
                     when 'initial' { %!values{name}:delete }
                     when 'inherit' { $inherit = True }
                 }
                 elsif $css.important(name) {
                     $inherit = True;
+                    $important = True;
                 }
                 elsif info.inherit {
                     $inherit = True without %!values{name};
                 }
-                %!values{name} = $css."{name}"()
-                    if $inherit;
+                if $inherit {
+                    %!values{name} = $css."{name}"();
+                    self.important(name) = True
+                        if $important;
+                }
             }
         }
     }
