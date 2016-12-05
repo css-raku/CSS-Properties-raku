@@ -1,6 +1,8 @@
 use v6;
-use CSS::Declarations;
 use Test;
+plan 10;
+
+use CSS::Declarations;
 
 my $css = CSS::Declarations.new: :style("color: orange; text-align: center!important; margin: 2pt; border-width: 1px 2px 3pt");
 
