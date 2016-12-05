@@ -24,8 +24,8 @@ say $css.Str;
 - color values are converted to Color objects
 - other values are converted to strings or numeric, as appropriate
 - the .key method returns the value type
-- some properties are containers only. For example, 'margin' is a container property for 'margin-top', 'margin-left', e.g.
-- also, for example, 'font' is a hash container for 'font-size', 'font-family', etc
+- box properties are properties that contain four sides. These are containers only. For example, 'margin' is a container property for 'margin-top', 'margin-left', e.g.
+- there are also some compound properties that are presented as Hashs; for example, 'font' is a hash container for 'font-size', 'font-family', and other font properties.
 
 ```
 use CSS::Declarations;
@@ -52,20 +52,23 @@ say $css.font<font-family>; # 'Helvetica;
 
 The simplest ways of setting a property is to assign a string value.  The value will be parsed as CSS. This works for both simple and container properties. Unit values are also recognized.
 
-````
+```
+use CSS::Declarations::Units;
 my $css = (require CSS::Declarations).new;
 
 # assign to container
 $css.font = "14pt Helvetica";
 
 # assign to simple properties
-$css.font-weight = 'bold'; # assign string
-$css.line-height = 16pt;   # assign unit value
+$css.font-weight = 'bold'; # string
+##$css.line-height = 16pt;   # unit value
 
 say ~$css; # font:bold 14pt/16pt Helvetica;
-````
+```
 
-## CSS Modules and Levels
+## CSS Modules
+
+## Conformance Levels
 
 Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be altered via the :module option:
 
@@ -87,7 +90,7 @@ my $css21 = CSS::Declarations.new( :$style, :$module);
 
 ### '@font-face' Declarations
 
-`@font-face` is a sub-module of `CSS3`. To process a rule-set, such as:
+`@font-face` is a sub-module of `CSS3`. To process a set of `@font-face` declarations, such as:
 
 ```
 @font-face {
@@ -120,18 +123,18 @@ Most properties have a default value. If a property is reset to its default valu
 
 ## Inheritance
 
-A child class can inherit from one or more parent classes. This is applied in a CSS conformant manner:
+A child class can inherit from one or more parent classes. This follows CSS standards:
 
-- heritability is property specific. For example `color` is inherited, but `margin` is not.
+- Note all properties are inherited by default; for example `color` is inherited, but `margin` is not.
 
-- the `inherit` keyword can be used in the child property to force inheritance.
+- the `inherit` keyword can be used in the child property to ensure inheritance.
 
-- the `!important` modifier can be used in parent properties to force inheritance to the child. The property remains 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
+- the `!important` modifier can be used in parent properties to force the parent value to override the child. The property becomes 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
 
 ```
 my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important");
 
-my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css) );
+my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css);
 
 say $parent-css.important("color");
 ## True
@@ -145,7 +148,7 @@ Properties are optimized and normalized during serialization, including:
 
 - omission of properties with default values, and
 
-- consolidation of compound properties. E.g.:
+- consolidation of container properties. E.g.:
 
 ```
 use CSS::Declarations;
