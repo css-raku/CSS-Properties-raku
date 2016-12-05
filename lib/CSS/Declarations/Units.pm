@@ -1,5 +1,9 @@
 use v6;
 
+#| utility definitions and operators for handing CSS Units
+#| at the moment this is restricted to length units and only
+#| the '+' and '-' operators are handled.
+
 module CSS::Declarations::Units {
     my enum Units is export « :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) »;
     role Keyed[$key] { method key{$key} }

@@ -1,5 +1,6 @@
 # perl6-CSS-Declarations
-CSS::Declarations is class for managing property lists, including parsing, inheritance, default handling and serialization.
+CSS::Declarations is a class for parsing and managing CSS property lists, including parsing, inheritance, default handling and serialization.
+
 
 ## Basic Construction
 ```
@@ -15,19 +16,55 @@ $css.margin = [5pt, 2pt, 5pt, 2pt];
 $css.border-color = 'red';
 
 # output the style
-say $css.write;
+say $css.Str;
 ```
 
-## Parsing of CSS style rules 
+## CSS Property Accessors 
+
+- color values are converted to Color objects
+- other values are converted to strings or numeric, as appropriate
+- the .key method returns the value type
+- some properties are containers only. For example, 'margin' is a container property for 'margin-top', 'margin-left', e.g.
+- also, for example, 'font' is a hash container for 'font-size', 'font-family', etc
 
 ```
 use CSS::Declarations;
 
-my $css = CSS::Declarations.new: :style("color: orange; text-align: center; margin: 2pt; border-width: 1px 2px 3pt");
+my $css = CSS::Declarations.new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
 
-say $css.color.hex; # (FF A5 00)
-say $css.color.key; # 'rgb'
+say $css.color.hex;      # (FF A5 00)
+say $css.color.key;      # 'rgb'
+say $css.text-align;     # 'center'
+say $css.text-align.key; # 'keyw' (keyword)
+
+# access margin-top, directly and through margin container
+say $css.margin-top;     # '2'
+say $css.margin-top.key; # 'pt'
+say $css.margin;         # [2 2 2 2]
+say $css.margin[0];      # '2'
+say $css.margin[0].key;  # 'pt'
+
+# access font-family directly and through container
+say $css.font-family;       # 'Helvetica'
+say $css.font-family.key;   # 'indent'
+say $css.font<font-family>; # 'Helvetica;
 ```
+
+The simplest ways of setting a property is to assign a string value.  The value will be parsed as CSS. This works for both simple and container properties. Unit values are also recognized.
+
+````
+my $css = (require CSS::Declarations).new;
+
+# assign to container
+$css.font = "14pt Helvetica";
+
+# assign to simple properties
+$css.font-weight = 'bold'; # assign string
+$css.line-height = 16pt;   # assign unit value
+
+say ~$css; # font:bold 14pt/16pt Helvetica;
+````
+
 ## CSS Modules and Levels
 
 Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be altered via the :module option:
@@ -50,7 +87,7 @@ my $css21 = CSS::Declarations.new( :$style, :$module);
 
 ### '@font-face' Declarations
 
-`@font-face` is a sub-module of `CSS3`. To process a ruleset, such as:
+`@font-face` is a sub-module of `CSS3`. To process a rule-set, such as:
 
 ```
 @font-face {
@@ -94,7 +131,7 @@ A child class can inherit from one or more parent classes. This is applied in a 
 ```
 my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important");
 
-my $css = CSS::Declarations.new( :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css) );
+my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css) );
 
 say $parent-css.important("color");
 ## True
@@ -118,13 +155,13 @@ say $css.write;  # "border: 2pt; color: red;"
 
 `$.write` Options include:
 
-- `:!optimize` - turn off optmization. Don't, combine simple properties into compound properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`).
+- `:!optimize` - turn off optimization. Don't, combine simple properties into compound properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`).
 
 - `:!terse` - enable multi-line output
 
 - `:!color-names` - don't translate RGB values to color-names
 
-## Property Metadata
+## Property Meta-data
 
 The `info` method gives property specific meta-data, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
 
@@ -162,3 +199,17 @@ margin-bottom: auto keyw
 margin-right: 5 mm
 ```
 
+## Length Units
+
+CSS::Declaration::Units is a convenience module that provides some simple postfix length unit definitions, plus overriding of the '+' and '-'
+operators. These are understood by the CSS::Declarations class.
+
+The '+' and '-' operators convert to the left-hand operand's units.
+
+```
+use CSS::Declarations::Units;
+my $css = (require CSS::Declarations).new: :margin[5pt, 10px, .1in, 2mm];
+
+# display margins in millimeters
+say "%.2f mm".sprintf(0mm + $_) for $css.margin.list;
+```

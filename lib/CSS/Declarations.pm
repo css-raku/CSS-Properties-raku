@@ -1,5 +1,6 @@
 use v6;
 
+#| management class for a set of CSS::Declarations
 class CSS::Declarations {
 
     use CSS::Declarations::Property;
@@ -9,11 +10,11 @@ class CSS::Declarations {
     use CSS::Module::CSS3;
     use CSS::Writer;
     use Color;
-    my %module-metadata{CSS::Module};     #| per-module metadata
-    my %module-properties{CSS::Module};   #| per-module property definitions
+    my %module-metadata{CSS::Module};     # per-module metadata
+    my %module-properties{CSS::Module};   # per-module property definitions
 
-    #| contextual variables
-    has Any %!values;         #| property values
+    # contextual variables
+    has Any %!values;         # property values
     has Array %!box;
     has Hash %!struct;
     has Bool %!important;
@@ -53,6 +54,7 @@ class CSS::Declarations {
         %module-properties{$m}{$name};
     }
 
+    #| return module meta-data for a property
     method info(Str $prop) {
         with %module-properties{$!module}{$prop} {
             $_;
@@ -158,7 +160,7 @@ class CSS::Declarations {
 		@v[3] //= @v[1];
 
 		my $n = 0;
-		%!values{$_} = self.coerce( @v[$n++], :prop($_) )
+		%!values{$_} = self!coerce( @v[$n++], :prop($_) )
                     for $edges.list;
 	    }
         );
@@ -187,7 +189,7 @@ class CSS::Declarations {
 
                 for $children.list -> $prop {
                     with %vals{$prop}:delete {
-                        self."$prop"() = self.coerce($_, :$prop);
+                        self."$prop"() = self!coerce($_, :$prop);
                     }
                     else {
                         self.delete($prop);
@@ -202,7 +204,7 @@ class CSS::Declarations {
     method !metadata { %module-metadata{$!module} }
             
     method !default($prop) {
-        %!default{$prop} //= self.coerce( .<default>[1] )
+        %!default{$prop} //= self!coerce( .<default>[1] )
             with self!metadata{$prop};
     }
 
@@ -213,7 +215,7 @@ class CSS::Declarations {
                     unless %!values{$prop}:exists;
                 %!values{$prop};
             },
-            STORE => sub ($,$v) { %!values{$prop} = self.coerce( $v, :$prop ) }
+            STORE => sub ($,$v) { %!values{$prop} = self!coerce( $v, :$prop ) }
         );
     }
 
@@ -226,7 +228,8 @@ class CSS::Declarations {
             });
     }
 
-    method handling(Str $prop) is rw {
+    #| return property value handling: 'initial', or 'inherit';
+    method handling(Str $prop --> Handling) is rw {
         with self.info($prop) {
             .edges
                 ?? self!child-handling( .edges )
@@ -243,6 +246,7 @@ class CSS::Declarations {
             });
     }
 
+    #| return true of the property has the !important attribute
     method important(Str $prop) is rw {
         with self.info($prop) {
             .edges
@@ -297,7 +301,7 @@ class CSS::Declarations {
     }
 
     has %!prop-cache; # cache, for performance
-    method coerce($val, Str :$prop) {
+    method !coerce($val, Str :$prop) {
         my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key');
         my \expr = needs-parse
             ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
@@ -305,9 +309,8 @@ class CSS::Declarations {
         self.from-ast(expr);
     }
 
+    #| convert 0 .. 255  =>  0.0 .. 1.0. round to 2 decimal places
     sub alpha($a) {
-        # convert 0 .. 255  =>  0.0 .. 1.0
-        # round to 2 decimal places
         :num(($a * 100/256).round / 100);
     }
 
@@ -350,6 +353,10 @@ class CSS::Declarations {
             !! $val;
     }
 
+    #| CSS conformant inheritance from the given parent declaration list. Note:
+    #| - handling of 'initial' and 'inherit' in the child declarations
+    #| - !important override properties in parent
+    #| - not all properties are inherited. e.g. color is, margin isn't
     method inherit(CSS::Declarations $css) {
         for $css.properties -> \name {
             my \info = self.info(name);
@@ -381,6 +388,7 @@ class CSS::Declarations {
             for $css.properties;
     }
 
+    #| set a list of properties as hash pairs
     method set-properties(*%props) {
         for %props.pairs -> \p {
             if %module-metadata{$!module}{p.key} {
@@ -477,7 +485,7 @@ class CSS::Declarations {
 
             my @child-types = @children.map: {
                 given %prop-ast{$_} {
-                    when .<keyw> ~~ 'initial'|'inherit' {.<keyw>}
+                    when .<keyw> ~~ Handling {.<keyw>}
                     when .<prio> ~~ 'important' {.<prio>}
                     default { 'normal' }
                 }
@@ -486,7 +494,7 @@ class CSS::Declarations {
             if +(@child-types.unique) == 1 {
                 # all of the same type
                 given @child-types[0] {
-                    when 'initial'|'inherit' {
+                    when Handling {
                         if .Num == metadata{prop}<children> {
                             # all child properties need to be present
                             %prop-ast{$_}:delete for @children;
@@ -507,6 +515,9 @@ class CSS::Declarations {
         }
     }
 
+    #| return an AST for the declarations.
+    #| This more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>
+    #| and suitable for reserialization with CSS::Writer
     method ast(Bool :$optimize = True) {
         my %prop-ast;
         # '!important'
@@ -548,6 +559,8 @@ class CSS::Declarations {
         :@declaration-list;
     }
 
+    #| write a set of declarations. By default, it is formatted as a single-line,
+    #| suited to an HTML inline-style (style attribute).
     method write(Bool :$optimize = True,
                  Bool :$terse = True,
                  Bool :$color-names = True,
@@ -558,9 +571,12 @@ class CSS::Declarations {
 
     method Str { self.write }
 
+    #| return a list of populated properties
     method properties {
         keys %!values;
     }
+
+    #| delete a property value from the list of populated properties
     method delete(Str $prop) {
         with self!metadata{$prop} {
             if .<box> {

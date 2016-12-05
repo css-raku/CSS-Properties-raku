@@ -2,6 +2,7 @@ use v6;
 
 use CSS::Declarations::Property;
 
+#| A four-sided container property that contains top, left, bottom and right sub-properties
 class CSS::Declarations::Edges
     is CSS::Declarations::Property {
     method box { True }
