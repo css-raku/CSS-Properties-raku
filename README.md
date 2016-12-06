@@ -46,7 +46,7 @@ say $css.margin[0].key;  # 'pt'
 
 # access font-family directly and through font container
 say $css.font-family;       # 'Helvetica'
-say $css.font-family.key;   # 'indent'
+say $css.font-family.key;   # 'ident'
 say $css.font<font-family>; # 'Helvetica;
 ```
 
@@ -148,9 +148,9 @@ The `.write` or `.Str` methods can be used to produce CSS. Properties are optimi
 
 - properties with default values are omitted
 
-- container properties are consolidated.
+- simple properties are consolidated to containers (e.g. `font-family` to `font`).
 
-- rgb masks are translated to color-name, if possible
+- rgb masks are translated to color-names, if possible
 
 ```
 use CSS::Declarations;
