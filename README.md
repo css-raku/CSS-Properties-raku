@@ -24,8 +24,8 @@ say $css.Str;
 - color values are converted to Color objects
 - other values are converted to strings or numeric, as appropriate
 - the .key method returns the value type
-- box properties are properties that contain four sides. These are containers only. For example, 'margin' is a container property for 'margin-top', 'margin-left', e.g.
-- there are also some compound properties that are presented as Hashs; for example, 'font' is a hash container for 'font-size', 'font-family', and other font properties.
+- box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
+- there are also some compound properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
 
 ```
 use CSS::Declarations;
@@ -44,7 +44,7 @@ say $css.margin;         # [2 2 2 2]
 say $css.margin[0];      # '2'
 say $css.margin[0].key;  # 'pt'
 
-# access font-family directly and through container
+# access font-family directly and through font container
 say $css.font-family;       # 'Helvetica'
 say $css.font-family.key;   # 'indent'
 say $css.font<font-family>; # 'Helvetica;
@@ -70,7 +70,7 @@ say ~$css; # font:bold 14pt/16pt Helvetica;
 
 ## Conformance Levels
 
-Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be altered via the :module option:
+Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be configured via the :module option:
 
 ```
 use CSS::Declarations;
@@ -112,14 +112,12 @@ my $font-face-css = CSS::Declarations.new( :$style, :$module);
 
 Most properties have a default value. If a property is reset to its default value it will be omitted from stringification:
 
-    ```
     my $css = (require CSS::Declarations).new;
     say $css.background-image; # none
     $css.background-image = 'url(camellia.png)';
     say ~$css; # "background-image: url(camellia.png);"
     $css.background-image = $css.info("background-image").default;
     say ~$css; # ""
-    ```
 
 ## Inheritance
 
@@ -144,17 +142,28 @@ say $css.handling("margin-left");
 
 ## Serialization
 
-Properties are optimized and normalized during serialization, including:
+The `.write` or `.Str` methods can be used to produce CSS. Properties are optimized and normalized:
 
-- omission of properties with default values, and
+- properties with default values are omitted, and
 
-- consolidation of container properties. E.g.:
+- container properties are consolidated. E.g.:
+
+- rgb masks are translated to color-name, if possible
 
 ```
 use CSS::Declarations;
 my $css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
 say $css.write;  # "border: 2pt; color: red;"
 ```
+
+Notice that:
+
+- `border-style` was omitted because it has the default value
+
+- `border-width` has been consolidated to `border`. This was possible
+because all four borders had the common value `2pt`
+
+- `color` has been translated from a color mask to a color
 
 `$.write` Options include:
 
