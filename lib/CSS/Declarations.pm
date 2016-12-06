@@ -40,12 +40,7 @@ class CSS::Declarations {
                 %module-properties{$m}{$name} = CSS::Declarations::Edges.new( :$name, |%defs);
             }
             else {
-                with %defs<children> {
-                    die "compound property not implemented: $name. please use constituant properties: $_";
-                }
-                else {
-                    %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
-                }
+                %module-properties{$m}{$name} = CSS::Declarations::Property.new( :$name, |%defs );
             }
         }
         else {
@@ -202,7 +197,7 @@ class CSS::Declarations {
     }
 
     method !metadata { %module-metadata{$!module} }
-            
+    #| return the default value for the property
     method !default($prop) {
         %!default{$prop} //= self!coerce( .<default>[1] )
             with self!metadata{$prop};
@@ -572,8 +567,15 @@ class CSS::Declarations {
 
     method Str { self.write }
 
-    #| return a list of populated properties
-    method properties {
+    #| return a list ofproperties
+
+    #| return all module properties
+    multi method properties(Bool :$all! where .so) {
+        keys %module-metadata{$!module};
+    }
+
+    #| return only populated properties
+    multi method properties is default {
         keys %!values;
     }
 

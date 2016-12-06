@@ -10,14 +10,13 @@ class CSS::Declarations::Property {
     has Str $.synopsis;
     has Str $.default;
     has $.default-ast;
-    has Str $.parent;
     has Str @.children;
     has Str $.edge;
     has Str @.edges;
 
     method box { False }
 
-    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :$!parent = Str, :@!children, :$!edge = Str, :@!edges ) {
+    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :@!children, :$!edge = Str, :@!edges ) {
         die "$!name css property should be composed via CSS::Declarations::Edges"
             if $box && !self.box;
         # second entry is the compiled default value
