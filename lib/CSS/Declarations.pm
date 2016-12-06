@@ -11,7 +11,7 @@ class CSS::Declarations {
     use CSS::Writer;
     use Color;
     my %module-metadata{CSS::Module};     # per-module metadata
-    my %module-properties{CSS::Module};   # per-module property definitions
+    my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
     has Any %!values;         # property values
@@ -273,19 +273,19 @@ class CSS::Declarations {
             $color .= new: |($type => @channels);
         }
 
-        $color does CSS::Declarations::Units::Keyed[$type];
+        $color does CSS::Declarations::Units::Type[$type];
     }
     multi method from-ast(Pair $v is copy where .key eq 'keyw') {
         if $v.value eq 'transparent' {
             $v = 'rgba' => Color.new: :r(0), :g(0), :b(0), :a(0)
         }
-        $v.value does CSS::Declarations::Units::Keyed[$v.key]
+        $v.value does CSS::Declarations::Units::Type[$v.key]
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
-        r ~~ CSS::Declarations::Units::Keyed
+        r ~~ CSS::Declarations::Units::Type
             ?? r
-            !! r does CSS::Declarations::Units::Keyed[$v.key]
+            !! r does CSS::Declarations::Units::Type[$v.key]
     }
     multi method from-ast(List $v) {
         $v.elems == 1
@@ -302,7 +302,7 @@ class CSS::Declarations {
 
     has %!prop-cache; # cache, for performance
     method !coerce($val, Str :$prop) {
-        my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('key');
+        my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('type');
         my \expr = needs-parse
             ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
             !! $val;
@@ -314,21 +314,23 @@ class CSS::Declarations {
         :num(($a * 100/256).round / 100);
     }
 
-    method to-ast($v, :$get = True) {
-        my $key = $v.key
-            if $v.can('key') && $get;
+    multi method to-ast(Pair $v) { $v }
+
+    multi method to-ast($v, :$get = True) is default {
+        my $key = $v.?type if $get;
 
         my $val = do given $v {
             when Color {
-                if .key eq 'hsl' {
+                my \type = .type;
+                if type eq 'hsl' {
                     my (\h, \s, \l) = .hsl;
                     [ :num(h), :percent(s), :percent(l) ];
                 }
-                elsif .key eq 'hsla' {
+                elsif type eq 'hsla' {
                     my (\h, \s, \l) = .hsl;
                     [ :num(h), :percent(s), :percent(l), alpha(.a) ];
                 }
-                elsif .key eq 'rgba' {
+                elsif type eq 'rgba' {
                     my (\r, \g, \b, \a) = .rgba;
                     [ :num(r), :num(g), :num(b), alpha(a) ];
                 }
@@ -336,7 +338,6 @@ class CSS::Declarations {
                      [ $v."$key"().map: -> $num { :$num } ]
                 }
             }
-            when Pair  { .value }
             when List  { .elems == 1
                          ?? self.to-ast( .[0] )
                          !! [ .map: { self.to-ast($_) } ];

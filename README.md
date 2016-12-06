@@ -23,7 +23,7 @@ say $css.Str;
 
 - color values are converted to Color objects
 - other values are converted to strings or numeric, as appropriate
-- the .key method returns the value type
+- the .type method returns additional type information
 - box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
 - there are also some compound properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
 
@@ -32,25 +32,25 @@ use CSS::Declarations;
 
 my $css = CSS::Declarations.new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
 
-say $css.color.hex;      # (FF A5 00)
-say $css.color.key;      # 'rgb'
-say $css.text-align;     # 'center'
-say $css.text-align.key; # 'keyw' (keyword)
+say $css.color.hex;       # (FF A5 00)
+say $css.color.type;      # 'rgb'
+say $css.text-align;      # 'center'
+say $css.text-align.type; # 'keyw' (keyword)
 
 # access margin-top, directly and through margin container
-say $css.margin-top;     # '2'
-say $css.margin-top.key; # 'pt'
-say $css.margin;         # [2 2 2 2]
-say $css.margin[0];      # '2'
-say $css.margin[0].key;  # 'pt'
+say $css.margin-top;      # '2'
+say $css.margin-top.type; # 'pt'
+say $css.margin;          # [2 2 2 2]
+say $css.margin[0];       # '2'
+say $css.margin[0].type;  # 'pt'
 
 # access font-family directly and through font container
 say $css.font-family;       # 'Helvetica'
-say $css.font-family.key;   # 'ident'
+say $css.font-family.type;  # 'ident'
 say $css.font<font-family>; # 'Helvetica;
 ```
 
-The simplest ways of setting a property is to assign a string value.  The value will be parsed as CSS. This works for both simple and container properties. Unit values are also recognized.
+The simplest ways of setting a property is to assign a string value.  The value will be parsed as CSS. This works for both simple and container properties. Unit values are also recognized. Also the type and value can be assigned as a pair.
 
 ```
 use CSS::Declarations::Units;
@@ -61,9 +61,10 @@ $css.font = "14pt Helvetica";
 
 # assign to simple properties
 $css.font-weight = 'bold'; # string
-##$css.line-height = 16pt;   # unit value
+$css.line-height = 16pt;   # unit value
+$css.font-style = :keyw<italic>; # type/value pair
 
-say ~$css; # font:bold 14pt/16pt Helvetica;
+say ~$css; # font:italic bold 14pt/16pt Helvetica;
 ```
 
 ## CSS Modules
@@ -201,7 +202,7 @@ my $css = CSS::Declarations.new: :$style;
 
 for $css.properties -> $prop {
     my $val = $css."$prop"();
-    say "$prop: $val {$val.key}";
+    say "$prop: $val {$val.type}";
 }
 
 ```

@@ -28,9 +28,9 @@ is ~$css, 'border-top-color:red;', 'basic css rewritten';
 
 $css.margin-top = 10pt;
 is $css.margin-top, 10, 'updated margin-right value';
-is $css.margin-top.key, 'pt', 'updated margin-right units';
+is $css.margin-top.type, 'pt', 'updated margin-right units';
 $css.margin[1] = 20px;
-is $css.margin-right.key, 'px', 'updated margin-right units';
+is $css.margin-right.type, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 $css.border-color = [ :rgb[10,20,30], :color<red> ];
 is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
