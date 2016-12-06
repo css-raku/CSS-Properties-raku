@@ -127,6 +127,8 @@ A child class can inherit from one or more parent classes. This follows CSS stan
 
 - the `inherit` keyword can be used in the child property to ensure inheritance.
 
+- `initial` will reset the child property to the default value
+
 - the `!important` modifier can be used in parent properties to force the parent value to override the child. The property becomes 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
 
 ```
@@ -144,9 +146,9 @@ say $css.handling("margin-left");
 
 The `.write` or `.Str` methods can be used to produce CSS. Properties are optimized and normalized:
 
-- properties with default values are omitted, and
+- properties with default values are omitted
 
-- container properties are consolidated. E.g.:
+- container properties are consolidated.
 
 - rgb masks are translated to color-name, if possible
 
@@ -160,7 +162,7 @@ Notice that:
 
 - `border-style` was omitted because it has the default value
 
-- `border-width` has been consolidated to `border`. This was possible
+- `border-width` has been consolidated to the `border` container property. This was possible
 because all four borders had the common value `2pt`
 
 - `color` has been translated from a color mask to a color
@@ -188,9 +190,8 @@ say $margin-info.inherit;  # True (property is inherited)
 
 ## Data Introspection
 
-The `properties` method, gives a list of current property names.
-
-The attributes of a parsed quantity can be accessed via the `.key` method:
+The `properties` method, gives a list of current properties. Only simple properties
+are returned. E.g. `font-family` is, if it has a value; but `font` isn't.
 
 ```
 use CSS::Declarations;
