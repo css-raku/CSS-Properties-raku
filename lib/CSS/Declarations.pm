@@ -206,9 +206,15 @@ class CSS::Declarations {
     method !item-value(Str $prop) {
         Proxy.new(
             FETCH => sub ($) {
-                %!values{$prop} = self!default($prop)
-                    unless %!values{$prop}:exists;
-                %!values{$prop};
+                if %!values{$prop}:exists {
+                    %!values{$prop};
+                }
+                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ {
+                    self.color;
+                }
+                else {
+                    %!values{$prop} = self!default($prop)
+                }
             },
             STORE => sub ($,$v) { %!values{$prop} = self!coerce( $v, :$prop ) }
         );

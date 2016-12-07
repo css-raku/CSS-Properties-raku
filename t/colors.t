@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 24;
+plan 27;
 
 use CSS::Declarations;
 use Color;
@@ -42,5 +42,13 @@ isa-ok $css.background-color, Color, ':values constructor';
 is $css.background-color, '#000000', ':values constructor';
 is-approx $css.background-color.a, 0, ':values constructor';
 is ~$css, '', 'serialization';
+
+# special handling of border colors. These default to the current color
+
+$css = CSS::Declarations.new: :color<green>;
+is $css.border-top-color, '#008000', 'border-*-color default';
+$css.color = 'red';
+is $css.border-top-color, '#FF0000', 'border-*-color default';
+is $css.border-right-color, '#FF0000', 'border-*-color default';
 
 done-testing;

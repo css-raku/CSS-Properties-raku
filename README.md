@@ -1,5 +1,5 @@
 # perl6-CSS-Declarations
-CSS::Declarations is a class for parsing and managing CSS property lists, including parsing, inheritance, default handling and serialization.
+CSS::Declarations is a class for managing CSS property lists, including parsing, inheritance, default handling and serialization.
 
 
 ## Basic Construction
