@@ -209,7 +209,7 @@ class CSS::Declarations {
                 if %!values{$prop}:exists {
                     %!values{$prop};
                 }
-                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ {
+                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ && self.can('color') {
                     self.color;
                 }
                 else {
