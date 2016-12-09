@@ -3,7 +3,7 @@
     "name"        : "CSS::Declarations",
     "version"     : "0.0.1",
     "auth"        : "github:p6-css",
-    "description" : "Basic manipulation of CSS properties",
+    "description" : "CSS property-list manipulation library",
     "depends"     : [ "CSS::Module", "CSS::Writer", "Color" ],
     "source-url"  : "git://github.com/p6-css/perl6-CSS-Declarations.git",
     "provides"    : {

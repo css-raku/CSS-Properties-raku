@@ -34,7 +34,7 @@ class CSS::Declarations::Property {
         die "malformed metadata for property $name"
             unless %metadata{$name}<synopsis>:exists;
 
-        self.build( :$name, :from-meta-data, |%metadata{$name} );
+        self.build( :$name, |%metadata{$name} );
     }
 
     submethod BUILD(|c) {

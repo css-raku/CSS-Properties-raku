@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 33;
+plan 35;
 
 use CSS::Declarations;
 use CSS::Declarations::Property;
@@ -22,6 +22,7 @@ is $css.azimuth, 'center', 'default azimuth';
 is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
+is $css.margin-left.type, 'percent', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is-deeply $css.background-color.rgba, (0,0,0,0), 'default background-color';
 is ~$css, 'border-top-color:red;', 'basic css rewritten';
@@ -34,6 +35,9 @@ is $css.margin-right.type, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
 $css.border-color = [ :rgb[10,20,30], :color<red> ];
 is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
+
+$css.margin = '0';
+is $css.margin-left, 0, 'reset margin-left';
 
 $css.border-color = 'green';
 $css.border-top-color = 'blue';

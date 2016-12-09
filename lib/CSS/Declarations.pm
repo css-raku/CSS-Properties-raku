@@ -69,6 +69,7 @@ class CSS::Declarations {
                 @props.push: ~$0 => .values[0]
             }
             else {
+                # filter out '/' operator, as in 'font:10pt/12pt times-roman'
                 @expr.push: $_
                     unless $prop-name eq 'font' && .<op> eqv '/';
             }

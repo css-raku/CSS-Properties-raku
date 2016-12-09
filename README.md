@@ -8,15 +8,16 @@ use v6;
 use CSS::Declarations::Units;
 use CSS::Declarations;
 
-my $style = "color: red";
+my $style = "color:red !important; padding: 1pt";
 my $css = CSS::Declarations.new( :$style );
-
-$css.padding = 5pt;  # set padding on all 4 sides
-$css.margin = [5pt, 2pt, 5pt, 2pt];
+say $css.important("color"); # True
 $css.border-color = 'red';
 
+$css.margin = [5pt, 2pt, 5pt, 2pt];
+$css.margin = 5pt;  # set margin on all 4 sides
+
 # output the style
-say $css.Str;
+say $css.Str; # border-color:red; color:red!important; margin:5pt; padding:1pt;
 ```
 
 ## CSS Property Accessors 
@@ -138,10 +139,11 @@ my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15p
 
 my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css);
 
-say $parent-css.important("color");
-## True
-say $css.handling("margin-left");
-## inherit
+say $parent-css.important("color"); # True
+say $css.color; # #FF0000 (red)
+
+say $css.handling("margin-left");   # inherit
+say $css.margin-left; # 15pt
 ```
 
 ## Serialization
@@ -376,7 +378,7 @@ for $css.properties(:all).sort -> $name {
     with $css.info($name) {
         my @type;
         @type.push: 'hash' if .children;
-        @type.push: 'box' if .edges;
+        @type.push: 'box' if .box;
 
         say ($name,
              .default // '',
