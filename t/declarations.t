@@ -1,13 +1,13 @@
 use v6;
 use Test;
-plan 35;
+plan 36;
 
 use CSS::Declarations;
 use CSS::Declarations::Property;
 use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
 
-my $css = CSS::Declarations.new :border-top-color<red>;
+my $css = CSS::Declarations.new( :!warn, :border-top-color<red> );
 is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
@@ -19,6 +19,9 @@ isa-ok $margin-left-info, CSS::Declarations::Property, 'simple property';
 is $margin-left-info.edge, 'margin', 'margin-left is a margin edge';
 
 is $css.azimuth, 'center', 'default azimuth';
+$css.azimuth = 'over-yonder';
+is $css.azimuth, 'center', 'default azimuth';
+
 is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';

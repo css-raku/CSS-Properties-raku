@@ -156,8 +156,10 @@ class CSS::Declarations {
 		@v[3] //= @v[1];
 
 		my $n = 0;
-		%!values{$_} = self!coerce( @v[$n++], :prop($_) )
-                    for $edges.list;
+                for $edges.list -> $prop {
+		    %!values{$prop} = $_
+                        with self!coerce( @v[$n++], :$prop )
+                }
 	    }
         );
     }
@@ -176,8 +178,10 @@ class CSS::Declarations {
 	    STORE => sub ($, $rval where Str|Associative) {
                 my %vals;
                 if $rval ~~ Str {
-                    my @props = self!get-props($prop, self.module.parse-property($prop, $rval));
-                    %vals{.key} = .value for @props;
+                    with self.module.parse-property($prop, $rval, :$!warn) {
+                        my @props = self!get-props($prop, $_);
+                        %vals{.key} = .value for @props;
+                    }
                 }
                 else {
                     %vals = %$rval;
@@ -185,7 +189,8 @@ class CSS::Declarations {
 
                 for $children.list -> $prop {
                     with %vals{$prop}:delete {
-                        self."$prop"() = self!coerce($_, :$prop);
+                        self."$prop"() = $_
+                            with self!coerce($_, :$prop);
                     }
                     else {
                         self.delete($prop);
@@ -217,7 +222,10 @@ class CSS::Declarations {
                     %!values{$prop} = self!default($prop)
                 }
             },
-            STORE => sub ($,$v) { %!values{$prop} = self!coerce( $v, :$prop ) }
+            STORE => sub ($,$v) {
+                %!values{$prop} = $_
+                    with self!coerce( $v, :$prop )
+            }
         );
     }
 
@@ -306,7 +314,7 @@ class CSS::Declarations {
     method !coerce($val, Str :$prop) {
         my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('type');
         my \expr = needs-parse
-            ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str))
+            ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str, :$!warn))
             !! $val;
         self.from-ast(expr);
     }
@@ -574,7 +582,8 @@ class CSS::Declarations {
 
     method Str { self.write }
 
-    #| return a list ofproperties
+    #| return a list of properties
+    proto method properties(|) {*}
 
     #| return all module properties
     multi method properties(Bool :$all! where .so) {
@@ -586,16 +595,18 @@ class CSS::Declarations {
         keys %!values;
     }
 
-    #| delete a property value from the list of populated properties
-    method delete(Str $prop) {
-        with self!metadata{$prop} {
-            if .<box> {
-                $.delete($_) for .<edges>.list
+    #| delete property values from the list of populated properties
+    method delete(*@props) {
+        for @props -> Str $prop {
+            with self!metadata{$prop} {
+                if .<box> {
+                    $.delete($_) for .<edges>.list
+                }
+                if .<children> {
+                    $.delete($_) for .<children>.list
+                }
+                %!values{$prop}:delete;
             }
-            if .<children> {
-                $.delete($_) for .<children>.list
-            }
-            %!values{$prop}:delete;
         }
     }
 
