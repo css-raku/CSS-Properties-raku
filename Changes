@@ -1,0 +1,3 @@
+0.0.2 Warn, but otherwise ignore illegal assignments:
+    $css.azimuth = 'over-yonder'; # has no affect
+0.0.1 Initial release
