@@ -218,6 +218,9 @@ class CSS::Declarations {
                 elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ && self.can('color') {
                     self.color;
                 }
+                elsif $prop eq 'text-align' && self.can('direction') {
+                    self.direction eq 'ltr' ?? 'left' !! 'right';
+                }
                 else {
                     %!values{$prop} = self!default($prop)
                 }

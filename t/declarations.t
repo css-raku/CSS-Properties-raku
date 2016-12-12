@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 36;
+plan 39;
 
 use CSS::Declarations;
 use CSS::Declarations::Property;
@@ -71,5 +71,14 @@ is ~$css, "border-top-color:red;", 'cloned css';
 $css.border-color = 'blue';
 is ~$css, "border-color:blue;", 'cloned css';
 is ~$original-css, "border-top-color:red;", 'original css';
+
+# special handling of text-align. Default depends on direction
+
+$css = CSS::Declarations.new: :color<green>;
+is $css.text-align, 'left', 'default text-align';
+$css.direction = 'rtl';
+is $css.text-align, 'right', 'default text-align (direction rtl)';
+$css.text-align = 'left';
+is $css.text-align, 'left', 'updated text-direction';
 
 done-testing;
