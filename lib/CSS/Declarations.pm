@@ -292,13 +292,13 @@ class CSS::Declarations {
         if $v.value eq 'transparent' {
             $v = 'rgba' => Color.new: :r(0), :g(0), :b(0), :a(0)
         }
-        $v.value does CSS::Declarations::Units::Type[$v.key]
+        $v.value but CSS::Declarations::Units::Type[$v.key]
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
         r ~~ CSS::Declarations::Units::Type
             ?? r
-            !! r does CSS::Declarations::Units::Type[$v.key]
+            !! r but CSS::Declarations::Units::Type[$v.key]
     }
     multi method from-ast(List $v) {
         $v.elems == 1

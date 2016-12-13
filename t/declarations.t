@@ -25,7 +25,7 @@ is $css.azimuth, 'center', 'default azimuth';
 is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
-is $css.margin-left.type, 'percent', 'default margin left type';
+is $css.margin-left.type, 'px', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is-deeply $css.background-color.rgba, (0,0,0,0), 'default background-color';
 is ~$css, 'border-top-color:red;', 'basic css rewritten';
