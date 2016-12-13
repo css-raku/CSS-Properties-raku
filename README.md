@@ -233,8 +233,8 @@ say "%.2f mm".sprintf(0mm + $_) for $css.margin.list;
 
 ## Appendix : CSS3 Properties
 
-Name | Default | Inherit | Type | Parent | Synopsis
---- | --- | --- | --- | --- | ---
+Name | Default | Inherit | Type | Synopsis
+--- | --- | --- | --- | ---
 azimuth | center | Yes |  | \<angle\> \| [[ left-side \| far-left \| left \| center-left \| center \| center-right \| right \| far-right \| right-side ] \|\| behind ] \| leftwards \| rightwards
 background |  |  | hash | ['background-color' \|\| 'background-image' \|\| 'background-repeat' \|\| 'background-attachment' \|\| 'background-position']
 background-attachment | scroll |  |  | scroll \| fixed
@@ -370,8 +370,8 @@ The above markdown table was produced with the following code snippet
 
 ```
 use v6;
-say <Name Default Inherit Type Parent Synopsis>.join(' | ');
-say ('---' xx 6).join(' | ');
+say <Name Default Inherit Type Synopsis>.join(' | ');
+say ('---' xx 5).join(' | ');
 
 my $css = (require CSS::Declarations).new;
 
