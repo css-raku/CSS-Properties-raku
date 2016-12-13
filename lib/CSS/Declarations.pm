@@ -215,11 +215,11 @@ class CSS::Declarations {
                 if %!values{$prop}:exists {
                     %!values{$prop};
                 }
-                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ && self.can('color') {
-                    self.color;
+                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ {
+                    self.?color;
                 }
-                elsif $prop eq 'text-align' && self.can('direction') {
-                    self.direction eq 'ltr' ?? 'left' !! 'right';
+                elsif $prop eq 'text-align' {
+                    self.can('direction') && self.direction eq 'rtl' ?? 'right' !! 'left';
                 }
                 else {
                     %!values{$prop} = self!default($prop)
