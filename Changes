@@ -4,7 +4,7 @@
     - Warn, but otherwise ignore illegal assignments:
       $css.azimuth = 'over-yonder'; # has no affect
     - handle default dependencies:
-      -- border-color on color
-      -- text-align on direction
+      -- border-color defaults to color
+      -- text-align is 'left' or 'right' depending on direction
       (See README.md Properties appendix)
 0.0.1 Initial release

@@ -175,16 +175,16 @@ class CSS::Declarations {
                     %bound;
                 }
             },
-	    STORE => sub ($, $rval where Str|Associative) {
+	    STORE => sub ($, $rval) {
                 my %vals;
-                if $rval ~~ Str {
+                if $rval ~~ Associative {
+                    %vals = %$rval;
+                }
+                else {
                     with self.module.parse-property($prop, $rval, :$!warn) {
                         my @props = self!get-props($prop, $_);
                         %vals{.key} = .value for @props;
                     }
-                }
-                else {
-                    %vals = %$rval;
                 }
 
                 for $children.list -> $prop {
