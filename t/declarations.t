@@ -6,6 +6,7 @@ use CSS::Declarations;
 use CSS::Declarations::Property;
 use CSS::Declarations::Edges;
 use CSS::Declarations::Units;
+use Color;
 
 my $css = CSS::Declarations.new( :!warn, :border-top-color<red> );
 is $css.border-top-color, '#FF0000', ':values constructor';
