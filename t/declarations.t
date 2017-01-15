@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 39;
+plan 42;
 
 use CSS::Declarations;
 use CSS::Declarations::Property;
@@ -30,6 +30,10 @@ is $css.margin-left.type, 'px', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is-deeply $css.background-color.rgba, (0,0,0,0), 'default background-color';
 is ~$css, 'border-top-color:red;', 'basic css rewritten';
+$css.background-position = <top left>;
+is $css.background-position[0], 'top', 'list parse';
+is $css.background-position[0].type, 'keyw', 'list parse';
+is ~$css, 'background-position:top left; border-top-color:red;', 'list parse';
 
 $css.margin-top = 10pt;
 is $css.margin-top, 10, 'updated margin-right value';

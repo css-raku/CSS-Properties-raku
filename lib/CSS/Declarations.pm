@@ -294,11 +294,16 @@ class CSS::Declarations {
         }
         $v.value but CSS::Declarations::Units::Type[$v.key]
     }
+    method !set-type(\v, \type) {
+        v ~~ Color|Hash|Array
+            ?? v does CSS::Declarations::Units::Type[type]
+            !! v but  CSS::Declarations::Units::Type[type];
+    }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
         r ~~ CSS::Declarations::Units::Type
             ?? r
-            !! r but CSS::Declarations::Units::Type[$v.key]
+            !! self!set-type(r, $v.key);
     }
     multi method from-ast(List $v) {
         $v.elems == 1
@@ -313,12 +318,20 @@ class CSS::Declarations {
         $v
     }
 
+    multi sub coerce-str(List $_) {
+        .map({ coerce-str($_) // return }).join: ' ';
+    }
+    multi sub coerce-str($_) is default {
+        .Str if $_ ~~ Str|Numeric && ! .can('type');
+    }
     has %!prop-cache; # cache, for performance
     method !coerce($val, Str :$prop) {
-        my Bool \needs-parse = ? $prop && $val ~~ Str|Numeric && ! $val.can('type');
-        my \expr = needs-parse
-            ?? (%!prop-cache{$prop}{$val.Str} //= $.module.parse-property($prop, $val.Str, :$!warn))
-            !! $val;
+        my \expr = do with $prop && coerce-str($val) {
+            (%!prop-cache{$prop}{$_} //= $.module.parse-property($prop, $_, :$!warn))
+        }
+        else {
+            $val
+        }
         self.from-ast(expr);
     }
 
@@ -351,10 +364,11 @@ class CSS::Declarations {
                      [ $v."$key"().map: -> $num { :$num } ]
                 }
             }
-            when List  { .elems == 1
-                         ?? self.to-ast( .[0] )
-                         !! [ .map: { self.to-ast($_) } ];
-                       }
+            when List  {
+                .elems == 1
+                    ?? self.to-ast( .[0] )
+                    !! [ .map: { self.to-ast($_) } ];
+            }
             default {
                 $key
                     ?? self.to-ast($_, :!get)
@@ -412,6 +426,7 @@ class CSS::Declarations {
                 warn "unknown property/option: {p.key}";
             }
         }
+        self;
     }
 
     #| create a deep copy of a CSS declarations object
@@ -611,6 +626,7 @@ class CSS::Declarations {
                 %!values{$prop}:delete;
             }
         }
+        self;
     }
 
     method can(Str \name) {
