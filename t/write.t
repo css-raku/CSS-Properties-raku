@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 19;
+plan 20;
 
 use CSS::Declarations;
 
@@ -12,7 +12,7 @@ $css = CSS::Declarations.new( :style("margin-top: 1pt; margin-left: 1pt; margin-
 is $css.write, "margin:1pt;", "consolidation of edge properties";
 
 $css = CSS::Declarations.new( :style("margin-bottom: 1pt; margin-left: 2pt; margin-right: 3pt; margin-top: 4pt;") );
-is $css.write, "margin-bottom:1pt; margin-left:2pt; margin-right:3pt; margin-top:4pt;", "consolidation of edge properties";
+is $css.write, "margin:4pt 3pt 1pt 2pt;", "consolidation of edge properties";
 
 $css = CSS::Declarations.new( :style("border-color: rgb(255,0,0); border-width: 2pt") );
 is $css.write, "border:2pt red;", "optimized properties";
@@ -28,28 +28,31 @@ is $style, "border-bottom-color:red; border-bottom-style:solid; border-bottom-wi
 is CSS::Declarations.new( :$style ).write, "border:1px solid red;", "compound edge - re-optimized";
 
 $css = CSS::Declarations.new( :style("$style; border-top-width: 2px; border-top-color: rgb(255,0,0)") );
-is $css.write, "border:solid red; border-bottom-width:1px; border-left-width:1px; border-right-width:1px; border-top-width:2px;", "compound edge - partial optimization";
+is $css.write, "border:2px 1px solid red;", "compound edge - partial optimization";
 
 $css = CSS::Declarations.new( :style("margin-top: 0; margin-right: 0mm; margin-left: 2pt") );
-is  $css.write, "margin-left:2pt;", "optimization of default values";
+is $css.write, "margin-left:2pt;", "optimization of default values";
 
 $css = CSS::Declarations.new( :style("cue-before: url(foo)") );
-is  $css.write, "cue-before:url('foo');";
+is $css.write, "cue-before:url('foo');";
 
 $css = CSS::Declarations.new( :style("cue-before: url(foo); cue-after: url(bar)") );
-is  $css.write, "cue:url('foo') url('bar');";
+is $css.write, "cue:url('foo') url('bar');";
 
 $css = CSS::Declarations.new( :style("cue-after: url('bar')") );
-is  $css.write, "cue-after:url('bar');";
+is $css.write, "cue-after:url('bar');";
 
 $css = CSS::Declarations.new( :style("font-weight:bold; font-family:Helvetica") );
-is  $css.write, "font-family:Helvetica; font-weight:bold;";
+is $css.write, "font-family:Helvetica; font-weight:bold;";
 
 $css = CSS::Declarations.new( :style("font-weight:bold; font-size: 12pt; font-family:Helvetica") );
-is  $css.write, "font:bold 12pt Helvetica;";
+is $css.write, "font:bold 12pt Helvetica;";
 
 $css = CSS::Declarations.new( :style("padding: 0pt 0em 0px 0in; width:10pt") );
 is $css.padding, [0,0,0,0];
-is  $css.write, "width:10pt;";
+is $css.write, "width:10pt;";
+
+$css = CSS::Declarations.new: :style("border-style:dotted solid double dashed;");
+is $css.write, "border-style:dotted solid double dashed;";
 
 done-testing;

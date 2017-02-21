@@ -276,7 +276,7 @@ class CSS::Declarations {
         my @channels = $v.value.map: {self.from-ast: $_};
         my Color $color;
         my $type = $v.key;
-        @channels[*-1] *= 256
+        @channels.tail *= 256
             if $type eq 'rgba'|'hsla';
         if $type eq 'hsla' {
             my Numeric \a = @channels.pop;
@@ -485,17 +485,23 @@ class CSS::Declarations {
 
         # consolidate box properties with common values
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
-        for %edges.keys -> \prop {
+        for %edges.keys -> $prop {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
-            my \info = self.info(prop);
+            my \info = self.info($prop);
             next unless info.box;
             my @edges = info.edges;
-            my @asts = @edges.map: { %prop-ast{$_} };
-            # we just handle the simplest case at the moment. Consolidate,
-            # if all four properties are present, and have the same value
-            if [[&same]] @asts {
+            my @asts = @edges.map({ %prop-ast{$_} }).grep: *.defined;
+            my @prio = @asts.map( *<prio> ).unique;
+            if +@asts == 4 && +@prio == 1 {
+                # all four edges present at the same priority; consolidate
                 %prop-ast{$_}:delete for @edges;
-                %prop-ast{prop} = @asts[0];
+
+                @asts.pop
+                    while +@asts > 1 && same( |@asts.tail(2) );
+
+                %prop-ast{$prop} = { :expr[ @asts.map: *<expr> ] };
+                %prop-ast{$prop}<prio> = $_
+                    with @prio[0];
             }
         }
         for @compound-properties -> \prop {
