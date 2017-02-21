@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 20;
+plan 22;
 
 use CSS::Declarations;
 
@@ -54,5 +54,11 @@ is $css.write, "width:10pt;";
 
 $css = CSS::Declarations.new: :style("border-style:dotted solid double dashed;");
 is $css.write, "border-style:dotted solid double dashed;";
+
+$css = CSS::Declarations.new: :style("margin-top: 1pt; margin-right: 2pt;");
+is $css.write, "margin:1pt 2pt;";
+
+$css = CSS::Declarations.new: :style("margin-top: 1pt; margin-left: 2pt;");
+is $css.write, "margin-left:2pt; margin-top:1pt;";
 
 done-testing;

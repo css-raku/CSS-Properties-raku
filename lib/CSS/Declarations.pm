@@ -489,11 +489,20 @@ class CSS::Declarations {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
             my \info = self.info($prop);
             next unless info.box;
-            my @edges = info.edges;
-            my @asts = @edges.map({ %prop-ast{$_} }).grep: *.defined;
-            my @prio = @asts.map( *<prio> ).unique;
-            if +@asts == 4 && +@prio == 1 {
-                # all four edges present at the same priority; consolidate
+            my @edges;
+            my @asts;
+            for info.edges -> \side {
+                with %prop-ast{side} {
+                    @edges.push: side;
+                    @asts.push: $_;
+                }
+                else {
+                    last;
+                }
+            }
+
+            if @asts > 1 && @asts.map( *<prio> ).unique == 1 {
+                # multiple edges present at the same priority; consolidate
                 %prop-ast{$_}:delete for @edges;
 
                 @asts.pop
@@ -501,7 +510,7 @@ class CSS::Declarations {
 
                 %prop-ast{$prop} = { :expr[ @asts.map: *<expr> ] };
                 %prop-ast{$prop}<prio> = $_
-                    with @prio[0];
+                    with @asts[0]<prio>;
             }
         }
         for @compound-properties -> \prop {

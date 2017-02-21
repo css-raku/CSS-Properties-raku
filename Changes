@@ -1,6 +1,6 @@
 0.0.1 Improved write optmizations
-      For example now rewrites style: margin-bottom: 1pt; margin-left: 2pt;
-      as "margin: 1pt 2pt"
+      For example now rewrites style: margin-top: 1pt; margin-right: 2pt;
+      as "margin:1pt 2pt"
 0.0.4 CSS::Declarations:
      - allow list assignment. E.g.: $css.new: :background-position<top left>;
        shortcut for: $css.new: :background-position("top left");
