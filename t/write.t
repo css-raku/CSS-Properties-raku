@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 22;
+plan 25;
 
 use CSS::Declarations;
 
@@ -25,7 +25,8 @@ $css = CSS::Declarations.new( :style("border: red solid 1px"));
 is $css.write, "border:1px solid red;", "compound edge";
 my Str $style = $css.write(:!optimize);
 is $style, "border-bottom-color:red; border-bottom-style:solid; border-bottom-width:1px; border-left-color:red; border-left-style:solid; border-left-width:1px; border-right-color:red; border-right-style:solid; border-right-width:1px; border-top-color:red; border-top-style:solid; border-top-width:1px;", "compound edge - unoptimized";
-is CSS::Declarations.new( :$style ).write, "border:1px solid red;", "compound edge - re-optimized";
+$css = CSS::Declarations.new( :$style );
+is $css.write, "border:1px solid red;", "compound edge - re-optimized";
 
 $css = CSS::Declarations.new( :style("$style; border-top-width: 2px; border-top-color: rgb(255,0,0)") );
 is $css.write, "border:2px 1px 1px solid red;", "compound edge - partial optimization";
@@ -60,5 +61,10 @@ is $css.write, "margin:1pt 2pt;";
 
 $css = CSS::Declarations.new: :style("margin-top: 1pt; margin-left: 2pt;");
 is $css.write, "margin-left:2pt; margin-top:1pt;";
+
+$css = CSS::Declarations.new: :style("border-top:2px; border-right:solid red;");
+is $css.write, "border-right:solid red; border-top-width:2px;";
+is $css.write(:!color-names), "border-right:solid #F00; border-top-width:2px;";
+is $css.write(:!optimize), "border-right-color:red; border-right-style:solid; border-top-width:2px;";
 
 done-testing;

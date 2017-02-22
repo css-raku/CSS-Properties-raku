@@ -463,6 +463,19 @@ class CSS::Declarations {
         @children >= 2;
     }
 
+    method optimize( @ast ) {
+        my %prop-ast;
+        for @ast {
+            next unless .key eq 'property';
+            my %v = .value;
+            my $prop = %v<ident>:delete;
+            %prop-ast{$_} = %v with $prop;
+        }
+
+        self!optimize-ast(%prop-ast);
+        assemble-ast(%prop-ast);
+    }
+
     method !optimize-ast( %prop-ast ) {
         my \metadata = self!metadata;
         my @compound-properties = metadata.keys.sort.grep: { metadata{$_}<children> };
@@ -471,6 +484,7 @@ class CSS::Declarations {
         for %prop-ast.keys -> \prop {
             # delete properties that match the default value
             my \info = self.info(prop);
+
             with %prop-ast{prop}<expr> {
                 my \val = .[0];
                 my \default = self.to-ast: self!default(prop);
@@ -502,7 +516,7 @@ class CSS::Declarations {
             }
 
             if @asts > 1 && @asts.map( *<prio> ).unique == 1 {
-                # multiple edges present at the same priority; consolidate
+                # consecutive edges present at the same priority; consolidate
                 %prop-ast{$_}:delete for @edges;
 
                 my constant DefaultIdx = [Mu, Mu, 0, 0, 1];
@@ -555,12 +569,32 @@ class CSS::Declarations {
                             'expr:'~$_ => sub-prop<expr>;
                         } ];
                         %ast<prio> = $_
-                            when $_ ~~ 'important';
+                            when 'important';
                         %prop-ast{prop} = %ast;
                     }
                 }
             }
         }
+        %prop-ast;
+    }
+
+    sub assemble-ast(%prop-ast) {
+        with %prop-ast<font> {
+            # reinsert font '/' operator if needed...
+            with .<expr> {
+                # e.g.: font: italic bold 10pt/12pt times-roman;
+                $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ];
+            }
+        }
+
+        #| assemble property list
+        my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
+            my %property = %prop-ast{prop};
+            %property.push: 'ident' => prop;
+            %property;
+        };
+        
+        :@declaration-list;
     }
 
     #| return an AST for the declarations.
@@ -586,25 +620,10 @@ class CSS::Declarations {
             }
         }
 
-        self!optimize-ast: %prop-ast
+        self!optimize-ast(%prop-ast)
             if $optimize;
 
-        with %prop-ast<font> {
-            # reinsert font '/' operator if needed...
-            with .<expr> {
-                # e.g.: font: italic bold 10pt/12pt times-roman;
-                $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ];
-            }
-        }
-
-        #| assemble property list
-        my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
-            my %property = %prop-ast{prop};
-            %property.push: 'ident' => prop;
-            %property;
-        };
-        
-        :@declaration-list;
+        assemble-ast(%prop-ast);
     }
 
     #| write a set of declarations. By default, it is formatted as a single-line,
