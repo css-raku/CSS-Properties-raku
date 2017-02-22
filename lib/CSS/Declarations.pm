@@ -505,8 +505,10 @@ class CSS::Declarations {
                 # multiple edges present at the same priority; consolidate
                 %prop-ast{$_}:delete for @edges;
 
+                my constant DefaultIdx = [Mu, Mu, 0, 0, 1];
                 @asts.pop
-                    while +@asts > 1 && same( |@asts.tail(2) );
+                while +@asts > 1
+                && same( @asts.tail, @asts[ DefaultIdx[+@asts] ] );
 
                 %prop-ast{$prop} = { :expr[ @asts.map: *<expr> ] };
                 %prop-ast{$prop}<prio> = $_

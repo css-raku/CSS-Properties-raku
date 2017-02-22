@@ -28,7 +28,7 @@ is $style, "border-bottom-color:red; border-bottom-style:solid; border-bottom-wi
 is CSS::Declarations.new( :$style ).write, "border:1px solid red;", "compound edge - re-optimized";
 
 $css = CSS::Declarations.new( :style("$style; border-top-width: 2px; border-top-color: rgb(255,0,0)") );
-is $css.write, "border:2px 1px solid red;", "compound edge - partial optimization";
+is $css.write, "border:2px 1px 1px solid red;", "compound edge - partial optimization";
 
 $css = CSS::Declarations.new( :style("margin-top: 0; margin-right: 0mm; margin-left: 2pt") );
 is $css.write, "margin-left:2pt;", "optimization of default values";
