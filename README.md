@@ -54,8 +54,9 @@ say $css.font<font-family>; # 'Helvetica;
 The simplest ways of setting a property is to assign a string value.  The value will be parsed as CSS. This works for both simple and container properties. Unit values are also recognized. Also the type and value can be assigned as a pair.
 
 ```
+use CSS::Declarations;
 use CSS::Declarations::Units;
-my $css = (require CSS::Declarations).new;
+my CSS::Declarations $css .= new;
 
 # assign to container
 $css.font = "14pt Helvetica";
