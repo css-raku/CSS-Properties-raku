@@ -127,7 +127,7 @@ Most properties have a default value. If a property is reset to its default valu
 
 A child class can inherit from one or more parent classes. This follows CSS standards:
 
-- Note all properties are inherited by default; for example `color` is inherited, but `margin` is not.
+- all properties are inherited by default; for example `color` is inherited, but `margin` is not.
 
 - the `inherit` keyword can be used in the child property to ensure inheritance.
 
@@ -135,16 +135,20 @@ A child class can inherit from one or more parent classes. This follows CSS stan
 
 - the `!important` modifier can be used in parent properties to force the parent value to override the child. The property becomes 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
 
+To inherit a css object or style string:
+
+- pass it as a `:inherit` option, when constructing the object, or
+
+- use the `inherit` method
+
 ```
 use CSS::Declarations;
 
-my $parent-css = CSS::Declarations.new: :style("margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important");
+my $inherit = "margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important";
 
-my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :inherit($parent-css);
+my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :$inherit;
 
-say $parent-css.important("color"); # True
 say $css.color; # #FF0000 (red)
-
 say $css.handling("margin-left");   # inherit
 say $css.margin-left; # 15pt
 ```
