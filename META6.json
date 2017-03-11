@@ -1,6 +1,7 @@
 {
-    "perl"        : "6c",
+    "perl"        : "6.*",
     "name"        : "CSS::Declarations",
+    "tags"        : ["css"],
     "version"     : "0.1.2",
     "auth"        : "github:p6-css",
     "description" : "CSS property-list manipulation library",
