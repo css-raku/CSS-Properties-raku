@@ -146,22 +146,18 @@ class CSS::Declarations::Box {
     }
 
     method save {
-        my $em = $!font.em;
-        my $ex = $!font.ex;
-        my $font-weight = $!font.weight;
         @!save.push: {
-            :$!width, :$!height, :$em, :$ex, :$font-weight,
+            :$!width, :$!height, :$!font,
         }
+        $!font = $!font.clone;
     }
 
     method restore {
         if @!save {
             with @!save.pop {
-                $!width       = .<width>;
-                $!height      = .<height>;
-                $!font.em     = .<em>;
-                $!font.ex     = .<ex>;
-                $!font.weight = .<font-weight>;
+                $!width    = .<width>;
+                $!height   = .<height>;
+                $!font     = .<font>;
             }
         }
     }
