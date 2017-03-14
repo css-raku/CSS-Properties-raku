@@ -20,6 +20,7 @@ class CSS::Declarations::Font {
 
     submethod TWEAK(Str :$font-style) {
         self.font-style = $_ with $font-style;
+        self.setup;
     }
 
     #| sets/gets the css font property
@@ -74,7 +75,7 @@ class CSS::Declarations::Font {
         }
     }
 
-    method !font-length($_) returns Numeric {
+    method font-length($_) returns Numeric {
         if $_ ~~ Numeric {
             .?type ~~ 'percent'
                 ?? $!em * $_ / 100
@@ -103,7 +104,7 @@ class CSS::Declarations::Font {
         $!family = $css.font-family // 'arial';
         $!style = $css.font-style;
         $!weight = self!weight($css.font-weight);
-        $!em = self!font-length($css.font-size);
+        $!em = self.font-length($css.font-size);
 
         $!leading = do given $css.line-height {
             when .type eq 'num'     { $_ * $!em }

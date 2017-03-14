@@ -16,7 +16,7 @@ class CSS::Declarations::Box {
     has Array $!margin;
 
     use CSS::Declarations::Font;
-    has CSS::Declarations::Font $.font is rw handles <em ex>;
+    has CSS::Declarations::Font $.font is rw handles <em ex font-length>;
     has CSS::Declarations $.css;
 
     has Hash @.save;
@@ -143,79 +143,6 @@ class CSS::Declarations::Box {
                 $!bottom = @v[Bottom] // $!top;
                 $!left   = @v[Left] // $!right
             });
-    }
-
-    method build-box($css, &build-content) {
-        my $top = self!length($css.top);
-        my $bottom = self!length($css.bottom);
-        my $left = self!length($css.left);
-        my $right = self!length($css.right);
-        my $width = self.css-width($css);
-        my $height = self.css-height($css);
-
-        my \height-max = do with $height {
-            $_
-        }
-        else {
-            my $max = $!height - ($top//0) - ($bottom//0);
-            for <padding-top padding-bottom border-top-width border-bottom-width> {
-                $max -= $_ with $css."$_"();
-            }
-            $max;
-        }
-
-        my \width-max = $width // do {
-            my $max = $!width - ($left//0) - ($right//0);
-            for <padding-left padding-right border-left-width border-right-width> {
-                $max -= $_ with $css."$_"();
-            }
-            $max;
-        }
-
-        my ($type, $content) = (.key, .value)
-            with &build-content( :width(width-max), :height(height-max) );
-
-        $width //= width-max if $left.defined && $right.defined;
-        $width //= $content.content-width;
-        with self!length($css.min-width) -> \min {
-            $width = min if min > $width
-        }
-
-        $height //= $content.content-height;
-        with self!length($css.min-height) -> \min {
-            $height = min if min > $height
-        }
-
-        my Bool \from-left = $left.defined;
-        unless from-left {
-            $left = $right.defined
-                ?? $!width - $right - $width
-                !! 0;
-        }
-
-        my Bool \from-top = $top.defined;
-        unless from-top {
-            $top = $bottom.defined
-                ?? $!height - $bottom - $height
-                !! 0;
-        }
-
-        #| adjust from PDF coordinates. Shift origin from top-left to bottom-left;
-        my \pdf-top = $!height - $top;
-        my \box = self.new: :$css, :$left, :top(pdf-top), :$width, :$height, :$.em, :$.ex, |($type => $content);
-
-        # reposition to outside of border
-        my Numeric @content-box[4] = box.Array.list;
-        my Numeric @border-box[4]  = box.border.list;
-        my \dx = from-left
-               ?? @content-box[Left]  - @border-box[Left]
-               !! @content-box[Right] - @border-box[Right];
-        my \dy = from-top
-               ?? @content-box[Top]    - @border-box[Top]
-               !! @content-box[Bottom] - @border-box[Bottom];
-
-        box.translate(dx, dy);
-        box;
     }
 
     method save {

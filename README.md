@@ -285,8 +285,11 @@ say $box.border-width;      # border-right - border-left
 say $box.width("border");   # border-width
 say $box.height("content"); # height of content box
 
-say $box.font.family;
-
+say $box.font.family;        # 'times-roman'
+# calculate some relative font lengths
+say $box.font-length(1.5em);    # 15
+say $box.font-length(200%);     # 20
+say $box.font-length('larger'); # 12
 ```
 
 - The box `new` constructor accepts:
