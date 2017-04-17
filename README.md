@@ -144,8 +144,8 @@ To inherit a css object or style string:
 use CSS::Declarations;
 
 my $inherit = "margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important";
-
-my $css = CSS::Declarations.new: :style("margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple"), :$inherit;
+my $style = "margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple";
+my $css = CSS::Declarations.new: :$style, :$inherit;
 
 say $css.color; # #FF0000 (red)
 say $css.handling("margin-left");   # inherit
@@ -246,11 +246,11 @@ operators. These are understood by the CSS::Declarations class.
 The '➕' and '➖' operators convert to the left-hand operand's units.
 
 ```
-use CSS::Declarations::Units :pt, :px, :in, :mm;
+use CSS::Declarations::Units :ops, :pt, :px, :in, :mm;
 my $css = (require CSS::Declarations).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
-say "%.2f mm".sprintf(0mm + $_) for $css.margin.list;
+say "%.2f mm".sprintf(0mm ➕ $_) for $css.margin.list;
 ```
 
 ## Box Model
