@@ -7,7 +7,7 @@
     "license"     : "Artistic-2.0",
     "description" : "CSS property manipulation library",
     "depends"     : [ "CSS::Module", "CSS::Writer", "Color" ],
-    "source-url"  : "git://github.com/p6-css/perl6-CSS-Declarations.git",
+    "source-url"  : "git://github.com/p6-css/CSS-Declarations-p6.git",
     "provides"    : {
         "CSS::Declarations" : "lib/CSS/Declarations.pm",
         "CSS::Declarations::Box" : "lib/CSS/Declarations/Box.pm",
