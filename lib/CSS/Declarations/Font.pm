@@ -111,6 +111,7 @@ class CSS::Declarations::Font {
             when 'normal'           { $!em * 1.2 }
             default                 { self.font-length($_) }
         }
+	self;
     }
 }
 
