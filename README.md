@@ -327,11 +327,11 @@ This returns all four corners of the given box, e.g.:
 
 This returns all four corners of the content box, e.g.:
 
-    my Numeric ($top, $right, $bottom, $left) = $box.Array;
+    my Numeric ($top, $right, $bottom, $left) = $box.content;
 
 These values are rw. The box can be both moved and resized, by adjusting this array.
 
-    $box.Array = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
+    $box.content = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
 
 Outer boxes, will grow or shrink to retain their original widths.
 
