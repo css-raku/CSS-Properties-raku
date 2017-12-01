@@ -7,7 +7,8 @@ class CSS::Declarations::Font {
     has Numeric $.ex is rw = $!em * 0.75;
     my subset FontWeight of Numeric where { $_ ~~ 100 .. 900 && $_ %% 100 }
     has FontWeight $.weight is rw = 400;
-    has Str $.family = 'times-roman';
+    has Str @!family = ['times-roman'];
+    method family { @!family[0] }
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has CSS::Declarations $.css = CSS::Declarations.new;
@@ -21,6 +22,26 @@ class CSS::Declarations::Font {
     submethod TWEAK(Str :$font-style) {
         self.font-style = $_ with $font-style;
         self.setup;
+    }
+
+    #| compute a fontconfig pattern for the font
+    method fc-pattern {
+        my Str $pat = @!family.join: ',';
+
+        $pat ~= ':slant=' ~ $!style
+            unless $!style eq 'normal';
+
+        unless $!weight == 400 {
+            my Str $weight = do given $!weight {
+                when * < 400 { 'light' }
+                when 400 { 'normal' }
+                when 500|600 { 'demibold' }
+                when 700 { 'bold' }
+                when * > 700 { 'black' }
+           }
+           $pat ~= ':weight=' ~ $weight;
+        }
+        $pat;
     }
 
     #| sets/gets the css font property
@@ -101,7 +122,20 @@ class CSS::Declarations::Font {
     }
 
     method setup(CSS::Declarations $css = $!css) {
-        $!family = $css.font-family // 'arial';
+        @!family = [];
+        with $css.font-family {
+            for .grep(* ne ',') {
+                if .type eq 'keyw' {
+                    $_ ~= ' ' with @!family.tail;
+                    @!family.tail ~= $_;
+                }
+                else {
+                    @!family.push: $_;
+                }
+            }
+        }
+        $_ = 'arial' without @!family[0];
+
         $!style = $css.font-style;
         $!weight = self!weight($css.font-weight);
         $!em = self.font-length($css.font-size);
