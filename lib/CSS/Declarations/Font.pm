@@ -26,7 +26,7 @@ class CSS::Declarations::Font {
     }
 
     #| compute a fontconfig pattern for the font
-    method fc-pattern {
+    method fontconfig-pattern {
         my Str $pat = @!family.join: ',';
 
         $pat ~= ':slant=' ~ $!style
