@@ -16,6 +16,6 @@ is $font.line-height, 12, 'line-height';
 is $font.length(15px), 11.25, 'length';
 is $font.fc-pattern, 'times-roman:slant=italic:weight=bold', 'fc-pattern';
 
-is CSS::Declarations::Font.new( :font-style("500 12px/30px Georgia, serif, Times") ).fc-pattern, 'Georgia serif,Times:weight=demibold', 'fc-pattern';
+is CSS::Declarations::Font.new( :font-style("500 condensed 12px/30px Georgia, serif, Times") ).fc-pattern, 'Georgia serif,Times:weight=medium:width=condensed', 'fc-pattern';
 
 done-testing;

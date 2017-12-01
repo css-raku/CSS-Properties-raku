@@ -11,6 +11,7 @@ class CSS::Declarations::Font {
     method family { @!family[0] }
     has Str $.style = 'normal';
     has Numeric $.line-height;
+    has Str $.stretch;
     has CSS::Declarations $.css = CSS::Declarations.new;
     method css is rw {
         Proxy.new(
@@ -31,16 +32,14 @@ class CSS::Declarations::Font {
         $pat ~= ':slant=' ~ $!style
             unless $!style eq 'normal';
 
-        unless $!weight == 400 {
-            my Str $weight = do given $!weight {
-                when * < 400 { 'light' }
-                when 400 { 'normal' }
-                when 500|600 { 'demibold' }
-                when 700 { 'bold' }
-                when * > 700 { 'black' }
-           }
-           $pat ~= ':weight=' ~ $weight;
-        }
+        $pat ~= ':weight='
+        #    000  100        200   300  400    500    600      700  800       900
+          ~ <thin extralight light book normal medium semibold bold extrabold black>[$!weight div 100]
+            unless $!weight == 400;
+
+        # [ultra|extra][condensed|expanded]
+        $pat ~= ':width=' ~ $!stretch.subst(/'-'/, '')
+            unless $!stretch eq 'normal';
         $pat;
     }
 
@@ -139,7 +138,7 @@ class CSS::Declarations::Font {
         $!style = $css.font-style;
         $!weight = self!weight($css.font-weight);
         $!em = self.font-length($css.font-size);
-
+        $!stretch = $css.font-stretch;
         $!line-height = do given $css.line-height {
             when .type eq 'num'     { $_ * $!em }
             when 'normal'           { $!em * 1.2 }
