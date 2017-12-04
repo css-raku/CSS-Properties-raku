@@ -88,8 +88,13 @@ class CSS::Declarations::Font {
             when 'lighter'        { max($!weight - 100, 100) }
             when 'bolder'         { min($!weight + 100, 900) }
             default {
-                warn "unhandled font-weight: $_";
-                400;
+                if /^ <[1..9]>00 $/ {
+                    .Int
+                }
+                else {
+                    warn "unhandled font-weight: $_";
+                    400;
+                }
             }
         }
     }
