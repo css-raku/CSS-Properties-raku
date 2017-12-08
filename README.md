@@ -255,7 +255,31 @@ say "%.2f mm".sprintf(0mm ➕ $_) for $css.margin.list;
 
 ## Box Model
 
-`CSS::Declarations::Box` is an abstract class for modelling Box elements.
+### Overview
+
+Excerpt from [CSS 2.2 Specification Chapter 8 - Box Model](https://www.w3.org/TR/CSS22/box.html#box-dimensions):
+
+![Box Model](doc/boxdim.png)
+
+The margin, border, and padding can be broken down into top, right, bottom, and left segments (e.g., in the diagram, "LM" for left margin, "RP" for right padding, "TB" for top border, etc.).
+
+The perimeter of each of the four areas (content, padding, border, and margin) is called an "edge", so each box has four edges:
+
+- *Content Edge* or *Inner Edge* - 
+  The content edge surrounds the rectangle given by the width and height of the box, which often depend on the element's rendered content. The four content edges define the box's content box.
+
+- *Padding Edge* -
+The padding edge surrounds the box padding. If the padding has 0 width, the padding edge is the same as the content edge. The four padding edges define the box's padding box.
+
+- *Border Edge* -
+The border edge surrounds the box's border. If the border has 0 width, the border edge is the same as the padding edge. The four border edges define the box's border box.
+
+- *Margin Edge or Outer Edge* -
+The margin edge surrounds the box margin. If the margin has 0 width, the margin edge is the same as the border edge. The four margin edges define the box's margin box.
+
+### Description
+
+`CSS::Declarations::Box` is an abstract class for modelling Box Model elements.
 
 ```
 use CSS::Declarations;
