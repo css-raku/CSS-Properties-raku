@@ -63,6 +63,7 @@ say $css.font<font-family>; # 'Helvetica;
 ```
 use CSS::Declarations;
 use CSS::Declarations::Units :pt;
+use Color;
 my CSS::Declarations $css .= new;
 
 # assign to container
