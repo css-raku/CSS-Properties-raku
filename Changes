@@ -1,3 +1,5 @@
+0.3.8
+   - Rename module CSS::Declarations -> CSS::Properties
 0.3.7
     - CSS::Declarations::measure replaces CSS::Declarations::Font::pt
     - Assigning Nil to a property now deletes it. 

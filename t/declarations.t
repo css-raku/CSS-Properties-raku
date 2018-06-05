@@ -2,21 +2,21 @@ use v6;
 use Test;
 plan 47;
 
-use CSS::Declarations;
-use CSS::Declarations::Property;
-use CSS::Declarations::Edges;
-use CSS::Declarations::Units :pt, :px;
+use CSS::Properties;
+use CSS::Properties::Property;
+use CSS::Properties::Edges;
+use CSS::Properties::Units :pt, :px;
 use Color;
 
-my $css = CSS::Declarations.new( :!warn, :border-top-color<red> );
+my $css = CSS::Properties.new( :!warn, :border-top-color<red> );
 is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
-isa-ok $margin-info, CSS::Declarations::Edges, 'box property';
+isa-ok $margin-info, CSS::Properties::Edges, 'box property';
 is-deeply [$margin-info.edges], ["margin-top", "margin-right", "margin-bottom", "margin-left"], 'edges property';
 
 my $margin-left-info = $css.info('margin-left');
-isa-ok $margin-left-info, CSS::Declarations::Property, 'simple property';
+isa-ok $margin-left-info, CSS::Properties::Property, 'simple property';
 is $margin-left-info.edge, 'margin', 'margin-left is a margin edge';
 
 is $css.azimuth, 'center', 'default azimuth';
@@ -81,7 +81,7 @@ is %border-top<border-top-style>, 'none', 'reset border top color';
 
 lives-ok { $css.info("background"); }, "info on a container property";
 
-$css = CSS::Declarations.new: :style("border-top-color:red");
+$css = CSS::Properties.new: :style("border-top-color:red");
 my $original-css = $css;
 $css = $css.clone;
 is ~$css, "border-top-color:red;", 'cloned css';
@@ -91,7 +91,7 @@ is ~$original-css, "border-top-color:red;", 'original css';
 
 # special handling of text-align. Default depends on direction
 
-$css = CSS::Declarations.new: :color<green>;
+$css = CSS::Properties.new: :color<green>;
 is $css.text-align, 'left', 'default text-align';
 $css.direction = 'rtl';
 is $css.text-align, 'right', 'default text-align (direction rtl)';

@@ -1,19 +1,19 @@
-# perl6-CSS-Declarations
+# perl6-CSS-Properties
 
-<a href="https://travis-ci.org/p6-css/CSS-Declarations-p6"><img src="https://travis-ci.org/p6-css/CSS-Declarations-p6.svg?branch=master"></a>
- <a href="https://ci.appveyor.com/project/dwarring/CSS-Declarations-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Declarations-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
+<a href="https://travis-ci.org/p6-css/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
+ <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
-CSS::Declarations is a class for parsing and generation of CSS property lists, including box-model, inheritance, and defaults.
+CSS::Properties is a class for parsing and generation of CSS property lists, including box-model, inheritance, and defaults.
 
 
 ## Basic Construction
 ```
 use v6;
-use CSS::Declarations::Units :pt;
-use CSS::Declarations;
+use CSS::Properties::Units :pt;
+use CSS::Properties;
 
 my $style = "color:red !important; padding: 1pt";
-my $css = CSS::Declarations.new( :$style );
+my $css = CSS::Properties.new( :$style );
 say $css.important("color"); # True
 $css.border-color = 'red';
 
@@ -33,9 +33,9 @@ say $css.Str; # border-color:red; color:red!important; margin:5pt; padding:1pt;
 - there are also some compound properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
 
 ```
-use CSS::Declarations;
+use CSS::Properties;
 
-my $css = CSS::Declarations.new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
+my $css = CSS::Properties.new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
 
 say $css.color.hex;       # (FF A5 00)
 say $css.color.type;      # 'rgb'
@@ -61,10 +61,10 @@ say $css.font<font-family>; # 'Helvetica;
 - Also the type and value can be assigned as a pair.
 
 ```
-use CSS::Declarations;
-use CSS::Declarations::Units :pt;
+use CSS::Properties;
+use CSS::Properties::Units :pt;
 use Color;
-my CSS::Declarations $css .= new;
+my CSS::Properties $css .= new;
 
 # assign to container
 $css.font = "14pt Helvetica";
@@ -85,22 +85,22 @@ say ~$css; # font:italic bold 14pt/16pt Helvetica;
 Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be configured via the :module option:
 
 ```
-use CSS::Declarations;
+use CSS::Properties;
 use CSS::Module::CSS1;
 use CSS::Module::CSS21;
 
 my $style = 'color: red; azimuth: left';
 
 my $module = CSS::Module::CSS1.module;
-my $css1 = CSS::Declarations.new( :$style, :$module);
+my $css1 = CSS::Properties.new( :$style, :$module);
 ## warnings: dropping unknown property: azimuth
 
 $module = CSS::Module::CSS21.module;
-my $css21 = CSS::Declarations.new( :$style, :$module);
+my $css21 = CSS::Properties.new( :$style, :$module);
 ## (no warnings)
 ```
 
-### '@font-face' Declarations
+### '@font-face' Properties
 
 `@font-face` is a sub-module of `CSS3`. To process a set of `@font-face` declarations, such as:
 
@@ -112,19 +112,19 @@ my $css21 = CSS::Declarations.new( :$style, :$module);
 ```
 
 ```
-use CSS::Declarations;
+use CSS::Properties;
 use CSS::Module::CSS3;
 
 my $style = "font-family: myFirstFont; src: url(sansation_light.woff)";
 my $module = CSS::Module::CSS3.module.sub-module<@font-face>;
-my $font-face-css = CSS::Declarations.new( :$style, :$module);
+my $font-face-css = CSS::Properties.new( :$style, :$module);
 ```
 
 ## Default values
 
 Most properties have a default value. If a property is reset to its default value it will be omitted from stringification:
 
-    my $css = (require CSS::Declarations).new;
+    my $css = (require CSS::Properties).new;
     say $css.background-image; # none
     $css.background-image = 'url(camellia.png)';
     say ~$css; # "background-image: url(camellia.png);"
@@ -135,7 +135,7 @@ Most properties have a default value. If a property is reset to its default valu
 
 Properties can be deleted via the `delete` method, or by assigning the property to `Nil`:
 
-    my CSS::Declarations $css .= new: :style("background-position:top left; border-top-color:red; border-bottom-color: green; color: blue");
+    my CSS::Properties $css .= new: :style("background-position:top left; border-top-color:red; border-bottom-color: green; color: blue");
     # delete background position
     $css.background-position = Nil;
     # delete all border colors
@@ -151,7 +151,7 @@ A child class can inherit from one or more parent classes. This follows CSS stan
 
 - `initial` will reset the child property to the default value
 
-- the `!important` modifier can be used in parent properties to force the parent value to override the child. The property remains 'important' in the child and will be passed on to any CSS::Declarations objects that inherit from it.
+- the `!important` modifier can be used in parent properties to force the parent value to override the child. The property remains 'important' in the child and will be passed on to any CSS::Properties objects that inherit from it.
 
 To inherit a css object or style string:
 
@@ -160,11 +160,11 @@ To inherit a css object or style string:
 - use the `inherit` method
 
 ```
-use CSS::Declarations;
+use CSS::Properties;
 
 my $parent-style = "margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important";
 my $style = "margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple";
-my $css = CSS::Declarations.new: :$style, :inherit($parent-style);
+my $css = CSS::Properties.new: :$style, :inherit($parent-style);
 
 say $css.color;                     # #FF0000 (red)
 say $css.handling("margin-left");   # inherit
@@ -182,8 +182,8 @@ The `.write` or `.Str` methods can be used to produce CSS. Properties are optimi
 - rgb masks are translated to color-names, where possible
 
 ```
-use CSS::Declarations;
-my $css = CSS::Declarations.new( :style("border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
+use CSS::Properties;
+my $css = CSS::Properties.new( :style("border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
 say $css.write;  # "border: 2pt; color: red;"
 ```
 
@@ -206,11 +206,11 @@ because all four borders had the common value `2pt`
 
 ASTs can also be directly optimized:
 ```
-use CSS::Declarations;
+use CSS::Properties;
 use CSS::Module::CSS3;
 use CSS::Writer;
 
-my $css = CSS::Declarations.new;
+my $css = CSS::Properties.new;
 my $module = CSS::Module::CSS3.module;
 my $actions = $module.actions.new;
 my $writer = CSS::Writer.new: :color-names, :terse;
@@ -222,11 +222,11 @@ say $writer.write(|%ast); # border:1px solid red;
 
 ## Property Meta-data
 
-The `info` method gives property specific meta-data, on all simple of compound properties. It returns an object of type CSS::Declarations::Property:
+The `info` method gives property specific meta-data, on all simple of compound properties. It returns an object of type CSS::Properties::Property:
 
 ```
-use CSS::Declarations;
-my $css = CSS::Declarations.new;
+use CSS::Properties;
+my $css = CSS::Properties.new;
 my $margin-info = $css.info("margin");
 say $margin-info.synopsis; # <margin-width>{1,4}
 say $margin-info.edges;    # [margin-top margin-right margin-bottom margin-left]
@@ -239,10 +239,10 @@ The `properties` method, gives a list of current properties. Only simple propert
 are returned. E.g. `font-family` is, if it has a value; but `font` isn't.
 
 ```
-use CSS::Declarations;
+use CSS::Properties;
 
 my $style = "margin-top: 10%; margin-right: 5mm; margin-bottom: auto";
-my $css = CSS::Declarations.new: :$style;
+my $css = CSS::Properties.new: :$style;
 
 for $css.properties -> $prop {
     my $val = $css."$prop"();
@@ -260,13 +260,13 @@ margin-right: 5 mm
 ## Length Units
 
 CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions, plus '➕' and '➖'
-operators. These are understood by the CSS::Declarations class.
+operators. These are understood by the CSS::Properties class.
 
 The '➕' and '➖' operators convert to the left-hand operand's units.
 
 ```
-use CSS::Declarations::Units :ops, :pt, :px, :in, :mm;
-my $css = (require CSS::Declarations).new: :margin[5pt, 10px, .1in, 2mm];
+use CSS::Properties::Units :ops, :pt, :px, :in, :mm;
+my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
 say "%.2f mm".sprintf(0mm ➕ $_) for $css.margin.list;
@@ -296,14 +296,14 @@ The border edge surrounds the box's border. If the border has 0 width, the borde
 - *Margin Edge or Outer Edge* -
 The margin edge surrounds the box margin. If the margin has 0 width, the margin edge is the same as the border edge. The four margin edges define the box's margin box.
 
-### `CSS::Declarations::Box`
+### `CSS::Properties::Box`
 
-`CSS::Declarations::Box` is an abstract class for modelling Box Model elements.
+`CSS::Properties::Box` is an abstract class for modelling Box Model elements.
 
 ```
-use CSS::Declarations;
-use CSS::Declarations::Box;
-use CSS::Declarations::Units :px, :pt, :em, :percent;
+use CSS::Properties;
+use CSS::Properties::Box;
+use CSS::Properties::Units :px, :pt, :em, :percent;
 
 my $style = q:to"END";
     width:   300px;
@@ -313,13 +313,13 @@ my $style = q:to"END";
     font:    italic bold 10pt/12pt times-roman;
     END
 
-my CSS::Declarations $css .= new: :$style;
+my CSS::Properties $css .= new: :$style;
 my $top    = 80pt;
 my $right  = 50pt;
 my $bottom = 10pt;
 my $left   = 10pt;
 
-my $box = CSS::Declarations::Box.new( :$top, :$left, :$bottom, :$right, :$css );
+my $box = CSS::Properties::Box.new( :$top, :$left, :$bottom, :$right, :$css );
 say $box.padding;           # dimensions of padding box;
 say $box.margin;            # dimensions of margin box;
 say $box.border-right;      # vertical position of right border
@@ -338,7 +338,7 @@ say $box.font-length('larger'); # 12
 
 #### new
 
-    my CSS::Declarations::Box.new( :$top, :$left, :$bottom, :$right, :$css );
+    my CSS::Properties::Box.new( :$top, :$left, :$bottom, :$right, :$css );
 
 The box `new` constructor accepts:
 
@@ -350,7 +350,7 @@ The box `new` constructor accepts:
 
     say "font-size is {$box.font.em}";
 
-The '.font' accessor returns an object of type `CSS::Declarations::Font`, with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font` and `fontconfig-pattern`.
+The '.font' accessor returns an object of type `CSS::Properties::Font`, with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font` and `fontconfig-pattern`.
 
 #### top, right, bottom, left
 
@@ -541,7 +541,7 @@ use v6;
 say <Name Default Inherit Type Synopsis>.join(' | ');
 say ('---' xx 5).join(' | ');
 
-my $css = (require CSS::Declarations).new;
+my $css = (require CSS::Properties).new;
 
 for $css.properties(:all).sort -> $name {
     with $css.info($name) {

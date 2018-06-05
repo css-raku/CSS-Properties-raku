@@ -2,10 +2,10 @@ use v6;
 use Test;
 plan 5;
 
-use CSS::Declarations;
+use CSS::Properties;
 
 my $style = 'font:italic bold 10pt/12pt times-roman;';
-my $css = CSS::Declarations.new: :$style;
+my $css = CSS::Properties.new: :$style;
 is $css.font-style, 'italic', 'font-style';
 is $css.font-weight, 'bold', 'font-weight';
 is $css.font-family, 'times-roman', 'font-family';

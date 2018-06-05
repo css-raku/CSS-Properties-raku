@@ -1,6 +1,6 @@
 use v6;
 use Test;
-use CSS::Declarations::Units :cm, :in, :mm, :pt, :px, :pc, :ops;
+use CSS::Properties::Units :cm, :in, :mm, :pt, :px, :pc, :ops;
 
 my $r = 1pt ➕ 2pt;
 is $r, '3', 'pt ➕ pt';

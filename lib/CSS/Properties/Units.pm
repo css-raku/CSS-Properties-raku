@@ -4,7 +4,7 @@ use v6;
 #| at the moment this is restricted to length units and only
 #| the '➕' and '➖' operators are handled.
 
-module CSS::Declarations::Units {
+module CSS::Properties::Units {
     my enum Scale is export(:Scale) « :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) »;
     role Type[$type] { method type{$type} }
     subset Length of Type is export where .type ~~ 'pt'|'pc'|'px'|'mm'|'cm'|'in';

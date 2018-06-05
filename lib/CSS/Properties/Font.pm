@@ -1,7 +1,7 @@
 use v6;
-class CSS::Declarations::Font {
-    use CSS::Declarations :measure;
-    use CSS::Declarations::Units :pt;
+class CSS::Properties::Font {
+    use CSS::Properties :measure;
+    use CSS::Properties::Units :pt;
 
     has Numeric $.em is rw = 10;
     has Numeric $.ex is rw = $!em * 0.75;
@@ -12,7 +12,7 @@ class CSS::Declarations::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Declarations $.css = CSS::Declarations.new;
+    has CSS::Properties $.css = CSS::Properties.new;
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -105,7 +105,7 @@ class CSS::Declarations::Font {
         }
     }
 
-    method setup(CSS::Declarations $css = $!css) {
+    method setup(CSS::Properties $css = $!css) {
         @!family = [];
         with $css.font-family {
             for .grep(* ne ',') {

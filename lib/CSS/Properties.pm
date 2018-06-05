@@ -1,16 +1,16 @@
 use v6;
 
-#| management class for a set of CSS::Declarations
-class CSS::Declarations:ver<0.3.7> {
+#| management class for a set of CSS Properties
+class CSS::Properties:ver<0.3.8> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
     use CSS::Writer:ver(v0.2.4+);
     use Color;
     use Color::Conversion;
-    use CSS::Declarations::Property;
-    use CSS::Declarations::Edges;
-    use CSS::Declarations::Units :Scale;
+    use CSS::Properties::Property;
+    use CSS::Properties::Edges;
+    use CSS::Properties::Units :Scale;
 
     my %module-metadata{CSS::Module};     # per-module metadata
     my %module-properties{CSS::Module};   # per-module property attributes
@@ -49,7 +49,7 @@ class CSS::Declarations:ver<0.3.7> {
                 }
              else {
                  0
-             }) does CSS::Declarations::Units::Type["pt"];
+             }) does CSS::Properties::Units::Type["pt"];
         }
         default { Nil }
     }
@@ -62,10 +62,10 @@ class CSS::Declarations:ver<0.3.7> {
                     # these shouldn't nest or cycle
                     %defs{$side} = $_ with make-property($m, $side);
                 }
-                CSS::Declarations::Edges.new( :$name, |%defs);
+                CSS::Properties::Edges.new( :$name, |%defs);
             }
             else {
-                CSS::Declarations::Property.new( :$name, |%defs );
+                CSS::Properties::Property.new( :$name, |%defs );
             }
         }
         else {
@@ -324,23 +324,23 @@ class CSS::Declarations:ver<0.3.7> {
             $color .= new: |($type => @channels);
         }
 
-        $color does CSS::Declarations::Units::Type[$type];
+        $color does CSS::Properties::Units::Type[$type];
     }
     multi method from-ast(Pair $v is copy where .key eq 'keyw') {
         state %cache;
         if $v.value eq 'transparent' {
             $v = 'rgba' => INIT Color.new: :r(0), :g(0), :b(0), :a(0)
         }
-        %cache{$v.value} //= $v.value but CSS::Declarations::Units::Type[$v.key]
+        %cache{$v.value} //= $v.value but CSS::Properties::Units::Type[$v.key]
     }
     method !set-type(\v, \type) {
         v ~~ Color|Hash|Array
-            ?? v does CSS::Declarations::Units::Type[type]
-            !! v but  CSS::Declarations::Units::Type[type];
+            ?? v does CSS::Properties::Units::Type[type]
+            !! v but  CSS::Properties::Units::Type[type];
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
-        r ~~ CSS::Declarations::Units::Type
+        r ~~ CSS::Properties::Units::Type
             ?? r
             !! self!set-type(r, $v.key);
     }
@@ -430,7 +430,7 @@ class CSS::Declarations:ver<0.3.7> {
         my $css = $.new( :$.module, :$style);
         $.inherit($css);
     }
-    multi method inherit(CSS::Declarations $css) {
+    multi method inherit(CSS::Properties $css) {
         for $css.properties -> \name {
             my \info = self.info(name);
             unless info.box {
@@ -456,7 +456,7 @@ class CSS::Declarations:ver<0.3.7> {
         }
     }
 
-    method !copy(CSS::Declarations $css) {
+    method !copy(CSS::Properties $css) {
         %!values{$_} = $css."$_"()
             for $css.properties;
     }

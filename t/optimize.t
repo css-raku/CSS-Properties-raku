@@ -2,11 +2,11 @@ use v6;
 use Test;
 plan 6;
 
-use CSS::Declarations;
+use CSS::Properties;
 use CSS::Module::CSS3;
 use CSS::Writer;
 
-my $css = CSS::Declarations.new;
+my $css = CSS::Properties.new;
 my $module = CSS::Module::CSS3.module;
 my $writer = CSS::Writer.new: :color-names, :terse;
 
@@ -23,7 +23,7 @@ for (
     is $writer.write(|$ast), (t.value//t.key), "optimised ast {t.value//t.key}";
     warn $_
         for $actions.warnings;
-    is CSS::Declarations.new( :style(t.key) ).Str, (t.value//t.key), "optimised css {t.value//t.key}";
+    is CSS::Properties.new( :style(t.key) ).Str, (t.value//t.key), "optimised css {t.value//t.key}";
 }
 
 done-testing;

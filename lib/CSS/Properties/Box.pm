@@ -1,7 +1,7 @@
 use v6;
 
-class CSS::Declarations::Box {
-    use CSS::Declarations::Units :pt;
+class CSS::Properties::Box {
+    use CSS::Properties::Units :pt;
     my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
     has Numeric $.top;
     has Numeric $.right;
@@ -12,9 +12,9 @@ class CSS::Declarations::Box {
     has Array $!border;
     has Array $!margin;
 
-    use CSS::Declarations::Font;
-    has CSS::Declarations::Font $.font is rw handles <font-length>;
-    has CSS::Declarations $.css;
+    use CSS::Properties::Font;
+    has CSS::Properties::Font $.font is rw handles <font-length>;
+    has CSS::Properties $.css;
 
     has Hash @.save;
 
@@ -30,8 +30,8 @@ class CSS::Declarations::Box {
         Numeric :$em = 12pt,
         Numeric :$ex = 0.75 * $em,
     ) {
-        $!css //= CSS::Declarations.new(:$style),
-        $!font //= CSS::Declarations::Font.new: :$em, :$ex, :$!css;
+        $!css //= CSS::Properties.new(:$style),
+        $!font //= CSS::Properties::Font.new: :$em, :$ex, :$!css;
         self!resize;
     }
 

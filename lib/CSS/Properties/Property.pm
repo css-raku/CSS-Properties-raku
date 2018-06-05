@@ -2,7 +2,7 @@ use v6;
 
 use CSS::Module;
 
-class CSS::Declarations::Property {
+class CSS::Properties::Property {
 
     has Str $.name;
     has Bool $.inherit;
@@ -16,7 +16,7 @@ class CSS::Declarations::Property {
     method box { False }
 
     multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :@!children, :$!edge = Str, :@!edges ) {
-        die "$!name css property should be composed via CSS::Declarations::Edges"
+        die "$!name css property should be composed via CSS::Properties::Edges"
             if $box && !self.box;
         # second entry is the compiled default value
          with $default {

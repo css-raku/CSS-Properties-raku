@@ -2,9 +2,9 @@ use v6;
 use Test;
 plan 14;
 
-use CSS::Declarations;
+use CSS::Properties;
 
-my $css = CSS::Declarations.new;
+my $css = CSS::Properties.new;
 
 nok $css.important('background-image');
 $css.important('background-image') = True;
@@ -27,7 +27,7 @@ nok $css.important('margin-bottom');
 nok $css.important('margin');
 ok $css.important('margin-top');
 
-$css = CSS::Declarations.new( :style("border-top: 1px red !important"));
+$css = CSS::Properties.new( :style("border-top: 1px red !important"));
 $css.important("border-top-width") = False;
 ok $css.important("border-top-color");
 nok $css.important("border-top-width");

@@ -2,11 +2,11 @@ use v6;
 use Test;
 plan 20;
 
-use CSS::Declarations;
-use CSS::Declarations::Units :pt;
-use CSS::Declarations::Box;
+use CSS::Properties;
+use CSS::Properties::Units :pt;
+use CSS::Properties::Box;
 
-my $css = CSS::Declarations.new;
+my $css = CSS::Properties.new;
 
 $css.padding = 5pt;
 $css.border-width = 3pt;
@@ -17,7 +17,7 @@ my $right  = 50e0pt;
 my $bottom = 0e0pt;
 my $left   = 0e0pt;
 
-my $box = CSS::Declarations::Box.new( :$top, :$left, :$bottom, :$right, :$css );
+my $box = CSS::Properties::Box.new( :$top, :$left, :$bottom, :$right, :$css );
 
 is-deeply $box.Array, [$top, $right, $bottom, $left], '.Array';
 is $box.padding, [$top+5, $right+5, $bottom-5, $left-5], '.padding';
@@ -46,7 +46,7 @@ is $box.padding, [$top-5, $right, $bottom-15, $left-10], 'move padding';
 $box.top += 5;
 is-deeply $box.Array, [$top-5, $right-5, $bottom-10, $left-5], '.resize';
 
-dies-ok { note CSS::Declarations::Box.new( :$top, :$left, :bottom($top+1), :$right, :$css )}, 'illegal initial size';
+dies-ok { note CSS::Properties::Box.new( :$top, :$left, :bottom($top+1), :$right, :$css )}, 'illegal initial size';
 
 dies-ok { $box.top = $box.bottom -5}, 'illegal resize';
 

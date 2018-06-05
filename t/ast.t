@@ -2,9 +2,9 @@ use v6;
 use Test;
 plan 4;
 
-use CSS::Declarations;
+use CSS::Properties;
 
-my $css = CSS::Declarations.new( :style("color:red !important; background-repeat: repeat-x; background-position: center; border-left-style: inherit") );
+my $css = CSS::Properties.new( :style("color:red !important; background-repeat: repeat-x; background-position: center; border-left-style: inherit") );
 is $css.ast(:!optimize), (:declaration-list[
                    {:expr[:keyw<center>], :ident<background-position>},
                    {:expr[:keyw<repeat-x>], :ident<background-repeat>},
