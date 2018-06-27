@@ -27,26 +27,29 @@ class CSS::Properties:ver<0.3.8> {
     has @.warnings;
     has Bool $.warn = True;
 
+    #| normalised point value
+    class NumPt is Num does CSS::Properties::Units::Type["pt"] {};
+
     our sub measure($_,
                     Numeric :$em = 12,
                     Numeric :$ex = $em * 3/4,
                     Numeric :$vw,
                     Numeric :$vh) is export(:measure) {
+        state %roles;
         when Numeric {
-            (given $_ // 0 {
-                    my Str $units = .?type // 'pt';
-                    my Numeric $scale = do given $units {
-                        when 'em' { $em }
-                        when 'ex' { $ex }
-                        when 'vw' { $vw // die 'Viewport width is unknown' }
-                        when 'vh' { $vh // die 'Viewport height is unknown' }
-                        when 'vmin' { min($vw // die 'Viewport dimensions are unknown', $vh) }
-                        when 'vmax' { max($vw // die 'Viewport dimensions are unknown', $vh) }
-                        when 'percent' { 0 }
-                        default { Scale.enums{$units} }
-                    } // die "unknown units: $units";
-                    (.Num * $scale).Num;
-                }) does CSS::Properties::Units::Type["pt"];
+            my Str $units = .?type // 'pt';
+            my Numeric $scale = do given $units {
+                when 'em' { $em }
+                when 'ex' { $ex }
+                when 'vw' { $vw // die 'Viewport width is unknown' }
+                when 'vh' { $vh // die 'Viewport height is unknown' }
+                when 'vmin' { min($vw // die 'Viewport dimensions are unknown', $vh) }
+                when 'vmax' { max($vw // die 'Viewport dimensions are unknown', $vh) }
+                when 'percent' { 0 }
+                default { Scale.enums{$units} }
+            } // die "unknown units: $units";
+            my $num = $_ // 0;
+            NumPt.new($num * $scale);
         }
         default { Nil }
     }
