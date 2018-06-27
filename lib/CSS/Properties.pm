@@ -17,12 +17,12 @@ class CSS::Properties:ver<0.3.8> {
 
     # contextual variables
     has Any %!values;         # property values
+    has Any %!default;
     has Array %!box;
     has Hash %!struct;
     has Bool %!important;
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
-    has %!default;
     has CSS::Module $.module = CSS::Module::CSS3.module; #| associated CSS module
     has @.warnings;
     has Bool $.warn = True;
@@ -33,9 +33,9 @@ class CSS::Properties:ver<0.3.8> {
                     Numeric :$vw,
                     Numeric :$vh) is export(:measure) {
         when Numeric {
-            (if $_ {
-                    my $units = .?type // 'pt';
-                    my $scale = do given $units {
+            (given $_ // 0 {
+                    my Str $units = .?type // 'pt';
+                    my Numeric $scale = do given $units {
                         when 'em' { $em }
                         when 'ex' { $ex }
                         when 'vw' { $vw // die 'Viewport width is unknown' }
@@ -46,10 +46,7 @@ class CSS::Properties:ver<0.3.8> {
                         default { Scale.enums{$units} }
                     } // die "unknown units: $units";
                     (.Num * $scale).Num;
-                }
-             else {
-                 0
-             }) does CSS::Properties::Units::Type["pt"];
+                }) does CSS::Properties::Units::Type["pt"];
         }
         default { Nil }
     }
