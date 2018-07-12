@@ -43,29 +43,29 @@ class CSS::Properties::Box {
         $!margin = Nil;
     }
 
-    multi method top {
+    multi method top is rw {
         Proxy.new(
             FETCH => sub ($) { $!top },
             STORE => sub ($, $!top) { self!resize },
             );
     }
 
-    multi method top(BoundingBox $box) {
+    multi method top(BoundingBox $box) is rw {
         self."$box"()[Top];
     }
 
-    multi method right { $!right }
-    multi method right(BoundingBox $box) {
+    multi method right is rw { $!right }
+    multi method right(BoundingBox $box) is rw {
         self."$box"()[Right];
     }
 
-    multi method bottom { $!bottom }
-    multi method bottom(BoundingBox $box) {
+    multi method bottom is rw { $!bottom }
+    multi method bottom(BoundingBox $box) is rw {
         self."$box"()[Bottom]
     }
 
-    multi method left { $!left }
-    multi method left(BoundingBox $box) {
+    multi method left is rw { $!left }
+    multi method left(BoundingBox $box) is rw {
         self."$box"()[Left]
     }
 
