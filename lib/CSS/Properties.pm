@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.3.8> {
+class CSS::Properties:ver<0.3.9> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
@@ -11,8 +11,6 @@ class CSS::Properties:ver<0.3.8> {
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
     use CSS::Properties::Units :Scale;
-    use CSS::Grammar::Test :json-eqv;
-
     my %module-metadata{CSS::Module};     # per-module metadata
     my %module-properties{CSS::Module};   # per-module property attributes
 
