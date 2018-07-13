@@ -29,10 +29,15 @@ class CSS::Properties:ver<0.3.9> {
     #| normalised point value
     class NumPt is Num does CSS::Properties::Units::Type["pt"] {};
 
-    my subset ZeroNum of Numeric where {$_ =~= 0};
-    multi sub css-eqv (Hash:D $a, Hash:D $b) {
+    my subset ZeroHash of Hash where {
+        # e.g. { :px(0) } === { :mm(0.0) }
+        given .values {
+            .elems == 1 && .[0] ~~ Numeric && .[0] =~= 0
+        }
+    };
+    multi sub css-eqv(ZeroHash:D $a, ZeroHash:D $b) { True }
+    multi sub css-eqv(Hash:D $a, Hash:D $b) {
 	if +$a != +$b { return False }
-	if $a.values[0] ~~ ZeroNum  && $b.values[0] ~~ ZeroNum { return True }
         for $a.kv -> $k, $v {
 	    unless $b{$k}:exists && css-eqv($a{$k}, $b{$k}) {
 		return False;
@@ -40,7 +45,7 @@ class CSS::Properties:ver<0.3.9> {
 	}
 	return True;
     }
-    multi sub css-eqv (List:D $a, List:D $b) {
+    multi sub css-eqv(List:D $a, List:D $b) {
 	if +$a != +$b { return Bool::False }
 	for (0 .. +$a-1) {
 	    return False
@@ -48,14 +53,14 @@ class CSS::Properties:ver<0.3.9> {
 	}
 	return True;
     }
-    multi sub css-eqv (Numeric:D $a, Numeric:D $b) { $a == $b }
-    multi sub css-eqv (Stringy $a, Stringy $b) { $a eq $b }
-    multi sub css-eqv (Bool $a, Bool $b) { $a == $b }
-    multi sub css-eqv (Any $a, Any $b) is default {
-        return css-eqv( %$a, $b) if $a.isa(Pair);
-        return css-eqv( $a, %$b) if $b.isa(Pair);
-        return True if !$a.defined && !$b.defined;
-	return False;
+    multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
+    multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
+    multi sub css-eqv(Bool $a, Bool $b) { $a == $b }
+    multi sub css-eqv(Any $a, Any $b) is default {
+        when $a.isa(Pair) { css-eqv( %$a, $b) }
+        when $b.isa(Pair) { css-eqv( $a, %$b) }
+        when !$a.defined && !$b.defined { True }
+	default { False }
     }
     our sub measure($_,
                     Numeric :$em = 12,
