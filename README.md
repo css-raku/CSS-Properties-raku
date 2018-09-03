@@ -261,17 +261,17 @@ margin-right: 5 mm
 
 ## Length Units
 
-CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions, plus '➕' and '➖'
+CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions, plus `+css` and `-css` infix operators.
 operators. These are understood by the CSS::Properties class.
 
-The '➕' and '➖' operators convert to the left-hand operand's units.
+The `+css` and `-css` operators convert to the left-hand operand's units.
 
 ```
 use CSS::Properties::Units :ops, :pt, :px, :in, :mm;
 my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
-say "%.2f mm".sprintf(0mm ➕ $_) for $css.margin.list;
+say "%.2f mm".sprintf(0mm +css $_) for $css.margin.list;
 ```
 
 ## Box Model

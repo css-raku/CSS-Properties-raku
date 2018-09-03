@@ -31,31 +31,27 @@ class CSS::Properties:ver<0.3.9> {
 
     my subset ZeroHash of Hash where {
         # e.g. { :px(0) } === { :mm(0.0) }
-        given .values {
-            .elems == 1 && .[0] ~~ Numeric && .[0] =~= 0
-        }
+        with .values[0] { $_ ~~ Numeric && $_ =~= 0 }
     };
     multi sub css-eqv(ZeroHash:D $a, ZeroHash:D $b) { True }
     multi sub css-eqv(Hash:D $a, Hash:D $b) {
 	if +$a != +$b { return False }
         for $a.kv -> $k, $v {
-	    unless $b{$k}:exists && css-eqv($a{$k}, $b{$k}) {
-		return False;
-	    }
+            return False
+                unless $b{$k}:exists && css-eqv($v, $b{$k});
 	}
-	return True;
+	True;
     }
     multi sub css-eqv(List:D $a, List:D $b) {
-	if +$a != +$b { return Bool::False }
-	for (0 .. +$a-1) {
+	if +$a != +$b { return False }
+	for $a.kv -> $k, $v {
 	    return False
-		unless (css-eqv($a[$_], $b[$_]));
+		unless (css-eqv($v, $b[$k]));
 	}
-	return True;
+	True;
     }
     multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
     multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
-    multi sub css-eqv(Bool $a, Bool $b) { $a == $b }
     multi sub css-eqv(Any $a, Any $b) is default {
         when $a.isa(Pair) { css-eqv( %$a, $b) }
         when $b.isa(Pair) { css-eqv( $a, %$b) }
@@ -71,10 +67,10 @@ class CSS::Properties:ver<0.3.9> {
         when Numeric {
             my Str $units = .?type // 'pt';
             my Numeric $scale = do given $units {
-                when 'em' { $em }
-                when 'ex' { $ex }
-                when 'vw' { $vw // die 'Viewport width is unknown' }
-                when 'vh' { $vh // die 'Viewport height is unknown' }
+                when 'em'   { $em }
+                when 'ex'   { $ex }
+                when 'vw'   { $vw // die 'Viewport width is unknown' }
+                when 'vh'   { $vh // die 'Viewport height is unknown' }
                 when 'vmin' { min($vw // die 'Viewport dimensions are unknown', $vh) }
                 when 'vmax' { max($vw // die 'Viewport dimensions are unknown', $vh) }
                 when 'percent' { 0 }
@@ -196,7 +192,7 @@ class CSS::Properties:ver<0.3.9> {
 
     method !box-value(Str $prop, List $edges) is rw {
 	Proxy.new(
-	    FETCH => sub ($) {
+	    FETCH => -> $ {
                 %!box{$prop} //= do {
                     my $n = 0;
                     my @bound;
@@ -205,13 +201,10 @@ class CSS::Properties:ver<0.3.9> {
                     @bound;
                 }
             },
-	    STORE => sub ($,$v) {
-                if $v ~~ Nil {
-                    self.delete($prop);
-                }
-                else {
+	    STORE => -> $, $v {
+                with $v {
                     # expand and assign values to child properties
-                    my @v = $v.isa(List) ?? $v.list !! [$v];
+                    my @v = .isa(List) ?? .list !! $_;
                     @v[1] //= @v[0];
                     @v[2] //= @v[0];
                     @v[3] //= @v[1];
@@ -222,13 +215,16 @@ class CSS::Properties:ver<0.3.9> {
                             with self!coerce( @v[$n++], :$prop )
                     }
                 }
+                else {
+                    self.delete($prop);
+                }
 	    }
         );
     }
 
     method !struct-value(Str $prop, List $children) is rw {
 	Proxy.new(
-	    FETCH => sub ($) {
+	    FETCH => -> $ {
                 %!struct{$prop} //= do {
                     my $n = 0;
                     my %bound;
@@ -237,18 +233,16 @@ class CSS::Properties:ver<0.3.9> {
                     %bound;
                 }
             },
-	    STORE => sub ($, $rval) {
+	    STORE => -> $, $rval {
                 my %vals;
-                if $rval ~~ Nil {
-                    self.delete($prop);
-                }
-                elsif $rval ~~ Associative {
-                    %vals = %$rval;
-                }
-                else {
-                    with self.module.parse-property($prop, $rval, :$!warn) {
-                        my @props = self!get-props($prop, $_);
-                        %vals{.key} = .value for @props;
+                given $rval {
+                    when Nil         { self.delete($prop); }
+                    when Associative { %vals = .Hash; }
+                    default {
+                        with self.module.parse-property($prop, $_, :$!warn) -> $expr {
+                            my @props = self!get-props($prop, $expr);
+                            %vals{.key} = .value for @props;
+                        }
                     }
                 }
 
@@ -276,7 +270,7 @@ class CSS::Properties:ver<0.3.9> {
 
     method !item-value(Str $prop) is rw {
         Proxy.new(
-            FETCH => sub ($) {
+            FETCH => -> $ {
                 with %!values{$prop} {
                     $_
                 }
@@ -290,7 +284,7 @@ class CSS::Properties:ver<0.3.9> {
                     %!values{$prop} = self!default($prop)
                 }
             },
-            STORE => sub ($,$v) {
+            STORE => -> $,$v {
                 if $v ~~ Nil {
                     self.delete($prop);
                 }
@@ -304,8 +298,8 @@ class CSS::Properties:ver<0.3.9> {
 
     method !child-handling(List $children) is rw {
         Proxy.new(
-            FETCH => sub ($) { [&&] $children.map: { %!handling{$_} } },
-            STORE => sub ($,Str $h) {
+            FETCH => -> $ { [&&] $children.map: { %!handling{$_} } },
+            STORE => -> $, Str $h {
                 %!handling{$_} = $h
                     for $children.list;
             });
@@ -322,8 +316,8 @@ class CSS::Properties:ver<0.3.9> {
 
     method !child-importance(List $children) is rw {
         Proxy.new(
-            FETCH => sub ($) { [&&] $children.map: { %!important{$_} } },
-            STORE => sub ($,Bool $v) {
+            FETCH => -> $ { [&&] $children.map: { %!important{$_} } },
+            STORE => -> $, Bool $v {
                 %!important{$_} = $v
                     for $children.list;
             });
@@ -348,10 +342,9 @@ class CSS::Properties:ver<0.3.9> {
             if $type ~~ 'rgba'|'hsla';
         if $type eq 'hsla' {
             # convert hsla color to rgba
-            my Numeric \a = @channels.pop;
-            my %rgba = hsl2rgb(@channels);
-            %rgba<a> = a;
-            $color .= new: |%rgba;
+            my $a = @channels.pop;
+            my %rgb = hsl2rgb(@channels);
+            $color .= new: |%rgb, :$a;
         }
         else {
             $color .= new: |($type => @channels);
@@ -606,7 +599,7 @@ class CSS::Properties:ver<0.3.9> {
                 %prop-ast{$_}:exists
             }
 
-            next unless $.optimizable(prop, :kids(@children.Set));
+            next unless @children && $.optimizable(prop, :kids(@children.Set));
 
             # agregrate related children to a compound property, where possible.
             # -- if child properties are 'initial', or 'inherit', they all
@@ -616,10 +609,10 @@ class CSS::Properties:ver<0.3.9> {
 
             my %groups = @children.classify: {
                 given %prop-ast{$_} {
-                    when .<expr>.elems > 1 { 'multi' }
-                    when .<keyw> ~~ Handling {.<keyw>}    # 'default', 'initial'
-                    when .<prio> ~~ 'important' {.<prio>}
-                    default { 'normal' }
+                    when .<expr>.elems > 1      {'multi'}
+                    when .<keyw> ~~ Handling    {.<keyw>}     # 'default', 'initial'
+                    when .<prio> ~~ 'important' {'important'}
+                    default {'normal'}
                 }
             }
 
@@ -628,15 +621,14 @@ class CSS::Properties:ver<0.3.9> {
             %groups<multi>:delete;
 
             #| find largest consolidation group
-            my $type;
-            with %groups.pairs.sort(*.key).sort({+.value}).tail {
-                $type = .key
+            my $group = do with %groups.pairs.sort(*.key).sort({+.value}).tail {
+                .key
                     if + .value > 1;
             }
 
-            with $type {
+            with $group {
                 # all of the same type
-                given %groups{$type}.list -> @children {
+                given %groups{$_}.list -> @children {
                     when Handling {
                         %prop-ast{$_}:delete for @children;
                         %prop-ast{prop} = { :expr[ :keyw($_) ] };

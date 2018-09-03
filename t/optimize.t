@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 6;
+plan 8;
 
 use CSS::Properties;
 use CSS::Module::CSS3;
@@ -9,11 +9,13 @@ use CSS::Writer;
 my $css = CSS::Properties.new;
 my $module = CSS::Module::CSS3.module;
 my $writer = CSS::Writer.new: :color-names, :terse;
+constant Unchanged = Any;
 
 for (
     "border-bottom-color:red; border-bottom-style:solid; border-bottom-width:1px; border-left-color:red; border-left-style:solid; border-left-width:1px; border-right-color:red; border-right-style:solid; border-right-width:1px; border-top-color:red; border-top-style:solid; border-top-width:1px;" => "border:1px solid red;",
-    "border-top-width:5px!important;" => Any,
-    "border:5pt solid; border-color:red green blue yellow;" => Any,
+    "border-width:5pt 5px 5in 5mm;" => Unchanged,
+    "border-top-width:5px!important;" => Unchanged,
+    "border:5pt solid; border-color:red green blue yellow;" => Unchanged,
     ) -> \t {
     my $actions = $module.actions.new;
     my $p = $module.grammar.parse(t.key, :rule<declaration-list>, :$actions)

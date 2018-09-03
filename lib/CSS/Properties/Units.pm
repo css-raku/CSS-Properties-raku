@@ -18,13 +18,13 @@ module CSS::Properties::Units {
     sub postfix:<ex>(Numeric $v) is rw is export(:ex) { $v but Type['ex']  };
     sub postfix:<%>(Numeric $v) is rw is export(:percent) { $v but Type['percent']  };
 
-    multi sub infix:<➕>(Length $v, Length $n) is export(:ops) {
+    multi sub infix:<+css>(Length $v, Length $n) is export(:ops) {
         my \scale = $v.type eq $n.type
             ?? 1
             !! Scale.enums{$n.type} / Scale.enums{$v.type};
         ($v  +  $n * scale) but Type[$v.type];
     }
-    multi sub infix:<➖>(Length $v, Length $n) is export(:ops) {
+    multi sub infix:<-css>(Length $v, Length $n) is export(:ops) {
         my \scale = $v.type eq $n.type
             ?? 1
             !! Scale.enums{$n.type} / Scale.enums{$v.type};
