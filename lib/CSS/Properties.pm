@@ -25,6 +25,8 @@ class CSS::Properties:ver<0.3.9> {
     has CSS::Module $.module = CSS::Module::CSS3.module; #| associated CSS module
     has @.warnings;
     has Bool $.warn = True;
+    has Hash $!metadata;
+    has Hash $!properties;
 
     #| normalised point value
     class NumPt is Num does CSS::Properties::Units::Type["pt"] {};
@@ -103,7 +105,7 @@ class CSS::Properties:ver<0.3.9> {
 
     #| return module meta-data for a property
     method info(Str $prop) {
-        with %module-properties{$!module}{$prop} {
+        with $!properties{$prop} {
             $_;
         }
         else {
@@ -175,12 +177,9 @@ class CSS::Properties:ver<0.3.9> {
     submethod TWEAK( Str :$style, :$inherit = [], :$copy, :$declarations,
                      :$module, :$warn, # stop these leaking through to %props
                      *%props, ) {
-        with $!module.property-metadata {
-            %module-metadata{$!module} //= $_
-        }
-        else {
-            die "module {$!module.name} lacks meta-data"
-        };
+        $!metadata = %module-metadata{$!module} //= $!module.property-metadata
+            // die "module {$!module.name} lacks meta-data";
+        $!properties = %module-properties{$!module} //= {};
 
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
@@ -261,11 +260,10 @@ class CSS::Properties:ver<0.3.9> {
             );
     }
 
-    method !metadata { %module-metadata{$!module} }
     #| return the default value for the property
     method !default($prop) {
         %!default{$prop} //= self!coerce( .<default>[1] )
-            with self!metadata{$prop};
+            with $!metadata{$prop};
     }
 
     method !item-value(Str $prop) is rw {
@@ -490,7 +488,7 @@ class CSS::Properties:ver<0.3.9> {
     #| set a list of properties as hash pairs
     method set-properties(*%props) {
         for %props.pairs.sort -> \p {
-            if %module-metadata{$!module}{p.key} {
+            if $!metadata{p.key} {
                 self."{p.key}"() = $_ with p.value;
             }
             else {
@@ -537,11 +535,11 @@ class CSS::Properties:ver<0.3.9> {
 
     has Array $!compound-properties;
     method !compound-properties {
-        $!compound-properties //= [.keys.sort.grep: -> \k { .{k}<children> } with self!metadata];
+        $!compound-properties //= [.keys.sort.grep: -> \k { .{k}<children> } with $!metadata];
     }
 
     method !optimize-ast( %prop-ast ) {
-        my \metadata = self!metadata;
+        my \metadata = $!metadata;
         my %edges;
 
         for %prop-ast.keys.sort -> \prop {
@@ -710,13 +708,13 @@ class CSS::Properties:ver<0.3.9> {
 
     #| return all module properties
     method properties(:$all) {
-        ($all ?? %module-metadata{$!module} !! %!values).keys.sort;
+        ($all ?? $!metadata !! %!values).keys.sort;
     }
 
     #| delete property values from the list of populated properties
     method delete(*@props) {
         for @props -> Str $prop {
-            with self!metadata{$prop} {
+            with $!metadata{$prop} {
                 if .<box> {
                     $.delete($_) for .<edges>.list
                 }
@@ -732,7 +730,7 @@ class CSS::Properties:ver<0.3.9> {
     method dispatch:<.?>(\name, |c) is raw {
         self.can(name)
             ?? self."{name}"(|c)
-            !! do with self!metadata{name} { self!value($_, name, |c) } else { Nil }
+            !! do with $!metadata{name} { self!value($_, name, |c) } else { Nil }
     }
     method !value($_, \name, |c) is rw {
         .<children>
@@ -743,7 +741,7 @@ class CSS::Properties:ver<0.3.9> {
                     )
     }
     method FALLBACK(Str \name, |c) is rw {
-        with self!metadata{name} {
+        with $!metadata{name} {
             self!value($_, name, |c)
         }
         else {
