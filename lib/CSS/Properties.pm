@@ -15,14 +15,14 @@ class CSS::Properties:ver<0.3.9> {
     my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
-    has Any %!values;         # property values
+    has Any %!values handles <keys>;         # property values
     has Any %!default;
     has Array %!box;
     has Hash %!struct;
     has Bool %!important;
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
-    has CSS::Module $.module = CSS::Module::CSS3.module; #| associated CSS module
+    has CSS::Module $.module handles <parse-property> = CSS::Module::CSS3.module; #| associated CSS module
     has @.warnings;
     has Bool $.warn = True;
     has Hash $!metadata;
@@ -238,7 +238,7 @@ class CSS::Properties:ver<0.3.9> {
                     when Nil         { self.delete($prop); }
                     when Associative { %vals = .Hash; }
                     default {
-                        with self.module.parse-property($prop, $_, :$!warn) -> $expr {
+                        with self.parse-property($prop, $_, :$!warn) -> $expr {
                             my @props = self!get-props($prop, $expr);
                             %vals{.key} = .value for @props;
                         }
@@ -390,7 +390,7 @@ class CSS::Properties:ver<0.3.9> {
     has %!prop-cache; # cache, for performance
     method !coerce($val, Str :$prop) {
         my \expr = do with $prop && coerce-str($val) {
-            (%!prop-cache{$prop}{$_} //= $.module.parse-property($prop, $_, :$!warn))
+            (%!prop-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))
         }
         else {
             $val;
@@ -505,31 +505,35 @@ class CSS::Properties:ver<0.3.9> {
         $obj;
     }
 
-    # Avoid these serialization optimizations, which won't parse correctly:
-    #     font: bold;
-    #     font: bold Helvetica;
-    # Need a font-size to disambiguate, e.g.:
+    #| determine if it is advantageous to combine component properties
+    #| into compound properties, e.g. font-family font-style ... into font
+    proto sub optimizable(Str $compound-prop, :%props) { * }
+
+    # Avoid these font serialization optimizations, which won't parse correctly:
+    #     font: bold;            // font-weight or font-style only
+    #     font: bold Helvetica;  // ... + family-name
+    # Need a font-size or font-family to disambiguate, e.g.:
     #     font: bold medium Helvetica;
     #     font: medium Helvetica;
-    multi method optimizable('font', Set :$kids!
-                              where <font-size font-family>.Set ⊈ $kids ) {
-        False;
+    multi method optimizable('font', :%props (:$font-size, :$font-family, |c) ) {
+        $font-size.defined && $font-family.defined;
     }
 
-    multi method optimizable(Str $, Set :$kids!) is default {
-        +$kids >= 2;
+    # only worthwhile, if there's more than one component
+    multi method optimizable(Str $, :props(%p)) is default {
+        %p.elems >= 2;
     }
 
     method optimize( @ast ) {
         my %prop-ast;
-        for @ast {
-            next unless .key eq 'property';
+        for @ast.grep(*.key eq 'property') {
             my %v = .value;
             %prop-ast{$_} = %v
                 with %v<ident>:delete;
         }
 
         self!optimize-ast(%prop-ast);
+        tweak-ast(%prop-ast);
         assemble-ast(%prop-ast);
     }
 
@@ -590,14 +594,15 @@ class CSS::Properties:ver<0.3.9> {
                     with @asts[0]<prio>;
             }
         }
-        for self!compound-properties.list -> \prop {
+        for self!compound-properties.list -> \compound-prop {
             # top-down aggregation of compound properties. e.g. border-width, border-style => border
 
-            my @children = metadata{prop}<children>.list.grep: {
+            my @children = metadata{compound-prop}<children>.list.grep: {
                 %prop-ast{$_}:exists
             }
 
-            next unless @children && $.optimizable(prop, :kids(@children.Set));
+            my %props = %(@children.Set);
+            next unless @children && $.optimizable(compound-prop, :%props);
 
             # agregrate related children to a compound property, where possible.
             # -- if child properties are 'initial', or 'inherit', they all
@@ -629,16 +634,16 @@ class CSS::Properties:ver<0.3.9> {
                 given %groups{$_}.list -> @children {
                     when Handling {
                         %prop-ast{$_}:delete for @children;
-                        %prop-ast{prop} = { :expr[ :keyw($_) ] };
+                        %prop-ast{compound-prop} = { :expr[ :keyw($_) ] };
                     }
                     when 'important'|'normal' {
-                        my %ast = expr => [ @children.map: {
+                        my %ast = :expr[ @children.map: {
                             my \sub-prop = %prop-ast{$_}:delete;
                             'expr:'~$_ => sub-prop<expr>;
                         } ];
                         %ast<prio> = $_
                             when 'important';
-                        %prop-ast{prop} = %ast;
+                        %prop-ast{compound-prop} = %ast;
                     }
                 }
             }
@@ -646,16 +651,18 @@ class CSS::Properties:ver<0.3.9> {
         %prop-ast;
     }
 
-    sub assemble-ast(%prop-ast) {
-        with %prop-ast<font> {
-            # reinsert font '/' operator if needed...
-            with .<expr> {
-                # e.g.: font: italic bold 10pt/12pt times-roman;
-                $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ];
-            }
-        }
+    multi sub tweak-ast(% ( :%font! ( :$expr! is rw ))) {
+        # reinsert font '/' operator if needed...
+        # e.g.: font: italic bold 10pt/12pt times-roman;
+        $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ]
+            given $expr;
+    }
+    multi sub tweak-ast(%) is default {
+        # nothing to do
+    }
 
-        #| assemble property list
+    #| assemble property list
+    multi sub assemble-ast(%prop-ast) {
         my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
             my %property = %prop-ast{prop};
             %property.push: 'ident' => prop;
@@ -691,6 +698,7 @@ class CSS::Properties:ver<0.3.9> {
         self!optimize-ast(%prop-ast)
             if $optimize;
 
+        tweak-ast(%prop-ast);
         assemble-ast(%prop-ast);
     }
 

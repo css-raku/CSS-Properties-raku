@@ -2,6 +2,7 @@
    - Adjust to Rakudo 2018.06+, including unordered
      hash keys and rw proxy accessors
    - Added +css and -css as experimental infix operators
+   - Minor refactors to ast and optmise methods
 0.3.8
    - Rename module CSS::Declarations -> CSS::Properties
 0.3.7
