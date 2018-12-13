@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.3.9> {
+class CSS::Properties:ver<0.3.10> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
@@ -31,34 +31,31 @@ class CSS::Properties:ver<0.3.9> {
     #| normalised point value
     class NumPt is Num does CSS::Properties::Units::Type["pt"] {};
 
-    my subset ZeroHash of Hash where {
+    my subset ZeroHash where {
         # e.g. { :px(0) } === { :mm(0.0) }
         with .values[0] { $_ ~~ Numeric && $_ =~= 0 }
     };
-    multi sub css-eqv(ZeroHash:D $a, ZeroHash:D $b) { True }
-    multi sub css-eqv(Hash:D $a, Hash:D $b) {
-	if +$a != +$b { return False }
-        for $a.kv -> $k, $v {
+    multi sub css-eqv(%a, %b) {
+        return True if %a ~~ ZeroHash && %b ~~ ZeroHash;
+	if %a.elems != %b.elems { return False }
+        for %a.kv -> $k, $v {
             return False
-                unless $b{$k}:exists && css-eqv($v, $b{$k});
+                unless %b{$k}:exists && css-eqv($v, %b{$k});
 	}
 	True;
     }
-    multi sub css-eqv(List:D $a, List:D $b) {
-	if +$a != +$b { return False }
-	for $a.kv -> $k, $v {
+    multi sub css-eqv(@a, @b) {
+	if +@a != +@b { return False }
+	for @a.kv -> $k, $v {
 	    return False
-		unless (css-eqv($v, $b[$k]));
+		unless css-eqv($v, @b[$k]);
 	}
 	True;
     }
     multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
     multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
     multi sub css-eqv(Any $a, Any $b) is default {
-        when $a.isa(Pair) { css-eqv( %$a, $b) }
-        when $b.isa(Pair) { css-eqv( $a, %$b) }
-        when !$a.defined && !$b.defined { True }
-	default { False }
+        !$a.defined && !$b.defined
     }
     our sub measure($_,
                     Numeric :$em = 12,
@@ -234,8 +231,7 @@ class CSS::Properties:ver<0.3.9> {
             },
 	    STORE => -> $, $rval {
                 my %vals;
-                given $rval {
-                    when Nil         { self.delete($prop); }
+                with $rval {
                     when Associative { %vals = .Hash; }
                     default {
                         with self.parse-property($prop, $_, :$!warn) -> $expr {
@@ -243,6 +239,9 @@ class CSS::Properties:ver<0.3.9> {
                             %vals{.key} = .value for @props;
                         }
                     }
+                }
+                else {
+                    self.delete($prop);
                 }
 
                 for $children.list -> $prop {
@@ -282,13 +281,12 @@ class CSS::Properties:ver<0.3.9> {
                     %!values{$prop} = self!default($prop)
                 }
             },
-            STORE => -> $,$v {
-                if $v ~~ Nil {
-                    self.delete($prop);
+            STORE => -> $, $v {
+                with self!coerce( $v, :$prop ) {
+                    %!values{$prop} = $_;
                 }
                 else {
-                    %!values{$prop} = $_
-                        with self!coerce( $v, :$prop );
+                    self.delete($prop);
                 }
             }
         );
@@ -351,11 +349,11 @@ class CSS::Properties:ver<0.3.9> {
         $color does CSS::Properties::Units::Type[$type];
     }
     multi method from-ast(Pair $v is copy where .key eq 'keyw') {
-        state %cache;
-        if $v.value eq 'transparent' {
-            $v = 'rgba' => INIT Color.new: :r(0), :g(0), :b(0), :a(0)
-        }
-        %cache{$v.value} //= $v.value but CSS::Properties::Units::Type[$v.key]
+        state $cache //= %(
+            'transparent' => (Color
+                              but CSS::Properties::Units::Type['rgba']).new( :r(0), :g(0), :b(0), :a(0));
+        );
+        $cache{$v.value} //= $v.value but CSS::Properties::Units::Type[$v.key]
     }
     method !set-type(\v, \type) {
         v ~~ Color|Hash|Array
@@ -387,10 +385,10 @@ class CSS::Properties:ver<0.3.9> {
     multi sub coerce-str($_) is default {
         .Str if $_ ~~ Str|Numeric && ! .can('type');
     }
-    has %!prop-cache; # cache, for performance
+    has %!ast-cache{Str}; # cache, for performance
     method !coerce($val, Str :$prop) {
         my \expr = do with $prop && coerce-str($val) {
-            (%!prop-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))
+            (%!ast-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))
         }
         else {
             $val;
@@ -555,9 +553,7 @@ class CSS::Properties:ver<0.3.9> {
                 my \default = self.to-ast: self!default(prop);
 
                 %prop-ast{prop}:delete
-                    if (val.elems == 1
-                        ?? css-eqv(val, default[0])
-                        !! css-eqv(val, default));
+                    if css-eqv(val, default[0]);
             }
             %edges{info.edge}++ if info.edge;
         }
@@ -589,7 +585,11 @@ class CSS::Properties:ver<0.3.9> {
                     while +@asts > 1
                     && css-eqv( @asts.tail, @asts[ DefaultIdx[+@asts] ] );
 
-                %prop-ast{$prop} = { :expr[ @asts.map: *<expr> ] };
+                my @expr;
+                @expr.append: .<expr>.list
+                   for @asts;
+
+                %prop-ast{$prop} = { :@expr };
                 %prop-ast{$prop}<prio> = $_
                     with @asts[0]<prio>;
             }
@@ -690,8 +690,10 @@ class CSS::Properties:ver<0.3.9> {
         #| expressions
         for %!values.keys.sort -> \prop {
             with %!values{prop} -> \value {
-                my \ast = self.to-ast: value;
-                %prop-ast{prop}<expr> = [ ast ];
+                my $ast = self.to-ast: value;
+                $ast = [ $ast ]
+                    unless $ast ~~ List;
+                %prop-ast{prop}<expr> = $ast;
             }
         }
 

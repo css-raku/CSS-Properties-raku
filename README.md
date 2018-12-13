@@ -147,7 +147,7 @@ Properties can be deleted via the `delete` method, or by assigning the property 
 
 A child class can inherit from one or more parent classes. This follows CSS standards:
 
-- not all properties are inherited; for example `color` is inherited, but `margin` is not.
+- not all properties are inherited by default; for example `color` is, but `margin` is not.
 
 - the `inherit` keyword can be used in the child property to ensure inheritance.
 
@@ -179,22 +179,25 @@ The `.write` or `.Str` methods can be used to produce CSS. Properties are optimi
 
 - properties with default values are omitted
 
-- simple properties are consolidated to containers (e.g. `font-family` to `font`).
+- multiple component properties are consolidated to compound properties, where possible (e.g. `font-family` and `font-size`
+  are consolidated to `font`).
 
 - rgb masks are translated to color-names, where possible
 
 ```
 use CSS::Properties;
-my CSS::Properties $css .= new( :style("border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
-say $css.write;  # "border: 2pt; color: red;"
+my CSS::Properties $css .= new( :style("background-repeat:repeat; border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
+# - 'border-width' and 'border-style' are consolidated to the 'border' compound property
+# - rgb(255,0,0) is mapped to 'red'
+say $css.write;  # "border:2pt groove; color: red;"
 ```
 
 Notice that:
 
-- `border-style` was omitted because it has the default value
+- `background-repeat` was omitted because it has the default value
 
-- `border-width` has been consolidated to the `border` container property. This was possible
-because all four borders had the common value `2pt`
+- `border-style` and `border-width` have been consolidated to the `border` container property. This is possible
+because all four borders have common values
 
 - `color` has been translated from a color mask to a color
 
