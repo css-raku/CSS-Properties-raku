@@ -5,7 +5,7 @@ class CSS::Properties::PageBox
     is CSS::Properties::Box {
 
     use CSS::Properties::Units :mm, :in, :pt;
-    my Array enum PageSizes is export(:PageSizes) «
+    my List enum PageSizes is export(:PageSizes) «
 	    :A5(148mm, 210mm)
 	    :A4(210mm, 297mm)
 	    :A3(297mm, 420mm)
