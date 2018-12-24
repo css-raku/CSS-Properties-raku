@@ -15,11 +15,11 @@ class CSS::Properties:ver<0.3.10> {
     my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
-    has Any %!values handles <keys>;         # property values
-    has Any %!default;
+    has Any   %!values handles <keys>;    # property values
+    has Any   %!default;
     has Array %!box;
-    has Hash %!struct;
-    has Bool %!important;
+    has Hash  %!struct;
+    has Bool  %!important;
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
     has CSS::Module $.module handles <parse-property> = CSS::Module::CSS3.module; #| associated CSS module
