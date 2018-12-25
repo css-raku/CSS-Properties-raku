@@ -4,7 +4,8 @@ use CSS::Properties::Box :Edges;
 class CSS::Properties::PageBox
     is CSS::Properties::Box {
 
-    use CSS::Properties::Units :mm, :in, :pt;
+    use CSS::Properties::Units :ops;
+    use CSS::Properties::Units :mm, :in, :pt, :ops;
     my List enum PageSizes is export(:PageSizes) «
 	    :A5(148mm, 210mm)
 	    :A4(210mm, 297mm)
@@ -22,16 +23,17 @@ class CSS::Properties::PageBox
         my @padding = @( self.widths: $.css.padding );
         my @border  = @( self.widths: $.css.border-width );
         my @margin  = @( self.widths: $.css.margin );
-        my @box = $top, $left, $bottom, $right;
-
-        @box[$_] -= @padding[$_] + @border[$_] + @margin[$_]
-            for Top, Right;
-        @box[$_] += @padding[$_] + @border[$_] + @margin[$_]
-            for Bottom, Left;
+        my @box = ($top, $left, $bottom, $right);
+        for @padding, @border, @margin -> @b {
+            @box[$_] -= @b[$_]
+                for Top, Right;
+            @box[$_] += @b[$_]
+                for Bottom, Left;
+        }
         @box;
     }
 
-    method !page-rect(:$width = 595pt, :$height=842pt) is export(:page-rect) {
+    method !page-rect(:$width = 595pt, :$height = 842pt) is export(:page-rect) {
         # todo: see https://www.w3.org/TR/css3-page/
         # @top-left-corner etc
         # page-break-before, page-break-after etc
@@ -69,7 +71,9 @@ class CSS::Properties::PageBox
         ($page-height, $page-width) = ($page-width, $page-height)
             if $orientation eq 'landscape' && !$auto;
 
-        self!padding-box(0, 0, $page-width, $page-height);
+        self!padding-box($page-width - $page-width,   # united zero
+                         $page-height - $page-height, # united zero
+                         $page-width, $page-height);
     }
 
     submethod TWEAK(|c) {

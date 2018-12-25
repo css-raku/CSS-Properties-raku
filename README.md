@@ -1,7 +1,7 @@
 # perl6-CSS-Properties
 
-<a href="https://travis-ci.org/p6-css/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
- <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
+<a href="https://travis-ci.org/p6-/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
+ <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
 CSS::Properties is a class for parsing and generation of CSS property lists, including box-model, inheritance, and defaults.
 
@@ -264,17 +264,23 @@ margin-right: 5 mm
 
 ## Length Units
 
-CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions, plus `+css` and `-css` infix operators.
-operators. These are understood by the CSS::Properties class.
+CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions.
 
-The `+css` and `-css` operators convert to the left-hand operand's units.
+The `:ops` export overloads  `+` and `-` to perform unit
+calculations. `+css` and `-css` are also available as
+more explicit infix operators:
+
+All infix operators convert to the left-hand operand's units.
 
 ```
 use CSS::Properties::Units :ops, :pt, :px, :in, :mm;
 my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
-say "%.2f mm".sprintf(0mm +css $_) for $css.margin.list;
+say "%.2f mm".sprintf(0mm + $_) for $css.margin.list;
+
+# display padding in inches
+say "%.2f in".sprintf(0in +css $_) for $css.padding.list;
 ```
 
 ## Box Model
@@ -305,39 +311,37 @@ The margin edge surrounds the box margin. If the margin has 0 width, the margin 
 
 `CSS::Properties::Box` is an abstract class for modelling Box Model elements.
 
-```
-use CSS::Properties;
-use CSS::Properties::Box;
-use CSS::Properties::Units :px, :pt, :em, :percent;
+    use CSS::Properties::Box;
+    use CSS::Properties::Units :px, :pt, :em, :percent;
+    use CSS::Properties;
 
-my $style = q:to"END";
-    width:   300px;
-    border:  25px solid green;
-    padding: 25px;
-    margin:  25px;
-    font:    italic bold 10pt/12pt times-roman;
-    END
+    my $style = q:to"END";
+        width:   300px;
+        border:  25px solid green;
+        padding: 25px;
+        margin:  25px;
+        font:    italic bold 10pt/12pt times-roman;
+        END
 
-my CSS::Properties $css .= new: :$style;
-my $top    = 80pt;
-my $right  = 50pt;
-my $bottom = 10pt;
-my $left   = 10pt;
+    my CSS::Properties $css .= new: :$style;
+    my $top    = 80pt;
+    my $right  = 50pt;
+    my $bottom = 10pt;
+    my $left   = 10pt;
 
-my CSS::Properties::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
-say $box.padding;           # dimensions of padding box;
-say $box.margin;            # dimensions of margin box;
-say $box.border-right;      # vertical position of right border
-say $box.border-width;      # border-right - border-left
-say $box.width("border");   # border-width
-say $box.height("content"); # height of content box
+    my CSS::Properties::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
+    say $box.padding;           # dimensions of padding box;
+    say $box.margin;            # dimensions of margin box;
+    say $box.border-right;      # vertical position of right border
+    say $box.border-width;      # border-right - border-left
+    say $box.width("border");   # border-width
+    say $box.height("content"); # height of content box
 
-say $box.font.family;        # 'times-roman'
-# calculate some relative font lengths
-say $box.font-length(1.5em);    # 15
-say $box.font-length(200%);     # 20
-say $box.font-length('larger'); # 12
-```
+    say $box.font.family;        # 'times-roman'
+    # calculate some relative font lengths
+    say $box.font-length(1.5em);    # 15
+    say $box.font-length(200%);     # 20
+    say $box.font-length('larger'); # 12
 
 ### Box Methods
 
@@ -454,7 +458,7 @@ display | inline |  |  | inline \| block \| list-item \| inline-block \| table \
 elevation | level | Yes |  | \<angle\> \| below \| level \| above \| higher \| lower
 empty-cells | show | Yes |  | show \| hide
 float | none |  |  | left \| right \| none
-font |  | Yes | hash | [ [ \<‘font-style’\> \|\| \<font-variant-css21\> \|\| \<‘font-weight’\> \|\| \<‘font-stretch’\> ]? \<‘font-size’\> [ / \<‘line-height’\> ]? \<‘font-family’\> ] \| caption \| icon \| menu \| message-box \| small-caption \| status-bar
+font |  | Yes | hash | [ [ \<‘font-style’\> \|\| \<font-variant-21\> \|\| \<‘font-weight’\> \|\| \<‘font-stretch’\> ]? \<‘font-size’\> [ / \<‘line-height’\> ]? \<‘font-family’\> ] \| caption \| icon \| menu \| message-box \| small-caption \| status-bar
 font-family | depends on user agent | Yes |  | [ \<generic-family\> \| \<family-name\> ]\#
 font-feature-settings | normal | Yes |  | normal \| \<feature-tag-value\>\#
 font-kerning | auto | Yes |  | auto \| normal \| none

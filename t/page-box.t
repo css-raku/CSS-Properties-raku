@@ -1,46 +1,52 @@
 use v6;
 use Test;
-plan 15;
+plan 17;
 
 use CSS::Properties;
-use CSS::Properties::Units :pt, :mm;
 use CSS::Properties::PageBox;
+use CSS::Properties::Units :pt, :mm, :ops;
 
-my $css = CSS::Properties.new: :style("size: a4");
+my $css = CSS::Properties.new: :style("size: 200pt 300pt");
+sub pt(*@v) { [@v.map: { (0pt + $_).round }] }
+sub mm(*@v) { [@v.map: { (0mm + $_).round }] }
 
 my CSS::Properties::PageBox $box .= new( :$css );
 
-is-deeply $box.Array, [295e0, 208e0, 2e0, 2e0], '.Array';
+is-deeply pt(|$box.Array), [298, 198, 2, 2], '.Array';
 
 $css.border = 0pt;
 
-is-deeply $box.new(:$css).Array, [297e0, 210e0, 0e0, 0e0], '.Array';
+is-deeply pt(|$box.new(:$css).Array), [300, 200, 0, 0], '.Array';
 
-$css.margin = 3pt;
-$css.border-width = 2pt;
-$css.padding = 5pt;
-is $css.Str, "border-width:2pt; margin:3pt; padding:5pt; size:a4;", "css";
-$box .= new(:$css);
+$css.margin = 3mm;
+$css.border-width = 2mm;
+$css.padding = 5mm;
+$css.size = 'a4';
+is $css.Str, "border-width:2mm; margin:3mm; padding:5mm; size:a4;", "css";
+$box .= new(:$css, :units<mm>);
 
-is-deeply $box.margin, [297e0, 210e0, 0e0, 0e0], '.margin';
-is-deeply $box.border, [294e0, 207e0, 3e0, 3e0], '.border';
-is-deeply $box.padding, [292e0, 205e0, 5e0, 5e0], '.padding';
-is-deeply $box.content, [287e0, 200e0, 10e0, 10e0], '.content';
+is-deeply mm(|$box.margin), [297, 210, 0, 0], '.margin (mm)';
+is-deeply pt(|$box.margin), [842, 595, 0, 0], '.margin (pt)';
+is-deeply mm(|$box.border), [294, 207, 3, 3], '.border';
+is-deeply mm(|$box.padding), [292, 205, 5, 5], '.padding';
+is-deeply mm(|$box.content), [287, 200, 10, 10], '.content';
 
 $css .= new: :style("size: auto");
 $box .= new(:$css);
 
-is-deeply $box.margin, [842e0, 595e0, 0e0, 0e0], '.margin auto';
-is-deeply $box.border, [842e0, 595e0, 0e0, 0e0], '.border auto ';
-is-deeply $box.padding, [840e0, 593e0, 2e0, 2e0], '.padding auto ';
-is-deeply $box.content, [840e0, 593e0, 2e0, 2e0], '.content auto ';
+is-deeply pt(|$box.margin), [842, 595, 0, 0], '.margin auto';
+is-deeply pt(|$box.border), [842, 595, 0, 0], '.border auto';
+is-deeply pt(|$box.padding), [840, 593, 2, 2], '.padding auto';
+is-deeply pt(|$box.content), [840, 593, 2, 2], '.content auto';
 
-$box .= new: :$css, :width(200), :height(250);
+$css.padding = 2mm;
+$css.margin = 3mm;
+$box .= new: :$css, :width(200mm), :height(250mm);
 
-is-deeply $box.margin, [250e0, 200e0, 0e0, 0e0], '.margin auto';
-is-deeply $box.border, [250e0, 200e0, 0e0, 0e0], '.border auto ';
-is-deeply $box.padding, [248e0, 198e0, 2e0, 2e0], '.padding auto ';
-is-deeply $box.content, [248e0, 198e0, 2e0, 2e0], '.content auto ';
-
+is-deeply mm(|$box.margin), [250, 200, 0, 0], '.margin auto';
+is-deeply mm(|$box.border), [247, 197, 3, 3], '.border auto';
+is-deeply mm(|$box.padding), [246, 196, 4, 4], '.padding auto';
+is-deeply mm(|$box.content), [244, 194, 6, 6], '.content auto (mm)';
+is-deeply pt(|$box.content), [692, 551, 16, 16], '.content auto (pt)';
 
 done-testing;

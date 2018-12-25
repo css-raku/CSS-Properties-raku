@@ -1,7 +1,8 @@
 use v6;
 
 class CSS::Properties::Box {
-    use CSS::Properties::Units :pt;
+    use CSS::Properties;
+    use CSS::Properties::Units :pt, :ops;
     my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
     has Numeric $.top;
     has Numeric $.right;
@@ -156,11 +157,11 @@ class CSS::Properties::Box {
             });
     }
 
-    method move( \x = 0, \y = 0) {
+    method move( \x, \y) {
         self.Array = [y, x ];
     }
 
-    method translate( \x = 0, \y = 0) {
+    method translate( \x, \y) {
         self.Array = [ $!top + y, $!right + x ];
     }
 

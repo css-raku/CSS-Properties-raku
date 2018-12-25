@@ -1,4 +1,7 @@
 0.4.0
+   - Reintroduce '+' and '-' infix overloading for
+     units calculations. '+css' and '-css' are
+     still available as more explict operators.
    - Adding CSS::Properties::PageBox (WIP)
 0.3.10
    - Minor adjusments for Rakudo 2018.11+ Bleed
