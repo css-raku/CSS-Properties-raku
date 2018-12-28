@@ -1,10 +1,13 @@
+0.4.1
+   - Add measure() and units() methods. Allow for
+     variable base units.
 0.4.0
    - Reintroduce '+' and '-' infix overloading for
      units calculations. '+css' and '-css' are
      still available as more explict operators.
    - Adding CSS::Properties::PageBox (WIP)
 0.3.10
-   - Minor adjusments for Rakudo 2018.11+ Bleed
+   - Minor adjustments for Rakudo 2018.11+ Bleed
 0.3.9
    - Adjust to Rakudo 2018.06+, including unordered
      hash keys and rw proxy accessors

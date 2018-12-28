@@ -361,9 +361,25 @@ The box `new` constructor accepts:
 
 The '.font' accessor returns an object of type `CSS::Properties::Font`, with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font` and `fontconfig-pattern`.
 
+#### measure
+
+This method converts lengths to base units (default 'pt').
+
+    use CSS::Properties::Units :mm, :in, :pt, :px;
+    use CSS::Properties::Box;
+    use CSS::Properties;
+    my CSS::Properties::Box $box .= new;
+    # default base units is points
+    say [(1mm, 1in, 1pt, 1px).map: {$box.measure($_)}];
+    # produces: [2.8346pt 72pt 1pt 0.75pt]
+    # change base units to inches
+    $box .= new: :units<in>;
+    say [(1in, 72pt).map: {$box.measure($_)}];
+    # produces: [1in, 1in]
+
 #### top, right, bottom, left
 
-These methods return the positions of each of the four corners of the inner content box. They
+These methods return measured positions of each of the four corners of the inner content box. They
 are rw accessors, e.g.:
 
     $box.top += 5;
@@ -372,14 +388,14 @@ Outer boxes will grow and shrink, retaining their original width and height.
 
 #### padding, margin, border
 
-This returns all four corners of the given box, e.g.:
+This returns all four corners (measured) of the given box, e.g.:
 
     my Numeric ($top, $right, $bottom, $left) = $box.padding
 
 
 #### content
 
-This returns all four corners of the content box, e.g.:
+This returns all four corners (measured) of the content box, e.g.:
 
     my Numeric ($top, $right, $bottom, $left) = $box.content;
 
@@ -393,13 +409,13 @@ Outer boxes, will grow or shrink to retain their original widths.
 
      say "margin box is size {$box.margin-width} X {$box.margin-height}";
 
-This family of accessors return the width, or height of the given box.
+This family of accessors return the measured width, or height of the given box.
 
 #### [padding|margin|border|content]-[top|right|bottom|left]
 
      say "margin left, top is ({$box.margin-left}, {$box.margin-top})";
 
-This family of accessors return the x or y position of the given edge
+This family of accessors return the measured x or y position of the given edge
 
 #### translate, move
 

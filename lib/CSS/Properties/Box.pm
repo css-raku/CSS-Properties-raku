@@ -14,7 +14,7 @@ class CSS::Properties::Box {
     has Array $!margin;
 
     use CSS::Properties::Font;
-    has CSS::Properties::Font $.font is rw handles <font-length>;
+    has CSS::Properties::Font $.font is rw handles <font-size measure units>;
     has CSS::Properties $.css;
 
     has Hash @.save;
@@ -30,8 +30,9 @@ class CSS::Properties::Box {
         Str :$style = '',
         Numeric :$em = 12pt,
         Numeric :$ex = 0.75 * $em,
+        Str :$units = 'pt',
     ) {
-        $!css //= CSS::Properties.new(:$style),
+        $!css //= CSS::Properties.new(:$style, :$units),
         $!font //= CSS::Properties::Font.new: :$em, :$ex, :$!css;
         self!resize;
     }
@@ -82,12 +83,8 @@ class CSS::Properties::Box {
         box[Top] - box[Bottom]
     }
 
-    method !length($v) {
-        self.font.length($v);
-    }
-
     method !width($qty) {
-        { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty} // self!length($qty)
+        { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty} // self.measure($qty)
     }
 
     method widths(List $qtys) {
@@ -116,12 +113,12 @@ class CSS::Properties::Box {
     }
 
     method css-height($css = $!css) {
-        my Numeric $height = $_ with self!length($css.height);
-        with self!length($css.max-height) {
+        my Numeric $height = $_ with $.measure($css.height);
+        with $.measure($css.max-height) {
             $height = $_
                 if $height.defined && $height > $_;
         }
-        with self!length($css.min-height) {
+        with $.measure($css.min-height) {
             $height = $_
                 if $height.defined && $height < $_;
         }
@@ -129,12 +126,12 @@ class CSS::Properties::Box {
     }
 
     method css-width($css = $!css) {
-        my Numeric $width = $_ with self!length($css.width);
-        with self!length($css.max-width) {
+        my Numeric $width = $_ with $.measure($css.width);
+        with $.measure($css.max-width) {
             $width = $_
                 if !$width.defined || $width > $_;
         }
-        with self!length($css.min-width) {
+        with $.measure($css.min-width) {
             $width = $_
                 if $width.defined && $width < $_;
         }

@@ -4,9 +4,8 @@ use CSS::Properties::Box :Edges;
 class CSS::Properties::PageBox
     is CSS::Properties::Box {
 
-    use CSS::Properties::Units :ops;
     use CSS::Properties::Units :mm, :in, :pt, :ops;
-    my List enum PageSizes is export(:PageSizes) «
+    my enum PageSizes is export(:PageSizes) «
 	    :A5(148mm, 210mm)
 	    :A4(210mm, 297mm)
 	    :A3(297mm, 420mm)
