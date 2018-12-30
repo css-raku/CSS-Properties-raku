@@ -14,7 +14,7 @@ class CSS::Properties::Box {
     has Array $!margin;
 
     use CSS::Properties::Font;
-    has CSS::Properties::Font $.font is rw handles <font-size measure units em ex vw vh>;
+    has CSS::Properties::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
     has CSS::Properties $.css;
 
     has Hash @.save;
@@ -30,6 +30,7 @@ class CSS::Properties::Box {
         Str :$style = '',
         Numeric :$em = 12pt,
         Numeric :$ex = 0.75 * $em,
+        :font($),
         |c
     ) {
         $!css //= CSS::Properties.new(:$style, |c),
