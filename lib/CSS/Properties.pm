@@ -29,6 +29,10 @@ class CSS::Properties:ver<0.4.1> {
     has Hash $!properties;
     has Str $.units = 'pt';
     has Numeric $!scale;
+    has Numeric $.viewport-width;
+    method viewport-width { $!viewport-width // fail "viewport-width is unknown" }
+    has Numeric $.viewport-height;
+    method viewport-height { $!viewport-height // fail "viewport-height is unknown" }
 
     my subset ZeroHash where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -59,17 +63,16 @@ class CSS::Properties:ver<0.4.1> {
     method measure($_,
                     Numeric :$em = 12,
                     Numeric :$ex = $em * 3/4,
-                    Numeric :$vw,
-                    Numeric :$vh) {
+                  ) {
         when Numeric {
             my Str $units = .?type // $!units;
             my Numeric $scale = do given $units {
                 when 'em'   { $em }
                 when 'ex'   { $ex }
-                when 'vw'   { $vw // die 'Viewport width is unknown' }
-                when 'vh'   { $vh // die 'Viewport height is unknown' }
-                when 'vmin' { min($vw // die 'Viewport dimensions are unknown', $vh) }
-                when 'vmax' { max($vw // die 'Viewport dimensions are unknown', $vh) }
+                when 'vw'   { $.viewport-width }
+                when 'vh'   { $.viewport-height }
+                when 'vmin' { min($.viewport-width, $.viewport-height) }
+                when 'vmax' { max($.viewport-width, $.viewport-height) }
                 when 'percent' { 0 }
                 default { Scale.enums{$units} }
             } // die "unknown units: $units";
@@ -170,6 +173,7 @@ class CSS::Properties:ver<0.4.1> {
 
     submethod TWEAK( Str :$style, :$inherit = [], :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
+                     :viewport-width($), :viewport-height($),
                      *%props, ) {
         $!metadata = %module-metadata{$!module} //= $!module.property-metadata
             // die "module {$!module.name} lacks meta-data";

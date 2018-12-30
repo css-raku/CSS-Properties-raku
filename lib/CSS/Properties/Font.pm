@@ -12,7 +12,7 @@ class CSS::Properties::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <units> = CSS::Properties.new;
+    has CSS::Properties $.css handles <units vw vh> = CSS::Properties.new;
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },

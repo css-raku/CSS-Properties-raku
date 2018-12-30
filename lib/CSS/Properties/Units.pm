@@ -5,7 +5,7 @@ use v6;
 #| the '+' and '-' operators are handled.
 
 module CSS::Properties::Units {
-    my enum Scale is export(:Scale) « :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) »;
+    my enum Scale is export(:Scale) « :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0) »;
     role Type[$type] {
         method type{$type}
         method gist {self~ $type}
@@ -19,6 +19,8 @@ module CSS::Properties::Units {
     sub postfix:<in>(Numeric $v) is rw is export(:in) { $v but Type['in']  };
     sub postfix:<em>(Numeric $v) is rw is export(:em) { $v but Type['em']  };
     sub postfix:<ex>(Numeric $v) is rw is export(:ex) { $v but Type['ex']  };
+    sub postfix:<vw>(Numeric $v) is rw is export(:vw) { $v but Type['vw']  };
+    sub postfix:<vh>(Numeric $v) is rw is export(:vh) { $v but Type['vh']  };
     sub postfix:<%>(Numeric $v) is rw is export(:percent) { $v but Type['percent']  };
 
     multi sub infix:<+>(Length $v, Length $n) is export(:ops) {

@@ -1,6 +1,7 @@
 0.4.1
    - Add measure() and units() methods. Allow for
      variable base units.
+   - Add viewport-width and viewport-height attributes
 0.4.0
    - Reintroduce '+' and '-' infix overloading for
      units calculations. '+css' and '-css' are
