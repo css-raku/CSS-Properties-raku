@@ -84,8 +84,9 @@ class CSS::Properties::Box {
         box[Top] - box[Bottom]
     }
 
-    method !width($qty) {
-        { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty} // self.measure($qty)
+    method !width($qty is copy) {
+        $qty = $_ with { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty};
+        self.measure($qty);
     }
 
     method widths(List $qtys) {
