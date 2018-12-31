@@ -363,7 +363,7 @@ The '.font' accessor returns an object of type `CSS::Properties::Font`, with acc
 
 #### measure
 
-This method converts lengths to base units (default 'pt').
+This method converts various length units to normalized base units (default 'pt').
 
     use CSS::Properties::Units :mm, :in, :pt, :px;
     use CSS::Properties::Box;

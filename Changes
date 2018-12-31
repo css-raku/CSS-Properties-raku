@@ -2,10 +2,12 @@
    - Add measure() and units() methods. Allow for
      variable base units.
    - Add viewport-width and viewport-height attributes
+   - Renamed method widths to measurements
 0.4.0
    - Reintroduce '+' and '-' infix overloading for
      units calculations. '+css' and '-css' are
-     still available as more explict operators.
+     still available as more explict and strongly
+     typed operators.
    - Adding CSS::Properties::PageBox (WIP)
 0.3.10
    - Minor adjustments for Rakudo 2018.11+ Bleed

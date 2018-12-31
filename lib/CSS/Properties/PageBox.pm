@@ -19,10 +19,10 @@ class CSS::Properties::PageBox
 	»;
 
     method !padding-box($right, $bottom, $left, $top) {
-        my @padding = @( self.widths: $.css.padding );
-        my @border  = @( self.widths: $.css.border-width );
-        my @margin  = @( self.widths: $.css.margin );
-        my @box = ($top, $left, $bottom, $right);
+        my @padding = self.measurements: $.css.padding;
+        my @border  = self.measurements: $.css.border-width;
+        my @margin  = self.measurements: $.css.margin;
+        my @box = self.measurements: ($top, $left, $bottom, $right);
         for @padding, @border, @margin -> @b {
             @box[$_] -= @b[$_]
                 for Top, Right;
@@ -69,6 +69,28 @@ class CSS::Properties::PageBox
 
         ($page-height, $page-width) = ($page-width, $page-height)
             if $orientation eq 'landscape' && !$auto;
+
+        $_ = $.measure($_) for $page-width, $page-height;
+
+        if $auto {
+            # See [https://www.w3.org/TR/css-page-3/#variable-auto-sizing]
+            with $.measure($.css.max-width) {
+                $page-width = $_
+                    if $page-width > $_;
+            }
+            with $.measure($.css.min-width) {
+                $page-width = $_
+                    if $page-width < $_;
+            }
+            with $.measure($.css.max-height) {
+                $page-height = $_
+                    if $page-height > $_;
+            }
+            with $.measure($.css.min-height) {
+                $page-height = $_
+                   if $page-height < $_;
+            }
+        }
 
         self!padding-box($page-width - $page-width,   # united zero
                          $page-height - $page-height, # united zero

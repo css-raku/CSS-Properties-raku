@@ -90,7 +90,7 @@ class CSS::Properties::Box {
     }
 
     method measurements(List $qtys) {
-        [ $qtys.map: { self!width($_) } ]
+        $qtys.map: { self!width($_) };
     }
 
     method padding returns Array {
