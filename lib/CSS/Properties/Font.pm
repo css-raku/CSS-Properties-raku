@@ -12,7 +12,7 @@ class CSS::Properties::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <units viewport-width viewport-height> = CSS::Properties.new;
+    has CSS::Properties $.css handles <units viewport-width viewport-height Str> = CSS::Properties.new;
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -135,7 +135,7 @@ class CSS::Properties::Font {
     method find-font(Str $name = $.fontconfig-pattern) {
         my $cmd =  run('fc-match',  '-f', '%{file}', $name, :out, :err);
         given $cmd.err.slurp {
-            note $_ if $_;
+            note chomp($_) if $_;
         }
         my $file = $cmd.out.slurp;
         $file

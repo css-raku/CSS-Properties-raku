@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.4.1> {
+class CSS::Properties:ver<0.4.2> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;

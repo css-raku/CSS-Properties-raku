@@ -1,6 +1,8 @@
+0.4.2
+   - Add CSS::Properties::Font .Str method
 0.4.1
    - Add measure() and units() methods. Allow for
-     variable base units.
+     variable base units, (e.g. 'pt', or 'in').
    - Add viewport-width and viewport-height attributes
    - Renamed method widths to measurements
 0.4.0

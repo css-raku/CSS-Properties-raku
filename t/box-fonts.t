@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 9;
+plan 10;
 
 use CSS::Properties;
 use CSS::Properties::Font;
@@ -15,6 +15,7 @@ is $font.family, 'times-roman', 'font-family';
 is $font.line-height, 12, 'line-height';
 is $font.measure(15px), 11.25, 'measure';
 is $font.fontconfig-pattern, 'times-roman:slant=italic:weight=bold', 'fontconfig-pattern';
+is $font.Str, "font:{$font-style};", '$font.Str';
 
 is CSS::Properties::Font.new( :font-style("500 condensed 12px/30px Georgia, serif, Times") ).fontconfig-pattern, 'Georgia serif,Times:weight=medium:width=condensed', 'fontconfig-pattern';
 
