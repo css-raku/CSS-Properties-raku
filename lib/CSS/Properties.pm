@@ -23,7 +23,7 @@ class CSS::Properties:ver<0.4.2> {
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling;
     has CSS::Module $.module handles <parse-property> = CSS::Module::CSS3.module; #| associated CSS module
-    has @.warnings;
+    has Exception @.warnings;
     has Bool $.warn = True;
     has Hash $!metadata;
     has Hash $!properties;
@@ -171,7 +171,7 @@ class CSS::Properties:ver<0.4.2> {
         }
     }
 
-    submethod TWEAK( Str :$style, :$inherit = [], :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, :$inherit = [], :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
@@ -181,6 +181,7 @@ class CSS::Properties:ver<0.4.2> {
 
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
+        @declarations.append: .list with $ast;
         self!build-declarations(@declarations);
         self.inherit($_) for $inherit.list;
         self!copy($_) with $copy;
