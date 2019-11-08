@@ -12,9 +12,9 @@ is $css.measure(10pt), 10, '$css.measure(pt)';
 
 is '%0.2f'.sprintf($css.measure(10px)), '7.50', '$css.measure(px)';
 is '%0.2f'.sprintf($css.measure(1pc)), '12.00', '$css.measure(pc)';
-is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units::Type["em"])), '12.00', '$css.measure(em)';
-is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units::Type["em"], :em(15))), '15.00', '$css.measure(em)';
-is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units::Type["ex"])), '9.00', '$css.measure(ex)';
+is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units["em"])), '12.00', '$css.measure(em)';
+is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units["em"], :em(15))), '15.00', '$css.measure(em)';
+is '%0.2f'.sprintf($css.measure(1 does CSS::Properties::Units["ex"])), '9.00', '$css.measure(ex)';
 is '%0.2f'.sprintf($css.measure(.1vw)), '20.00', '$css.measure(vw)';
 is '%0.2f'.sprintf($css.measure(.1vh)), '10.00', '$css.measure(vh)';
 

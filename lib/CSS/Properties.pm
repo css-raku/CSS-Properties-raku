@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.4.2> {
+class CSS::Properties:ver<0.4.3> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
@@ -76,7 +76,7 @@ class CSS::Properties:ver<0.4.2> {
                 when 'percent' { 0 }
                 default { Scale.enums{$units} }
             } // die "unknown units: $units";
-           ($_ * $scale / $!scale) but CSS::Properties::Units::Type[$!units];
+           ($_ * $scale / $!scale) but CSS::Properties::Units[$!units];
         }
         default { Nil }
     }
@@ -115,14 +115,15 @@ class CSS::Properties:ver<0.4.2> {
 
         my @expr;
         for $expr.list {
-            if $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
+            when $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
                 # embedded property declaration
                 @props.push: ~$0 => .values[0]
             }
-            else {
+            when $prop-name eq 'font' && .<op> eqv '/' {
                 # filter out '/' operator, as in 'font:10pt/12pt times-roman'
-                @expr.push: $_
-                    unless $prop-name eq 'font' && .<op> eqv '/';
+            }
+            default {
+                @expr.push: $_;
             }
         }
 
@@ -349,23 +350,23 @@ class CSS::Properties:ver<0.4.2> {
             $color .= new: |($type => @channels);
         }
 
-        $color does CSS::Properties::Units::Type[$type];
+        $color does CSS::Properties::Units[$type];
     }
     multi method from-ast(Pair $v is copy where .key eq 'keyw') {
         state $cache //= %(
             'transparent' => (Color
-                              but CSS::Properties::Units::Type['rgba']).new( :r(0), :g(0), :b(0), :a(0));
+                              but CSS::Properties::Units['rgba']).new( :r(0), :g(0), :b(0), :a(0));
         );
-        $cache{$v.value} //= $v.value but CSS::Properties::Units::Type[$v.key]
+        $cache{$v.value} //= $v.value but CSS::Properties::Units[$v.key]
     }
     method !set-type(\v, \type) {
         v ~~ Color|Hash|Array
-            ?? v does CSS::Properties::Units::Type[type]
-            !! v but  CSS::Properties::Units::Type[type];
+            ?? v does CSS::Properties::Units[type]
+            !! v but  CSS::Properties::Units[type];
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
-        r ~~ CSS::Properties::Units::Type
+        r ~~ CSS::Properties::Units
             ?? r
             !! self!set-type(r, $v.key);
     }

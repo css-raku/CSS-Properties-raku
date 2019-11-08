@@ -6,8 +6,8 @@ use CSS::Properties;
 use CSS::Properties::PageBox;
 use CSS::Properties::Units :pt, :mm, :ops;
 
-sub pt(*@v) { [@v.map: { (0pt + $_).round }] }
-sub mm(*@v) { [@v.map: { (0mm + $_).round }] }
+sub pt(*@v) { [@v.map: { .scale("pt").round }] }
+sub mm(*@v) { [@v.map: { .scale("mm").round }] }
 
 my $css = CSS::Properties.new: :style("size: 200pt 300pt");
 my CSS::Properties::PageBox $box .= new( :$css );
