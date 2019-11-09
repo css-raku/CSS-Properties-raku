@@ -10,9 +10,13 @@ class CSS::Properties:ver<0.4.3> {
     use Color::Conversion;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Properties::Units :Lengths, :Colors, :&dimension;
+    use CSS::Properties::Units :Lengths, :&dimension;
     my %module-metadata{CSS::Module};     # per-module metadata
     my %module-properties{CSS::Module};   # per-module property attributes
+
+    my enum Colors is export(:Colors) «
+       :rgb :rgba :hsl :hsla
+    »;
 
     # contextual variables
     has Any   %!values handles <keys>;    # property values

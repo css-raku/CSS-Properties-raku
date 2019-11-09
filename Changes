@@ -1,6 +1,7 @@
 0.4.3
    - Renamed role CSS::Properties::Units::Type ->
-     CSS::Properties::Units. Added .scale() method
+     CSS::Properties::Units. Added .scale() method. Define Time, Angle and
+     Frequency units
 0.4.2
    - Add CSS::Properties::Font .Str method
 0.4.1

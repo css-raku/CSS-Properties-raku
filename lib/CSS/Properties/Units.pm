@@ -6,12 +6,16 @@ my enum Lengths is export(:Lengths) «
     :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
 »;
 my enum Resolutions «
-   :dpi(72.0) :dpcm(28.346)
+   :dpi(72.0) :dpcm(28.346) :dppx(.75)
 »;
 
-my enum Colors is export(:Colors) «
-   :rgb :rgba :hsl :hsla
+my enum Angles «
+   :deg(1.0) :turn(360.0) :rad(57.2958)
 »;
+
+my enum Time « :s(1.0) :ms(0.001) »;
+
+my enum Frequency « :hz(1.0) :khz(1000.0) »;
 
 my enum Percentages ('%' => 100);
 
@@ -46,6 +50,17 @@ role CSS::Properties::Units[\dimension, \units] {
 
     sub postfix:<dpi>(Numeric $v) is rw is export(:dpi) { $v but Units[Resolutions, 'dpi']  };
     sub postfix:<dpcm>(Numeric $v) is rw is export(:dpcm) { $v but Units[Resolutions, 'dpcm']  };
+    sub postfix:<dppx>(Numeric $v) is rw is export(:dppx) { $v but Units[Resolutions, 'dppx']  };
+
+    sub postfix:<turn>(Numeric $v) is rw is export(:turn) { $v but Units[Angles, 'turn']  };
+    sub postfix:<deg>(Numeric $v) is rw is export(:deg) { $v but Units[Angles, 'deg']  };
+    sub postfix:<rad>(Numeric $v) is rw is export(:rad) { $v but Units[Angles, 'rad']  };
+
+    sub postfix:<s>(Numeric $v) is rw is export(:s) { $v but Units[Time, 's']  };
+    sub postfix:<ms>(Numeric $v) is rw is export(:ms) { $v but Units[Time, 'ms']  };
+
+    sub postfix:<hz>(Numeric $v) is rw is export(:hz) { $v but Units[Frequency, 'hz']  };
+    sub postfix:<khz>(Numeric $v) is rw is export(:khz) { $v but Units[Frequency, 'khz']  };
 
     sub postfix:<%>(Numeric $v) is rw is export(:percent) { $v but Units[Percentages, 'percent']  };
 
@@ -75,7 +90,7 @@ role CSS::Properties::Units {
     use Color;
 
     sub dimension(\units) is export(:dimension) {
-        (Lengths, Resolutions, Colors, Percentages).first({.enums{units}:exists})
+        (Lengths, Resolutions, Percentages, Time, Frequency).first({.enums{units}:exists})
     }
     method value(\v, \units) {
         v ~~ Color|Hash|List
