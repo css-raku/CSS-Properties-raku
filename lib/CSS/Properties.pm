@@ -10,7 +10,7 @@ class CSS::Properties:ver<0.4.3> {
     use Color::Conversion;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Properties::Units :Scale;
+    use CSS::Properties::Units :Lengths, :Colors, :&dimension;
     my %module-metadata{CSS::Module};     # per-module metadata
     my %module-properties{CSS::Module};   # per-module property attributes
 
@@ -74,9 +74,9 @@ class CSS::Properties:ver<0.4.3> {
                 when 'vmin' { min($.viewport-width, $.viewport-height) }
                 when 'vmax' { max($.viewport-width, $.viewport-height) }
                 when 'percent' { 0 }
-                default { Scale.enums{$units} }
+                default { dimension($_).enums{$_} }
             } // die "unknown units: $units";
-           ($_ * $scale / $!scale) but CSS::Properties::Units[$!units];
+            CSS::Properties::Units.value($_ * $scale / $!scale, $!units);
         }
         default { Nil }
     }
@@ -187,7 +187,7 @@ class CSS::Properties:ver<0.4.3> {
         self.inherit($_) for $inherit.list;
         self!copy($_) with $copy;
         self.set-properties(|%props);
-        $!scale = Scale.enums{$!units};
+        $!scale = Lengths.enums{$!units};
     }
 
     method !box-value(Str $prop, List $edges) is rw {
@@ -350,25 +350,20 @@ class CSS::Properties:ver<0.4.3> {
             $color .= new: |($type => @channels);
         }
 
-        $color does CSS::Properties::Units[$type];
+        $color does CSS::Properties::Units[Colors, $type];
     }
     multi method from-ast(Pair $v is copy where .key eq 'keyw') {
         state $cache //= %(
             'transparent' => (Color
-                              but CSS::Properties::Units['rgba']).new( :r(0), :g(0), :b(0), :a(0));
+                              but CSS::Properties::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
         );
-        $cache{$v.value} //= $v.value but CSS::Properties::Units[$v.key]
-    }
-    method !set-type(\v, \type) {
-        v ~~ Color|Hash|Array
-            ?? v does CSS::Properties::Units[type]
-            !! v but  CSS::Properties::Units[type];
+        $cache{$v.value} //= CSS::Properties::Units.value($v.value, $v.key);
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
         r ~~ CSS::Properties::Units
             ?? r
-            !! self!set-type(r, $v.key);
+            !! CSS::Properties::Units.value(r, $v.key);
     }
     multi method from-ast(List $v) {
         $v.elems == 1

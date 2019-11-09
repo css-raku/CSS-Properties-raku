@@ -277,10 +277,7 @@ use CSS::Properties::Units :ops, :pt, :px, :in, :mm;
 my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
-say "%.2f mm".sprintf(0mm + $_) for $css.margin.list;
-
-# display padding in inches
-say "%.2f in".sprintf(0in +css $_) for $css.padding.list;
+say "%.2f mm".sprintf(.scale("mm")) for $css.margin.list;
 ```
 
 ## Box Model
