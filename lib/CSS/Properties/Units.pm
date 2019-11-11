@@ -90,7 +90,7 @@ role CSS::Properties::Units {
     use Color;
 
     sub dimension(\units) is export(:dimension) {
-        (Lengths, Resolutions, Percentages, Time, Frequency).first({.enums{units}:exists})
+        (Lengths, Resolutions, Percentages, Angles, Time, Frequency).first({.enums{units}:exists})
     }
     method value(\v, \units) {
         v ~~ Color|Hash|List

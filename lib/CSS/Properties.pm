@@ -11,12 +11,12 @@ class CSS::Properties:ver<0.4.3> {
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
     use CSS::Properties::Units :Lengths, :&dimension;
+    use Method::Also;
+
+    my enum Colors « :rgb :rgba :hsl :hsla »;
+
     my %module-metadata{CSS::Module};     # per-module metadata
     my %module-properties{CSS::Module};   # per-module property attributes
-
-    my enum Colors is export(:Colors) «
-       :rgb :rgba :hsl :hsla
-    »;
 
     # contextual variables
     has Any   %!values handles <keys>;    # property values
@@ -356,7 +356,7 @@ class CSS::Properties:ver<0.4.3> {
 
         $color does CSS::Properties::Units[Colors, $type];
     }
-    multi method from-ast(Pair $v is copy where .key eq 'keyw') {
+    multi method from-ast(Pair $v where .key eq 'keyw') {
         state $cache //= %(
             'transparent' => (Color
                               but CSS::Properties::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
@@ -676,7 +676,7 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return an AST for the declarations.
-    #| This more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>
+    #| This is more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>
     #| and suitable for reserialization with CSS::Writer
     method ast(Bool :$optimize = True) {
         my %prop-ast;
@@ -712,16 +712,18 @@ class CSS::Properties:ver<0.4.3> {
     method write(Bool :$optimize = True,
                  Bool :$terse = True,
                  Bool :$color-names = True,
-                 |c) {
+                 |c) is also<Str gist> {
         my CSS::Writer $writer .= new( :$terse, :$color-names, |c);
         $writer.write: self.ast(:$optimize);
     }
 
-    method Str { self.write }
-
-    #| return all module properties
-    method properties(:$all) {
-        ($all ?? $!metadata !! %!values).keys.sort;
+    #| return all known module properties
+    multi method properties(:$all! where .so) {
+        $!metadata.keys.sort;
+    }
+    #| return in-use properties
+    multi method properties {
+        %!values.keys.sort;
     }
 
     #| delete property values from the list of populated properties

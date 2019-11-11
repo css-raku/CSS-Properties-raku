@@ -7,7 +7,8 @@
   "depends" : [
     "CSS::Module",
     "CSS::Writer",
-    "Color"
+    "Color",
+    "Method::Also"
   ],
   "description" : "CSS property manipulation library",
   "license" : "Artistic-2.0",

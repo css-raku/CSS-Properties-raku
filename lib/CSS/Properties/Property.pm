@@ -8,7 +8,6 @@ class CSS::Properties::Property {
     has Bool $.inherit;
     has Str $.synopsis;
     has Str $.default;
-    has $.default-ast;
     has Str @.children;
     has Str $.edge;
     has Str @.edges;
@@ -21,7 +20,6 @@ class CSS::Properties::Property {
         # second entry is the compiled default value
          with $default {
              $!default = .[0];
-             $!default-ast = [ .[1].map: { $_ ~~ Hash && .keys == 1 ?? .pairs[0] !! $_ } ];
          }
     }
 
