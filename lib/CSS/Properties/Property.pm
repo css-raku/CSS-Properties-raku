@@ -1,37 +1,25 @@
 use v6;
 
 use CSS::Module;
+use CSS::Module::Property;
 
 class CSS::Properties::Property {
 
+    has CSS::Module::Property $.meta handles<inherit synopsis default edge edges children>;
     has Str $.name;
-    has Bool $.inherit;
-    has Str $.synopsis;
-    has Str $.default;
-    has Str @.children;
-    has Str $.edge;
-    has Str @.edges;
-
     method box { False }
 
-    multi method build( Str :$!name!, :$!synopsis!, Array :$default, :$!inherit = False, Bool :$box = False, :@!children, :$!edge = Str, :@!edges ) {
+    multi method build( Str :$!name!, :$!meta! ) {
         die "$!name css property should be composed via CSS::Properties::Edges"
-            if $box && !self.box;
-        # second entry is the compiled default value
-         with $default {
-             $!default = .[0];
-         }
+            if $!meta.box && !self.box;
     }
 
     multi method build(Str :$name!, CSS::Module :$module = (require CSS::Module::CSS3).module) is default {
-        my Hash \metadata = $module.property-metadata;
-        die "unknown property: $name"
-            unless metadata{$name}:exists;
+        my $prop-num = $module.property-number($name)
+            // die "property does not exist: $name";
+        my $meta = $module.index[ $prop-num ];
 
-        die "malformed metadata for property $name"
-            unless metadata{$name}<synopsis>:exists;
-
-        self.build( :$name, |metadata{$name} );
+        self.build( :$name, :$meta );
     }
 
     submethod BUILD(|c) {

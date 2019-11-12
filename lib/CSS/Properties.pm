@@ -8,11 +8,12 @@ class CSS::Properties:ver<0.4.3> {
     use CSS::Writer:ver(v0.2.4+);
     use Color;
     use Color::Conversion;
+    use CSS::Module::Property;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
     use CSS::Properties::Units :Lengths, :&dimension;
     use Method::Also;
-
+    use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
 
     my %module-metadata{CSS::Module};     # per-module metadata
@@ -23,14 +24,14 @@ class CSS::Properties:ver<0.4.3> {
     has Any   %!default;
     has Array %!box;
     has Hash  %!struct;
-    has Bool  %!important;
+    has Bool  %!important{Int};
     my subset Handling of Str where 'initial'|'inherit';
-    has Handling %!handling;
-    has CSS::Module $.module handles <parse-property> = CSS::Module::CSS3.module; #| associated CSS module
+    has Handling %!handling{Int};
+    has CSS::Module $.module handles <parse-property index property-number property-name> = CSS::Module::CSS3.module; #| associated CSS module
     has Exception @.warnings;
     has Bool $.warn = True;
     has Hash $!metadata;
-    has Hash $!properties;
+    has Array $!properties;
     has Str $.units = 'pt';
     has Numeric $!scale;
     has Numeric $.viewport-width;
@@ -85,32 +86,43 @@ class CSS::Properties:ver<0.4.3> {
         default { Nil }
     }
 
-    sub make-property(CSS::Module $m, Str $name) {
-        %module-properties{$m}{$name} //= do with %module-metadata{$m}{$name} -> %defs {
-            with %defs<edges> {
+    multi sub make-property(CSS::Module $m, Str:D $name) {
+        my UInt:D $prop-num = $m.property-number($name)
+            // die "unknown property: $name";
+        make-property($m, $prop-num, :$name);
+    }
+    multi sub make-property(CSS::Module $m, UInt:D $prop-num, :$name = $m.property-name($prop-num)) {
+        my CSS::Module::Property $meta = $m.index[$prop-num];
+
+        %module-properties{$m}[$prop-num] //= do {
+            with $meta.edges {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
-                for .list -> $side {
-                    # these shouldn't nest or cycle
-                    %defs{$side} = $_ with make-property($m, $side);
+                my $n = 0;
+                my %edges;
+                for <top left bottom right> -> $side {
+                    my $edge := .[$n++];
+                    %edges{$side} = make-property($m, $edge);
                 }
-                CSS::Properties::Edges.new( :$name, |%defs);
+                CSS::Properties::Edges.new( :$name, :$meta, |%edges);
             }
             else {
-                CSS::Properties::Property.new( :$name, |%defs );
+                CSS::Properties::Property.new( :$name, :$meta );
             }
-        }
-        else {
-            die "unknown property: $name"
         }
     }
 
     #| return module meta-data for a property
-    method info(Str $prop) {
-        with $!properties{$prop} {
+    multi method info(Str:D $prop-name) {
+        my $prop-num = self.property-number($prop-name)
+            // die "unknown property: $prop-name";
+        self.info($prop-num);
+    }
+    multi method info(Int:D $prop-num) {
+        with $!properties[$prop-num] {
             $_;
         }
         else {
-            make-property($!module, $prop);
+            make-property($!module, $prop-num);
         }
     }
 
@@ -182,7 +194,7 @@ class CSS::Properties:ver<0.4.3> {
                      *%props, ) {
         $!metadata = %module-metadata{$!module} //= $!module.property-metadata
             // die "module {$!module.name} lacks meta-data";
-        $!properties = %module-properties{$!module} //= {};
+        $!properties = %module-properties{$!module} //= [];
 
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
@@ -300,7 +312,7 @@ class CSS::Properties:ver<0.4.3> {
         );
     }
 
-    method !child-handling(List $children) is rw {
+    method !child-handling(CArray $children) is rw {
         Proxy.new(
             FETCH => -> $ { [&&] $children.map: { %!handling{$_} } },
             STORE => -> $, Str $h {
@@ -310,7 +322,10 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return property value handling: 'initial', or 'inherit';
-    method handling(Str $prop --> Handling) is rw {
+    multi method handling(Str:D $prop --> Handling) is rw {
+        self.handling(self.property-number($prop));
+    }
+    multi method handling(Int:D $prop --> Handling) is rw {
         with self.info($prop) {
             .edges
                 ?? self!child-handling( .edges )
@@ -318,7 +333,7 @@ class CSS::Properties:ver<0.4.3> {
         }
     }
 
-    method !child-importance(List $children) is rw {
+    method !child-importance(CArray $children) is rw {
         Proxy.new(
             FETCH => -> $ { [&&] $children.map: { %!important{$_} } },
             STORE => -> $, Bool $v {
@@ -328,11 +343,12 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return true of the property has the !important attribute
-    method important(Str $prop) is rw {
-        with self.info($prop) {
+    multi method important(Str $prop-name) is rw { self.important($.property-number($prop-name)) }
+    multi method important(Int $prop-num) is rw {
+        with self.info($prop-num) {
             .edges
                 ?? self!child-importance( .edges )
-                !! %!important{$prop}
+                !! %!important{$prop-num};
         }
     }
 
@@ -545,7 +561,7 @@ class CSS::Properties:ver<0.4.3> {
 
     method !optimize-ast( %prop-ast ) {
         my \metadata = $!metadata;
-        my %edges;
+        my %edges{Int};
 
         for %prop-ast.keys.sort -> \prop {
             # delete properties that match the default value
@@ -563,15 +579,16 @@ class CSS::Properties:ver<0.4.3> {
 
         # consolidate box properties with common values
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
-        for %edges.keys.sort -> $prop {
+        for %edges.keys.sort -> Int $prop {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
             my \info = self.info($prop);
             next unless info.box;
             my @edges;
             my @asts;
             for info.edges -> \side {
-                with %prop-ast{side} {
-                    @edges.push: side;
+                my $prop := self.property-name(side);
+                with %prop-ast{$prop} {
+                    @edges.push: $prop;
                     @asts.push: $_;
                 }
                 else {
@@ -592,8 +609,9 @@ class CSS::Properties:ver<0.4.3> {
                 @expr.append: .<expr>.list
                    for @asts;
 
-                %prop-ast{$prop} = { :@expr };
-                %prop-ast{$prop}<prio> = $_
+                my $name = self.property-name($prop);
+                %prop-ast{$name} = { :@expr };
+                %prop-ast{$name}<prio> = $_
                     with @asts[0]<prio>;
             }
         }
@@ -682,12 +700,13 @@ class CSS::Properties:ver<0.4.3> {
         my %prop-ast;
         # '!important'
         for %!important.pairs {
-            %prop-ast{.key}<prio> = 'important'
+            %prop-ast{$.property-name(.key)}<prio> = 'important'
                 if .value;
         }
         # 'initial', 'inherit'
         for %!handling.pairs {
-            %prop-ast{.key}<expr> = [ :keyw(.value) ];
+            %prop-ast{$.property-name(.key)}<expr> = [ :keyw(.value) ]
+                if .value;
         }
 
         #| expressions

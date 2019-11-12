@@ -13,11 +13,11 @@ is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
 isa-ok $margin-info, CSS::Properties::Edges, 'box property';
-is-deeply [$margin-info.edges], ["margin-top", "margin-right", "margin-bottom", "margin-left"], 'edges property';
+is-deeply [$margin-info.edges.list], [<margin-top margin-right margin-bottom margin-left>.map({$css.property-number($_)})], 'edges property';
 
 my $margin-left-info = $css.info('margin-left');
 isa-ok $margin-left-info, CSS::Properties::Property, 'simple property';
-is $margin-left-info.edge, 'margin', 'margin-left is a margin edge';
+is $margin-left-info.edge, $css.property-number('margin'), 'margin-left is a margin edge';
 
 is $css.azimuth, 'center', 'default azimuth';
 $css.azimuth = 'over-yonder';
