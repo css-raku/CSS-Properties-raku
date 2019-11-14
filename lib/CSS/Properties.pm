@@ -361,15 +361,8 @@ class CSS::Properties:ver<0.4.3> {
         my $type = $v.key;
         @channels.tail *= 256
             if $type ~~ 'rgba'|'hsla';
-        if $type eq 'hsla' {
-            # convert hsla color to rgba
-            my $a = @channels.pop;
-            my %rgb = hsl2rgb(@channels);
-            $color .= new: |%rgb, :$a;
-        }
-        else {
-            $color .= new: |($type => @channels);
-        }
+
+        $color .= new: |($type => @channels);
 
         $color does CSS::Properties::Units[Colors, $type];
     }
@@ -425,27 +418,16 @@ class CSS::Properties:ver<0.4.3> {
 
     multi method to-ast($v, :$get = True) is default {
         my $key = $v.?type if $get;
+        my @ast;
         my $val = do given $v {
             when Color {
-                given .?type {
-                    when 'hsl' {
-                        my (\h, \s, \l) = $v.hsl;
-                        [ :num(h), :percent(s), :percent(l) ];
-                    }
-                    when 'hsla' {
-                        my (\h, \s, \l) = $v.hsl;
-                        [ :num(h), :percent(s), :percent(l), alpha($v.a) ];
-                    }
-                    when 'rgba' {
-                        my (\r, \g, \b, \a) = $v.rgba;
-                        [ :num(r), :num(g), :num(b), alpha(a) ];
-                    }
-                    default {
-                        $key //= 'rgb';
-                        my (\r, \g, \b) = $v.rgb;
-                        [ :num(r), :num(g), :num(b) ];
-                    }
-                }
+                $key //= 'rgb';
+                my $ast = $key ~~ 'hsl'|'hsla'
+                    ?? [ <num percent percent> Z=> $v.hsl ]
+                    !! [ <num num num> Z=> $v.rgb ];
+                $ast.push( alpha($v.a) )
+                    if $key.ends-with('a'); # rgba or hsla
+                $ast;
             }
             when List  {
                 .elems == 1
