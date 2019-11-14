@@ -5,25 +5,35 @@ use CSS::Module::Property;
 
 class CSS::Properties::Property {
 
-    has CSS::Module::Property $.meta handles<inherit synopsis default edge edges children>;
-    has Str $.name;
+    has CSS::Module::Property $!meta handles<name prop-num inherit important synopsis default default-type edge edges edge-names children child-names>;
     method box { False }
 
-    multi method build( Str :$!name!, :$!meta! ) {
-        die "$!name css property should be composed via CSS::Properties::Edges"
+    multi method build(UInt:D :$prop-num!, CSS::Module :$module!) {
+        $!meta = $module.index[ $prop-num ];
+        die "{$!meta.name} css property should be composed via CSS::Properties::Edges"
             if $!meta.box && !self.box;
     }
-
-    multi method build(Str :$name!, CSS::Module :$module = (require CSS::Module::CSS3).module) is default {
-        my $prop-num = $module.property-number($name)
-            // die "property does not exist: $name";
-        my $meta = $module.index[ $prop-num ];
-
-        self.build( :$name, :$meta );
+    multi method build(Str:D :$name!, CSS::Module :$module = (require CSS::Module::CSS3).module) {
+        my $prop-num := $module.property-number($name)
+            // die "unknown css property: $name";
+        self.build(:$prop-num, :$module);
+    }
+    method TWEAK(|c) {
+        self.build(|c);
     }
 
-    submethod BUILD(|c) {
-        self.build(|c)
+    method default-value {
+        # kludgy default handling - part II
+        with $.default-type {
+            when "keyw"                    { [$_ => $.default] }
+            when "px" && $.default eq "0"  { :px(0) }
+            when $.default eq '0% 0%'      { [:percent(0) xx 2] }
+            default { warn "ignoring default value: $.default-type:$.default" }
+        }
+        else {
+            Nil
+        }
     }
+
 
 }
