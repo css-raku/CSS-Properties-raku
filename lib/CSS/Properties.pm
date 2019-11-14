@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.4.3> {
+class CSS::Properties:ver<0.4.4> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
@@ -16,7 +16,7 @@ class CSS::Properties:ver<0.4.3> {
     use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
 
-    my %module-index{CSS::Module};     # per-module objects
+    my %module-index{CSS::Module};        # per-module objects
     my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
@@ -119,7 +119,7 @@ class CSS::Properties:ver<0.4.3> {
         }
     }
 
-    method !get-props(Str $prop-name, List $expr) {
+    method !get-compound-prop(Str $prop-name, List $expr) {
         my @props;
 
         my @expr;
@@ -175,7 +175,7 @@ class CSS::Properties:ver<0.4.3> {
                         if decl<prio> ~~ 'important';
 
                     self!build-property( .key, .value, :$important)
-                        for self!get-props(decl<ident>, expr).list;
+                        for self!get-compound-prop(decl<ident>, expr).list;
                 }
             }
         }
@@ -248,8 +248,8 @@ class CSS::Properties:ver<0.4.3> {
                     when Associative { %vals = .Hash; }
                     default {
                         with self.parse-property($prop, $_, :$!warn) -> $expr {
-                            my @props = self!get-props($prop, $expr);
-                            %vals{.key} = .value for @props;
+                            %vals{.key} = .value
+                                for self!get-compound-prop($prop, $expr);
                         }
                     }
                 }
@@ -420,11 +420,11 @@ class CSS::Properties:ver<0.4.3> {
         my $val = do given $v {
             when Color {
                 $key //= 'rgb';
-                my $ast = $key ~~ 'hsl'|'hsla'
+                my $ast := $key ~~ 'hsl'|'hsla'
                     ?? [ <num percent percent> Z=> $v.hsl ]
                     !! [ <num num num> Z=> $v.rgb ];
                 $ast.push( alpha($v.a) )
-                    if $key.ends-with('a'); # rgba or hsla
+                    if $key ~~ 'rgba'|'hsla';
                 $ast;
             }
             when List  {
@@ -518,8 +518,8 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     # only worthwhile, if there's more than one component
-    multi method optimizable(Str $, :props(%p)) is default {
-        %p.elems >= 2;
+    multi method optimizable(Str $, :%props) is default {
+        %props.elems >= 2;
     }
 
     method optimize( @ast ) {
@@ -547,12 +547,9 @@ class CSS::Properties:ver<0.4.3> {
             # delete properties that match the default value
             my \info = self.info(prop);
 
-            with %prop-ast{prop}<expr> {
-                my \val = .[0];
-                my \default = self.to-ast: self!default(prop);
-
+            with %prop-ast{prop}<expr> -> \val {
                 %prop-ast{prop}:delete
-                    if css-eqv(val, default[0]);
+                    if css-eqv(val[0], info.default-value[0]);
             }
             %edges{info.edge}++ if info.edge;
         }

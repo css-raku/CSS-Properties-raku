@@ -1,3 +1,6 @@
+0.4.4
+   - Added CSS::Module::Property - A CStruct representation of property
+     definiions to facilitate downstream optimizations (CSS::Properties).
 0.4.3
    - Renamed role CSS::Properties::Units::Type ->
      CSS::Properties::Units. Added .scale() method. Define Time, Angle and
