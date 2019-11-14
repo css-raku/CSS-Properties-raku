@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 14;
+plan 13;
 
 use CSS::Properties::Property;
 use CSS::Properties::Edges;
@@ -14,7 +14,6 @@ is-deeply $sample-prop.box, False, '$prop.box';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, "none", '$prop.default';
-is-deeply $sample-prop.default-ast, [:keyw<none>, ], '$prop.default-ast';
 
 $sample-prop = CSS::Properties::Edges.new( :name<margin> );
 

@@ -5,13 +5,10 @@ use v6;
 my enum Lengths is export(:Lengths) «
     :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
 »;
-my enum Resolutions «
-   :dpi(72.0) :dpcm(28.346) :dppx(.75)
-»;
 
-my enum Angles «
-   :deg(1.0) :turn(360.0) :rad(57.2958)
-»;
+my enum Resolutions « :dpi(72.0) :dpcm(28.346) :dppx(.75) »;
+
+my enum Angles « :deg(1.0) :turn(360.0) :rad(57.2958) »;
 
 my enum Time « :s(1.0) :ms(0.001) »;
 
@@ -90,7 +87,7 @@ role CSS::Properties::Units {
     use Color;
 
     sub dimension(\units) is export(:dimension) {
-        (Lengths, Resolutions, Percentages, Time, Frequency).first({.enums{units}:exists})
+        (Lengths, Resolutions, Percentages, Angles, Time, Frequency).first({.enums{units}:exists})
     }
     method value(\v, \units) {
         v ~~ Color|Hash|List

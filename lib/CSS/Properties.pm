@@ -8,35 +8,34 @@ class CSS::Properties:ver<0.4.3> {
     use CSS::Writer:ver(v0.2.4+);
     use Color;
     use Color::Conversion;
+    use CSS::Module::Property;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
     use CSS::Properties::Units :Lengths, :&dimension;
-    my %module-metadata{CSS::Module};     # per-module metadata
-    my %module-properties{CSS::Module};   # per-module property attributes
+    use Method::Also;
+    use NativeCall;
+    my enum Colors « :rgb :rgba :hsl :hsla »;
 
-    my enum Colors is export(:Colors) «
-       :rgb :rgba :hsl :hsla
-    »;
+    my %module-index{CSS::Module};     # per-module objects
+    my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
     has Any   %!values handles <keys>;    # property values
     has Any   %!default;
     has Array %!box;
     has Hash  %!struct;
-    has Bool  %!important;
+    has Bool  %!important{Int};
     my subset Handling of Str where 'initial'|'inherit';
-    has Handling %!handling;
-    has CSS::Module $.module handles <parse-property> = CSS::Module::CSS3.module; #| associated CSS module
+    has Handling %!handling{Int};
+    has CSS::Module $.module handles <parse-property index property-number property-name> = CSS::Module::CSS3.module; #| associated CSS module
     has Exception @.warnings;
     has Bool $.warn = True;
-    has Hash $!metadata;
-    has Hash $!properties;
+    has Array $!properties;
+    has CArray $!index;
     has Str $.units = 'pt';
     has Numeric $!scale;
     has Numeric $.viewport-width;
-    method viewport-width { $!viewport-width // fail "viewport-width is unknown" }
     has Numeric $.viewport-height;
-    method viewport-height { $!viewport-height // fail "viewport-height is unknown" }
 
     my subset ZeroHash where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -65,8 +64,8 @@ class CSS::Properties:ver<0.4.3> {
         !$a.defined && !$b.defined
     }
     method measure($_,
-                    Numeric :$em = 12,
-                    Numeric :$ex = $em * 3/4,
+                   Numeric :$em = 12,
+                   Numeric :$ex = $em * 3/4,
                   ) {
         when Numeric {
             my Str $units = .?type // $!units;
@@ -85,32 +84,38 @@ class CSS::Properties:ver<0.4.3> {
         default { Nil }
     }
 
-    sub make-property(CSS::Module $m, Str $name) {
-        %module-properties{$m}{$name} //= do with %module-metadata{$m}{$name} -> %defs {
-            with %defs<edges> {
+    sub make-property(CSS::Module $module, UInt:D $prop-num) {
+        my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
+
+        %module-properties{$module}[$prop-num] //= do {
+            with $meta.edges {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
-                for .list -> $side {
-                    # these shouldn't nest or cycle
-                    %defs{$side} = $_ with make-property($m, $side);
+                my $n = 0;
+                my %edges;
+                for <top left bottom right> -> $side {
+                    my $edge := .[$n++];
+                    %edges{$side} = make-property($module, $edge);
                 }
-                CSS::Properties::Edges.new( :$name, |%defs);
+                CSS::Properties::Edges.new( :$prop-num, :$module, :$meta, |%edges);
             }
             else {
-                CSS::Properties::Property.new( :$name, |%defs );
+                CSS::Properties::Property.new( :$prop-num, :$module, :$meta );
             }
-        }
-        else {
-            die "unknown property: $name"
         }
     }
 
     #| return module meta-data for a property
-    method info(Str $prop) {
-        with $!properties{$prop} {
+    multi method info(Str:D $prop-name) {
+        my $prop-num := self.property-number($prop-name)
+            // die "unknown property: $prop-name";
+        self.info($prop-num);
+    }
+    multi method info(Int:D $prop-num) {
+        with $!properties[$prop-num] {
             $_;
         }
         else {
-            make-property($!module, $prop);
+            make-property($!module, $prop-num);
         }
     }
 
@@ -180,9 +185,9 @@ class CSS::Properties:ver<0.4.3> {
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
-        $!metadata = %module-metadata{$!module} //= $!module.property-metadata
-            // die "module {$!module.name} lacks meta-data";
-        $!properties = %module-properties{$!module} //= {};
+        $!index = %module-index{$!module} //= $!module.index
+            // die "module {$!module.name} lacks an index";
+        $!properties = %module-properties{$!module} //= [];
 
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
@@ -194,7 +199,7 @@ class CSS::Properties:ver<0.4.3> {
         $!scale = Lengths.enums{$!units};
     }
 
-    method !box-value(Str $prop, List $edges) is rw {
+    method !box-value(Str $prop, CArray $edges) is rw {
 	Proxy.new(
 	    FETCH => -> $ {
                 %!box{$prop} //= do {
@@ -226,7 +231,7 @@ class CSS::Properties:ver<0.4.3> {
         );
     }
 
-    method !struct-value(Str $prop, List $children) is rw {
+    method !struct-value(Str $prop, CArray $children) is rw {
 	Proxy.new(
 	    FETCH => -> $ {
                 %!struct{$prop} //= do {
@@ -269,8 +274,8 @@ class CSS::Properties:ver<0.4.3> {
 
     #| return the default value for the property
     method !default($prop) {
-        %!default{$prop} //= self!coerce( .<default>[1] )
-            with $!metadata{$prop};
+        %!default{$prop} //= self!coerce( .default-value )
+            with $.info($prop);
     }
 
     method !item-value(Str $prop) is rw {
@@ -300,7 +305,7 @@ class CSS::Properties:ver<0.4.3> {
         );
     }
 
-    method !child-handling(List $children) is rw {
+    method !child-handling(CArray $children) is rw {
         Proxy.new(
             FETCH => -> $ { [&&] $children.map: { %!handling{$_} } },
             STORE => -> $, Str $h {
@@ -310,15 +315,21 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return property value handling: 'initial', or 'inherit';
-    method handling(Str $prop --> Handling) is rw {
+    multi method handling(Str:D $prop --> Handling) is rw {
+        self.handling(self.property-number($prop));
+    }
+    multi method handling(Int:D $prop --> Handling) is rw {
         with self.info($prop) {
-            .edges
-                ?? self!child-handling( .edges )
-                !! %!handling{$prop}
+            with .edges {
+                self!child-handling( $_ );
+            }
+            else {
+                %!handling{$prop};
+            }
         }
     }
 
-    method !child-importance(List $children) is rw {
+    method !child-importance(CArray $children) is rw {
         Proxy.new(
             FETCH => -> $ { [&&] $children.map: { %!important{$_} } },
             STORE => -> $, Bool $v {
@@ -328,11 +339,15 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return true of the property has the !important attribute
-    method important(Str $prop) is rw {
-        with self.info($prop) {
-            .edges
-                ?? self!child-importance( .edges )
-                !! %!important{$prop}
+    multi method important(Str $prop-name) is rw { self.important($.property-number($prop-name)) }
+    multi method important(Int $prop-num) is rw {
+        with self.info($prop-num) {
+            with .edges {
+                self!child-importance( $_ );
+            }
+            else {
+                %!important{$prop-num};
+            }
         }
     }
 
@@ -344,19 +359,12 @@ class CSS::Properties:ver<0.4.3> {
         my $type = $v.key;
         @channels.tail *= 256
             if $type ~~ 'rgba'|'hsla';
-        if $type eq 'hsla' {
-            # convert hsla color to rgba
-            my $a = @channels.pop;
-            my %rgb = hsl2rgb(@channels);
-            $color .= new: |%rgb, :$a;
-        }
-        else {
-            $color .= new: |($type => @channels);
-        }
+
+        $color .= new: |($type => @channels);
 
         $color does CSS::Properties::Units[Colors, $type];
     }
-    multi method from-ast(Pair $v is copy where .key eq 'keyw') {
+    multi method from-ast(Pair $v where .key eq 'keyw') {
         state $cache //= %(
             'transparent' => (Color
                               but CSS::Properties::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
@@ -408,27 +416,16 @@ class CSS::Properties:ver<0.4.3> {
 
     multi method to-ast($v, :$get = True) is default {
         my $key = $v.?type if $get;
+        my @ast;
         my $val = do given $v {
             when Color {
-                given .?type {
-                    when 'hsl' {
-                        my (\h, \s, \l) = $v.hsl;
-                        [ :num(h), :percent(s), :percent(l) ];
-                    }
-                    when 'hsla' {
-                        my (\h, \s, \l) = $v.hsl;
-                        [ :num(h), :percent(s), :percent(l), alpha($v.a) ];
-                    }
-                    when 'rgba' {
-                        my (\r, \g, \b, \a) = $v.rgba;
-                        [ :num(r), :num(g), :num(b), alpha(a) ];
-                    }
-                    default {
-                        $key //= 'rgb';
-                        my (\r, \g, \b) = $v.rgb;
-                        [ :num(r), :num(g), :num(b) ];
-                    }
-                }
+                $key //= 'rgb';
+                my $ast = $key ~~ 'hsl'|'hsla'
+                    ?? [ <num percent percent> Z=> $v.hsl ]
+                    !! [ <num num num> Z=> $v.rgb ];
+                $ast.push( alpha($v.a) )
+                    if $key.ends-with('a'); # rgba or hsla
+                $ast;
             }
             when List  {
                 .elems == 1
@@ -489,7 +486,7 @@ class CSS::Properties:ver<0.4.3> {
     #| set a list of properties as hash pairs
     method set-properties(*%props) {
         for %props.pairs.sort -> \p {
-            if $!metadata{p.key} {
+            with $.property-number(p.key) {
                 self."{p.key}"() = $_ with p.value;
             }
             else {
@@ -540,12 +537,11 @@ class CSS::Properties:ver<0.4.3> {
 
     has Array $!compound-properties;
     method !compound-properties {
-        $!compound-properties //= [.keys.sort.grep: -> \k { .{k}<children> } with $!metadata];
+        $!compound-properties //= [$!index.grep(*.children).map(*.name)];
     }
 
     method !optimize-ast( %prop-ast ) {
-        my \metadata = $!metadata;
-        my %edges;
+        my %edges{Int};
 
         for %prop-ast.keys.sort -> \prop {
             # delete properties that match the default value
@@ -563,15 +559,16 @@ class CSS::Properties:ver<0.4.3> {
 
         # consolidate box properties with common values
         # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
-        for %edges.keys.sort -> $prop {
+        for %edges.keys.sort -> Int $prop {
             # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
             my \info = self.info($prop);
             next unless info.box;
             my @edges;
             my @asts;
             for info.edges -> \side {
-                with %prop-ast{side} {
-                    @edges.push: side;
+                my $prop := self.property-name(side);
+                with %prop-ast{$prop} {
+                    @edges.push: $prop;
                     @asts.push: $_;
                 }
                 else {
@@ -588,19 +585,18 @@ class CSS::Properties:ver<0.4.3> {
                     while +@asts > 1
                     && css-eqv( @asts.tail, @asts[ DefaultIdx[+@asts] ] );
 
-                my @expr;
-                @expr.append: .<expr>.list
-                   for @asts;
+                my @expr = flat @asts.map(*<expr>.list);
 
-                %prop-ast{$prop} = { :@expr };
-                %prop-ast{$prop}<prio> = $_
+                my $name = self.property-name($prop);
+                %prop-ast{$name} = { :@expr };
+                %prop-ast{$name}<prio> = $_
                     with @asts[0]<prio>;
             }
         }
         for self!compound-properties.list -> \compound-prop {
             # top-down aggregation of compound properties. e.g. border-width, border-style => border
 
-            my @children = metadata{compound-prop}<children>.list.grep: {
+            my @children = $.info(compound-prop).child-names.grep: {
                 %prop-ast{$_}:exists
             }
 
@@ -668,7 +664,7 @@ class CSS::Properties:ver<0.4.3> {
     multi sub assemble-ast(%prop-ast) {
         my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
             my %property = %prop-ast{prop};
-            %property.push: 'ident' => prop;
+            %property<ident> = prop;
             %property;
         };
 
@@ -676,25 +672,26 @@ class CSS::Properties:ver<0.4.3> {
     }
 
     #| return an AST for the declarations.
-    #| This more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>
-    #| and suitable for reserialization with CSS::Writer
+    #| This is more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>,
+    #| but with optimization. Suitable for reserialization with CSS::Writer
     method ast(Bool :$optimize = True) {
         my %prop-ast;
         # '!important'
         for %!important.pairs {
-            %prop-ast{.key}<prio> = 'important'
+            %prop-ast{$.property-name(.key)}<prio> = 'important'
                 if .value;
         }
         # 'initial', 'inherit'
         for %!handling.pairs {
-            %prop-ast{.key}<expr> = [ :keyw(.value) ];
+            %prop-ast{$.property-name(.key)}<expr> = [ :keyw(.value) ]
+                if .value;
         }
 
         #| expressions
         for %!values.keys.sort -> \prop {
             with %!values{prop} -> \value {
                 my $ast = self.to-ast: value;
-                $ast = [ $ast ]
+                $ast .= List
                     unless $ast ~~ List;
                 %prop-ast{prop}<expr> = $ast;
             }
@@ -712,27 +709,29 @@ class CSS::Properties:ver<0.4.3> {
     method write(Bool :$optimize = True,
                  Bool :$terse = True,
                  Bool :$color-names = True,
-                 |c) {
+                 |c) is also<Str gist> {
         my CSS::Writer $writer .= new( :$terse, :$color-names, |c);
         $writer.write: self.ast(:$optimize);
     }
 
-    method Str { self.write }
-
-    #| return all module properties
-    method properties(:$all) {
-        ($all ?? $!metadata !! %!values).keys.sort;
+    #| return all known module properties
+    multi method properties(:$all! where .so) {
+        $!index.map(*.name);
+    }
+    #| return in-use properties
+    multi method properties {
+        %!values.keys.sort;
     }
 
     #| delete property values from the list of populated properties
     method delete(*@props) {
         for @props -> Str $prop {
-            with $!metadata{$prop} {
-                if .<box> {
-                    $.delete($_) for .<edges>.list
+            with $.info($prop) {
+                if .box {
+                    $.delete($_) for .edge-names;
                 }
-                if .<children> {
-                    $.delete($_) for .<children>.list
+                with .child-names {
+                    $.delete($_) for $_;
                 }
             }
             %!values{$prop}:delete;
@@ -743,19 +742,19 @@ class CSS::Properties:ver<0.4.3> {
     method dispatch:<.?>(\name, |c) is raw {
         self.can(name)
             ?? self."{name}"(|c)
-            !! do with $!metadata{name} { self!value($_, name, |c) } else { Nil }
+            !! do with $.propertry-number(name) { self!value($!index[$_], name, |c) } else { Nil }
     }
     method !value($_, \name, |c) is rw {
-        .<children>
-            ?? self!struct-value(name, .<children>)
-            !! ( .<box>
-                     ?? self!box-value(name, .<edges>)
+        .children
+            ?? self!struct-value(name, .child-names)
+            !! ( .box
+                     ?? self!box-value(name, .edge-names)
                      !! self!item-value(name)
                     )
     }
     method FALLBACK(Str \name, |c) is rw {
-        with $!metadata{name} {
-            self!value($_, name, |c)
+        with $.property-number(name) {
+            self!value($!index[$_], name, |c)
         }
         else {
             die X::Method::NotFound.new( :method(name), :typename(self.^name) )
