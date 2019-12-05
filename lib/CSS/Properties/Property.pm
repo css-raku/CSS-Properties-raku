@@ -5,7 +5,7 @@ use CSS::Module::Property;
 
 class CSS::Properties::Property {
 
-    has CSS::Module::Property $!meta handles<name prop-num inherit important synopsis default default-type edge edges edge-names children child-names>;
+    has CSS::Module::Property $!meta handles<name prop-num inherit initial important synopsis default default-type edge edges edge-names children child-names>;
     method box { False }
 
     multi method build(UInt:D :$prop-num!, CSS::Module :$module!) {

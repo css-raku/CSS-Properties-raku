@@ -27,7 +27,7 @@ class CSS::Properties:ver<0.4.4> {
     has Bool  %!important{Int};
     my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling{Int};
-    has CSS::Module $.module handles <parse-property index property-number property-name> = CSS::Module::CSS3.module; #| associated CSS module
+    has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; #| associated CSS module
     has Exception @.warnings;
     has Bool $.warn = True;
     has Array $!properties;
@@ -181,6 +181,7 @@ class CSS::Properties:ver<0.4.4> {
         }
     }
 
+
     submethod TWEAK( Str :$style, List :$ast, :$inherit = [], :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
@@ -188,7 +189,6 @@ class CSS::Properties:ver<0.4.4> {
         $!index = %module-index{$!module} //= $!module.index
             // die "module {$!module.name} lacks an index";
         $!properties = %module-properties{$!module} //= [];
-
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
@@ -454,6 +454,8 @@ class CSS::Properties:ver<0.4.4> {
     }
     multi method inherit(CSS::Properties $css) {
         for $css.properties -> \name {
+            # skip unknown extension properties
+            next if name.starts-with('-') && !self.prop-num(name).defined;
             my \info = self.info(name);
             unless info.box {
                 my $inherit = False;
@@ -719,6 +721,7 @@ class CSS::Properties:ver<0.4.4> {
     multi method properties {
         %!values.keys.sort;
     }
+    method property-exists(Str $_) { %!values{.lc}:exists }
 
     #| delete property values from the list of populated properties
     method delete(*@props) {

@@ -1,6 +1,11 @@
 0.4.4
    - Added CSS::Module::Property - A CStruct representation of property
      definiions to facilitate downstream optimizations (CSS::Properties).
+   - Added .property-exists() method
+   - Add t/extensions.t - just to make sure we handle alias extension properties
+     introduced with CSS::Module 0.5.1
+   - Skip unknown properties starting with '-' when inheriting. These are
+     custom properties by definition.
 0.4.3
    - Renamed role CSS::Properties::Units::Type ->
      CSS::Properties::Units. Added .scale() method. Define Time, Angle and
