@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.4.4> {
+class CSS::Properties:ver<0.4.5> {
 
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
@@ -350,6 +350,9 @@ class CSS::Properties:ver<0.4.4> {
             }
         }
     }
+    multi method important is default {
+        %!important.pairs.map: { $.property-name(.key) => .value }
+    }
 
     my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
 
@@ -464,17 +467,11 @@ class CSS::Properties:ver<0.4.4> {
                     when 'initial' { %!values{name}:delete }
                     when 'inherit' { $inherit = True }
                 }
-                elsif $css.important(name) {
-                    $inherit = True;
-                    $important = True;
-                }
                 elsif info.inherit {
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
                     %!values{name} = $css."{name}"();
-                    self.important(name) = True
-                        if $important;
                 }
             }
         }

@@ -28,14 +28,14 @@ is $css.margin-right, 10, "inherited value";
 
 $css = CSS::Properties.new( :style("margin: initial; color:purple"), :$inherit);
 is $css.margin-top, 0, "initial box value";
-is $css.color, '#0000FF', "inheritable !important property";
-ok $css.important("color"), 'inherited !important stickyness';
+is $css.color, '#7F007F', "inheritable !important property";
+nok $css.important("color"), '!important is not inherited';
 
 # inherit from css object
-is ~$css, 'color:blue!important; margin-bottom:initial; margin-left:initial; margin-right:initial;', 'inherit from object';
+is ~$css, 'color:purple; margin-bottom:initial; margin-left:initial; margin-right:initial;', 'inherit from object';
 
 # inherit from style string
 $css = CSS::Properties.new( :inherit(~$inherit));
-is ~$css, 'color:blue!important;', 'inherit from object';
+is ~$css, 'color:blue;', 'inherit from object';
 
 done-testing;

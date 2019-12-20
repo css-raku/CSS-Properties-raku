@@ -1,6 +1,10 @@
+0.4.5
+   - issue #4 !important is not inherited and has no affect on inheritance.
+   - add '.important()' (parameterless) candidate, which returns a map of all
+     !important properties: my Bool %important{Str} = $css.important();
 0.4.4
    - Added CSS::Module::Property - A CStruct representation of property
-     definiions to facilitate downstream optimizations (CSS::Properties).
+     definitions to facilitate downstream optimizations (CSS::Properties).
    - Added .property-exists() method
    - Add t/extensions.t - just to make sure we handle alias extension properties
      introduced with CSS::Module 0.5.1
