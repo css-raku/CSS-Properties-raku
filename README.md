@@ -32,7 +32,7 @@ say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; tex
 - other values are converted to strings or numeric, as appropriate
 - the .type method returns additional type information
 - box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
-- there are also some compound properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
+- there are also some container properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
 
 ```
 use CSS::Properties;
@@ -71,7 +71,7 @@ my CSS::Properties $css .= new;
 # assign to container
 $css.font = "14pt Helvetica";
 
-# assign to simple properties
+# assign to component properties
 $css.font-weight = 'bold'; # string
 $css.line-height = 16pt;   # unit value
 $css.border-color = Color.new(0, 255, 0);
@@ -153,8 +153,6 @@ A child class can inherit from one or more parent classes. This follows CSS stan
 
 - `initial` will reset the child property to the default value
 
-- the `!important` modifier can be used in parent properties to force the parent value to override the child. The property remains 'important' in the child and will be passed on to any CSS::Properties objects that inherit from it.
-
 To inherit a css object or style string:
 
 - pass it as a `:inherit` option, when constructing the object, or
@@ -168,7 +166,7 @@ my $parent-style = "margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !impor
 my $style = "margin-top:25pt; margin-right: initial; margin-left: inherit; color:purple";
 my CSS::Properties $css .= new: :$style, :inherit($parent-style);
 
-say $css.color;                     # #FF0000 (red)
+say $css.color;                     # #7F007Frgb (purple)
 say $css.handling("margin-left");   # inherit
 say $css.margin-left;               # 15pt
 ```
@@ -179,15 +177,15 @@ The `.write` or `.Str` methods can be used to produce CSS. Properties are optimi
 
 - properties with default values are omitted
 
-- multiple component properties are consolidated to compound properties, where possible (e.g. `font-family` and `font-size`
-  are consolidated to `font`).
+- multiple component properties are generally consolidated to container properties (e.g. `font-family: Courier` and `font-size: 12pt`
+  are consolidated to `font: 12pt Courier`).
 
 - rgb masks are translated to color-names, where possible
 
 ```
 use CSS::Properties;
 my CSS::Properties $css .= new( :style("background-repeat:repeat; border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
-# - 'border-width' and 'border-style' are consolidated to the 'border' compound property
+# - 'border-width' and 'border-style' are consolidated to the 'border' container property
 # - rgb(255,0,0) is mapped to 'red'
 say $css.write;  # "border:2pt groove; color: red;"
 ```
@@ -203,7 +201,7 @@ because all four borders have common values
 
 `$.write` Options include:
 
-- `:!optimize` - turn off optimization. Don't, combine simple properties into compound properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`).
+- `:!optimize` - turn off optimization. Don't, combine component properties into container properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`).
 
 - `:!terse` - enable multi-line output
 
@@ -227,7 +225,7 @@ say $writer.write(|%ast); # border:1px solid red;
 
 ## Property Meta-data
 
-The `info` method gives property specific meta-data, on all simple of compound properties. It returns an object of type CSS::Properties::Property:
+The `info` method gives property specific meta-data, on all (component or container properties). It returns an object of type CSS::Properties::Property:
 
 ```
 use CSS::Properties;
@@ -240,8 +238,8 @@ say $margin-info.inherit;  # True (property is inherited)
 
 ## Data Introspection
 
-The `properties` method, gives a list of current properties. Only simple properties
-are returned. E.g. `font-family` is, if it has a value; but `font` isn't.
+The `properties` method, gives a list of current properties. Only component properties
+are returned. E.g. `font-family` may be returned; but `font` never is.
 
 ```
 use CSS::Properties;
