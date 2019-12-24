@@ -36,6 +36,7 @@ class CSS::Properties:ver<0.4.5> {
     has Numeric $!scale;
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
+    has CSS::Properties $.parent is rw; # for building rendering trees
 
     my subset ZeroHash where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -119,7 +120,7 @@ class CSS::Properties:ver<0.4.5> {
         }
     }
 
-    method !get-compound-prop(Str $prop-name, List $expr) {
+    method !get-container-prop(Str $prop-name, List $expr) {
         my @props;
 
         my @expr;
@@ -175,7 +176,7 @@ class CSS::Properties:ver<0.4.5> {
                         if decl<prio> ~~ 'important';
 
                     self!build-property( .key, .value, :$important)
-                        for self!get-compound-prop(decl<ident>, expr).list;
+                        for self!get-container-prop(decl<ident>, expr).list;
                 }
             }
         }
@@ -249,7 +250,7 @@ class CSS::Properties:ver<0.4.5> {
                     default {
                         with self.parse-property($prop, $_, :$!warn) -> $expr {
                             %vals{.key} = .value
-                                for self!get-compound-prop($prop, $expr);
+                                for self!get-container-prop($prop, $expr);
                         }
                     }
                 }
@@ -327,6 +328,12 @@ class CSS::Properties:ver<0.4.5> {
                 %!handling{$prop};
             }
         }
+    }
+    multi method inherited(Str $prop) {
+        with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit} 
+    }
+    multi method inherited {
+        %!values.keys.grep({ $.inherited($_) }).sort;
     }
 
     method !child-importance(CArray $children) is rw {
@@ -455,7 +462,7 @@ class CSS::Properties:ver<0.4.5> {
         my $css = $.new( :$.module, :$style);
         $.inherit($css);
     }
-    multi method inherit(CSS::Properties $css) {
+    multi method inherit(CSS::Properties:D $css) {
         for $css.properties -> \name {
             # skip unknown extension properties
             next if name.starts-with('-') && !self.prop-num(name).defined;
@@ -471,10 +478,16 @@ class CSS::Properties:ver<0.4.5> {
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
-                    %!values{name} = $css."{name}"();
+                    my $val := $css."{name}"();
+                    unless name eq 'font-size' && $val ~~ 'smaller'|'larger'
+                    || ($val ~~ CSS::Properties::Units && $val.type ~~ 'em'|'ex') {
+                        # don't inherit relative values
+                        %!values{name} = $val;
+                    }
                 }
             }
         }
+        self;
     }
 
     method !copy(CSS::Properties $css) {
@@ -503,8 +516,8 @@ class CSS::Properties:ver<0.4.5> {
     }
 
     #| determine if it is advantageous to combine component properties
-    #| into compound properties, e.g. font-family font-style ... into font
-    proto sub optimizable(Str $compound-prop, :%props) { * }
+    #| into container properties, e.g. font-family font-style ... into font
+    proto sub optimizable(Str $cont-prop, :%props) { * }
 
     # Avoid these font serialization optimizations, which won't parse correctly:
     #     font: bold;            // font-weight or font-style only
@@ -534,9 +547,9 @@ class CSS::Properties:ver<0.4.5> {
         assemble-ast(%prop-ast);
     }
 
-    has Array $!compound-properties;
-    method !compound-properties {
-        $!compound-properties //= [$!index.grep(*.children).map(*.name)];
+    has Array $!container-properties;
+    method !container-properties {
+        $!container-properties //= [$!index.grep(*.children).map(*.name)];
     }
 
     method !optimize-ast( %prop-ast ) {
@@ -589,17 +602,17 @@ class CSS::Properties:ver<0.4.5> {
                     with @asts[0]<prio>;
             }
         }
-        for self!compound-properties.list -> \compound-prop {
-            # top-down aggregation of compound properties. e.g. border-width, border-style => border
+        for self!container-properties.list -> \container-prop {
+            # top-down aggregation of container properties. e.g. border-width, border-style => border
 
-            my @children = $.info(compound-prop).child-names.grep: {
+            my @children = $.info(container-prop).child-names.grep: {
                 %prop-ast{$_}:exists
             }
 
             my %props = %(@children.Set);
-            next unless @children && $.optimizable(compound-prop, :%props);
+            next unless @children && $.optimizable(container-prop, :%props);
 
-            # agregrate related children to a compound property, where possible.
+            # agregrate related children to a container property, where possible.
             # -- if child properties are 'initial', or 'inherit', they all
             #    need to be present and the same
             # -- otherwise they need to all need to have or lack
@@ -629,7 +642,7 @@ class CSS::Properties:ver<0.4.5> {
                 given %groups{$_}.list -> @children {
                     when Handling {
                         %prop-ast{$_}:delete for @children;
-                        %prop-ast{compound-prop} = { :expr[ :keyw($_) ] };
+                        %prop-ast{container-prop} = { :expr[ :keyw($_) ] };
                     }
                     when 'important'|'normal' {
                         my %ast = :expr[ @children.map: {
@@ -638,7 +651,7 @@ class CSS::Properties:ver<0.4.5> {
                         } ];
                         %ast<prio> = $_
                             when 'important';
-                        %prop-ast{compound-prop} = %ast;
+                        %prop-ast{container-prop} = %ast;
                     }
                 }
             }
@@ -748,6 +761,14 @@ class CSS::Properties:ver<0.4.5> {
                      ?? self!box-value(name, .edge-names)
                      !! self!item-value(name)
                     )
+    }
+    method property(Str \name) is rw {
+        with $.property-number(name) {
+            self!value($!index[$_], name)
+        }
+        else {
+            fail "unknown property: {name}";
+        }
     }
     method FALLBACK(Str \name, |c) is rw {
         with $.property-number(name) {

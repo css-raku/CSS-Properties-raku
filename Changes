@@ -2,6 +2,10 @@
    - issue #4 !important is not inherited and has no affect on inheritance.
    - add '.important()' (parameterless) candidate, which returns a map of all
      !important properties: my Bool %important{Str} = $css.important();
+   - issue #5 don't inherit relative quantities, e.g. 'font-size: 1.5em'.
+     generally these shouldn't be propagated and re-applied.
+   - also add .parent() attribute and .inherited method to make it easier
+     for agents to do their own inheritance. 
 0.4.4
    - Added CSS::Module::Property - A CStruct representation of property
      definitions to facilitate downstream optimizations (CSS::Properties).
