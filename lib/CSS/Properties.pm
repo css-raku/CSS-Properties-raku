@@ -479,8 +479,9 @@ class CSS::Properties:ver<0.4.5> {
                 }
                 if $inherit {
                     my $val := $css."{name}"();
-                    unless name eq 'font-size' && $val ~~ 'smaller'|'larger'
-                    || ($val ~~ CSS::Properties::Units && $val.type ~~ 'em'|'ex') {
+                    unless $val ~~ CSS::Properties::Units
+                    && ($val.type ~~ 'em'|'ex'
+                        || ($val.type ~~ 'keyw' && $val ~~ 'larger'|'smaller'|'bolder'|'lighter')) {
                         # don't inherit relative values
                         %!values{name} = $val;
                     }
