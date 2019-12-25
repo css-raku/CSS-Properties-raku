@@ -329,6 +329,7 @@ class CSS::Properties:ver<0.4.5> {
             }
         }
     }
+
     multi method inherited(Str $prop) {
         with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit} 
     }
@@ -472,17 +473,21 @@ class CSS::Properties:ver<0.4.5> {
                 my $important = False;
                 with self.handling(name) {
                     when 'initial' { %!values{name}:delete }
-                    when 'inherit' { $inherit = True }
+                    when 'inherit' { $inherit = !(%!values{name}:exists) }
                 }
                 elsif info.inherit {
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
                     my $val := $css."{name}"();
-                    unless $val ~~ CSS::Properties::Units
-                    && ($val.type ~~ 'em'|'ex'
+                    # static inheritance only works so well.
+                    if $val ~~ CSS::Properties::Units
+                    && ($val.type ~~ 'em'|'ex'|'%'
                         || ($val.type ~~ 'keyw' && $val ~~ 'larger'|'smaller'|'bolder'|'lighter')) {
-                        # don't inherit relative values
+                        # ignore what we can't handle
+                        self.handling(name) = 'inherit';
+                    }
+                    else {
                         %!values{name} = $val;
                     }
                 }
