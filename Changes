@@ -5,7 +5,8 @@
    - issue #5 don't inherit relative quantities, e.g. 'font-size: 1.5em'.
      generally these shouldn't be propagated and re-applied.
    - also add .parent() attribute and .inherited method to make it easier
-     for agents to do their own inheritance. 
+     for agents to do their own inheritance.
+   - issue #6 - fix optimization of 'inherit' and 'initial' component properties
 0.4.4
    - Added CSS::Module::Property - A CStruct representation of property
      definitions to facilitate downstream optimizations (CSS::Properties).

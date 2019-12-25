@@ -626,16 +626,14 @@ class CSS::Properties:ver<0.4.5> {
 
             my %groups = @children.classify: {
                 given %prop-ast{$_} {
-                    when .<expr>.elems > 1      {'multi'}
-                    when .<keyw> ~~ Handling    {.<keyw>}     # 'default', 'initial'
+                    when .<expr>.elems > 1      {'nah'}
+                    when .<expr>[0]<keyw> ~~ Handling    {'nah'}     # 'default', 'initial'
                     when .<prio> ~~ 'important' {'important'}
                     default {'normal'}
                 }
             }
 
-            # don't agregrate properties with a complex expression
-            # eg. border-color: red green blue yellow;
-            %groups<multi>:delete;
+            %groups<nah>:delete;
 
             #| find largest consolidation group
             my $group = do with %groups.pairs.sort(*.key).sort({+.value}).tail {
