@@ -1,5 +1,6 @@
 use v6;
 
+warn "CSS::Properties::Units is deprecated, Please use CSS::Units";
 #| utility definitions and operators for handing CSS Units
 
 my enum Lengths is export(:Lengths) «

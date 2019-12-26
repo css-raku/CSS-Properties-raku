@@ -1,11 +1,10 @@
 use v6;
 use Test;
 plan 13;
-use  CSS::Properties::Units;
+use CSS::Units :pt, :px, :pc, :in, :vw, :vh;
 
-sub value($v, $u) { CSS::Properties::Units.value($v, $u) }
+sub value($v, $u) { CSS::Units.value($v, $u) }
 
-use CSS::Properties::Units :pt, :px, :pc, :in, :vw, :vh;
 use CSS::Properties;
 my CSS::Properties $css .= new: :viewport-width(200pt), :viewport-height(100pt);
 is '%0.2f'.sprintf($css.measure($css.viewport-width)), '200.00', '$css.measure($.viewport-width)';

@@ -1,15 +1,28 @@
-# perl6-CSS-Properties
+# CSS-Properties-p6
 
 <a href="https://travis-ci.org/p6-css/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
  <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
-CSS::Properties is a class for parsing and generation of CSS property lists, including box-model, inheritance, and defaults.
+The CSS::Properties module is a set of related classes for parsing and generation of CSS property lists, including inheritance, and defaults.
+
+Classess in this module
+--------
+  * `CSS::Properties` - property list manipulation class.
+  * `CSS::Properties::Font` - property font manipulation
+  * `CSS::Units` - units and postfix operators (e.g. `12pt`)
+  * `CSS::Box` - CSS Box model implementation.
+  * `CSS::PageBox` - CSS Box model for paged media
+
+See Also
+--------
+
+  * [CSS](https://github.com/p6-css/CSS-raku) - Top level CSS manipulation class
 
 
 ## Basic Construction
 ```
 use v6;
-use CSS::Properties::Units :pt;
+use CSS::Units :pt;
 use CSS::Properties;
 
 my $style = "color:red !important; padding: 1pt";
@@ -64,7 +77,7 @@ say $css.font<font-family>; # 'Helvetica;
 
 ```
 use CSS::Properties;
-use CSS::Properties::Units :pt;
+use CSS::Units :pt;
 use Color;
 my CSS::Properties $css .= new;
 
@@ -262,7 +275,7 @@ margin-right: 5 mm
 
 ## Length Units
 
-CSS::Declaration::Units is a convenience module that provides some simple post-fix length unit definitions.
+CSS::Units is a convenience module that provides some simple post-fix length unit definitions.
 
 The `:ops` export overloads  `+` and `-` to perform unit
 calculations. `+css` and `-css` are also available as
@@ -271,7 +284,7 @@ more explicit infix operators:
 All infix operators convert to the left-hand operand's units.
 
 ```
-use CSS::Properties::Units :ops, :pt, :px, :in, :mm;
+use CSS::Units :ops, :pt, :px, :in, :mm;
 my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
@@ -302,12 +315,12 @@ The border edge surrounds the box's border. If the border has 0 width, the borde
 - *Margin Edge or Outer Edge* -
 The margin edge surrounds the box margin. If the margin has 0 width, the margin edge is the same as the border edge. The four margin edges define the box's margin box.
 
-### `CSS::Properties::Box`
+### `CSS::Box`
 
-`CSS::Properties::Box` is an abstract class for modelling Box Model elements.
+`CSS::Box` is an abstract class for modelling Box Model elements.
 
-    use CSS::Properties::Box;
-    use CSS::Properties::Units :px, :pt, :em, :percent;
+    use CSS::Box;
+    use CSS::Units :px, :pt, :em, :percent;
     use CSS::Properties;
 
     my $style = q:to"END";
@@ -324,7 +337,7 @@ The margin edge surrounds the box margin. If the margin has 0 width, the margin 
     my $bottom = 10pt;
     my $left   = 10pt;
 
-    my CSS::Properties::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
+    my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
     say $box.padding;           # dimensions of padding box;
     say $box.margin;            # dimensions of margin box;
     say $box.border-right;      # vertical position of right border
@@ -342,7 +355,7 @@ The margin edge surrounds the box margin. If the margin has 0 width, the margin 
 
 #### new
 
-    my CSS::Properties::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
+    my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
 
 The box `new` constructor accepts:
 
@@ -360,10 +373,10 @@ The '.font' accessor returns an object of type `CSS::Properties::Font`, with acc
 
 This method converts various length units to normalized base units (default 'pt').
 
-    use CSS::Properties::Units :mm, :in, :pt, :px;
-    use CSS::Properties::Box;
+    use CSS::Units :mm, :in, :pt, :px;
+    use CSS::Box;
     use CSS::Properties;
-    my CSS::Properties::Box $box .= new;
+    my CSS::Box $box .= new;
     # default base units is points
     say [(1mm, 1in, 1pt, 1px).map: {$box.measure($_)}];
     # produces: [2.8346pt 72pt 1pt 0.75pt]

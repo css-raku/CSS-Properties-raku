@@ -1,7 +1,7 @@
 use v6;
 class CSS::Properties::Font {
     use CSS::Properties;
-    use CSS::Properties::Units :pt;
+    use CSS::Units :pt;
 
     has Numeric $.em is rw = 10;
     has Numeric $.ex is rw = $!em * 0.75;

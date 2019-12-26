@@ -5,7 +5,7 @@ plan 47;
 use CSS::Properties;
 use CSS::Properties::Property;
 use CSS::Properties::Edges;
-use CSS::Properties::Units :pt, :px;
+use CSS::Units :pt, :px;
 use Color;
 
 my $css = CSS::Properties.new( :!warn, :border-top-color<red> );

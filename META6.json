@@ -7,6 +7,7 @@
   "depends" : [
     "CSS::Module",
     "CSS::Writer",
+    "CSS::Box",  
     "Color",
     "Method::Also"
   ],
@@ -15,13 +16,16 @@
   "name" : "CSS::Properties",
   "perl" : "6.*",
   "provides" : {
+    "CSS::Box" : "lib/CSS/Box.pm",
+    "CSS::PageBox" : "lib/CSS/PageBox.pm",
     "CSS::Properties" : "lib/CSS/Properties.pm",
     "CSS::Properties::Box" : "lib/CSS/Properties/Box.pm",
     "CSS::Properties::Edges" : "lib/CSS/Properties/Edges.pm",
     "CSS::Properties::Font" : "lib/CSS/Properties/Font.pm",
     "CSS::Properties::PageBox" : "lib/CSS/Properties/PageBox.pm",
     "CSS::Properties::Property" : "lib/CSS/Properties/Property.pm",
-    "CSS::Properties::Units" : "lib/CSS/Properties/Units.pm"
+    "CSS::Properties::Units" : "lib/CSS/Properties/Units.pm",
+    "CSS::Units" : "lib/CSS/Units.pm"
   },
   "resources" : [ ],
   "source-url" : "git://github.com/p6-css/CSS-Properties-p6.git",

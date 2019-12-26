@@ -5,7 +5,7 @@ plan 13;
 use CSS::Properties::Property;
 use CSS::Properties::Edges;
 use CSS::Properties;
-use CSS::Properties::Units :pt, :px;
+use CSS::Units :pt, :px;
 
 my $sample-prop = CSS::Properties::Property.new( :name<background-image> );
 

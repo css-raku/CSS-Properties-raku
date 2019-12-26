@@ -3,14 +3,14 @@ use Test;
 plan 18;
 
 use CSS::Properties;
-use CSS::Properties::PageBox;
-use CSS::Properties::Units :pt, :mm, :ops;
+use CSS::PageBox;
+use CSS::Units :pt, :mm, :ops;
 
 sub pt(*@v) { [@v.map: { .scale("pt").round }] }
 sub mm(*@v) { [@v.map: { .scale("mm").round }] }
 
 my $css = CSS::Properties.new: :style("size: 200pt 300pt");
-my CSS::Properties::PageBox $box .= new( :$css );
+my CSS::PageBox $box .= new( :$css );
 
 is-deeply pt(|$box.Array), [298, 198, 2, 2], '.Array';
 

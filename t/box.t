@@ -3,8 +3,8 @@ use Test;
 plan 20;
 
 use CSS::Properties;
-use CSS::Properties::Units :pt;
-use CSS::Properties::Box;
+use CSS::Units :pt;
+use CSS::Box;
 
 my CSS::Properties $css .= new;
 
@@ -17,7 +17,7 @@ my $right  = 50e0pt;
 my $bottom = 0e0pt;
 my $left   = 0e0pt;
 
-my CSS::Properties::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
+my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
 
 is-deeply $box.Array, [$top, $right, $bottom, $left], '.Array';
 is $box.padding, [$top+5, $right+5, $bottom-5, $left-5], '.padding';
@@ -46,7 +46,7 @@ is $box.padding, [$top-5, $right, $bottom-15, $left-10], 'move padding';
 $box.top += 5;
 is-deeply $box.Array, [$top-5, $right-5, $bottom-10, $left-5], '.resize';
 
-dies-ok { note CSS::Properties::Box.new( :$top, :$left, :bottom($top+1), :$right, :$css )}, 'illegal initial size';
+dies-ok { note CSS::Box.new( :$top, :$left, :bottom($top+1), :$right, :$css )}, 'illegal initial size';
 
 dies-ok { $box.top = $box.bottom -5}, 'illegal resize';
 

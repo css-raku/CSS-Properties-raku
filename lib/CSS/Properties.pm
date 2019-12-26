@@ -11,7 +11,7 @@ class CSS::Properties:ver<0.4.5> {
     use CSS::Module::Property;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Properties::Units :Lengths, :&dimension;
+    use CSS::Units :Lengths, :&dimension;
     use Method::Also;
     use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
@@ -80,7 +80,7 @@ class CSS::Properties:ver<0.4.5> {
                 when 'percent' { 0 }
                 default { dimension($_).enums{$_} }
             } // die "unknown units: $units";
-            CSS::Properties::Units.value($_ * $scale / $!scale, $!units);
+            CSS::Units.value($_ * $scale / $!scale, $!units);
         }
         default { Nil }
     }
@@ -373,20 +373,20 @@ class CSS::Properties:ver<0.4.5> {
 
         $color .= new: |($type => @channels);
 
-        $color does CSS::Properties::Units[Colors, $type];
+        $color does CSS::Units[Colors, $type];
     }
     multi method from-ast(Pair $v where .key eq 'keyw') {
         state $cache //= %(
             'transparent' => (Color
-                              but CSS::Properties::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
+                              but CSS::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
         );
-        $cache{$v.value} //= CSS::Properties::Units.value($v.value, $v.key);
+        $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
     }
     multi method from-ast(Pair $v) {
         my \r = self.from-ast( $v.value );
-        r ~~ CSS::Properties::Units
+        r ~~ CSS::Units
             ?? r
-            !! CSS::Properties::Units.value(r, $v.key);
+            !! CSS::Units.value(r, $v.key);
     }
     multi method from-ast(List $v) {
         $v.elems == 1
@@ -481,7 +481,7 @@ class CSS::Properties:ver<0.4.5> {
                 if $inherit {
                     my $val := $css."{name}"();
                     # static inheritance only works so well.
-                    if $val ~~ CSS::Properties::Units
+                    if $val ~~ CSS::Units
                     && ($val.type ~~ 'em'|'ex'|'%'
                         || ($val.type ~~ 'keyw' && $val ~~ 'larger'|'smaller'|'bolder'|'lighter')) {
                         # ignore what we can't handle
@@ -626,14 +626,16 @@ class CSS::Properties:ver<0.4.5> {
 
             my %groups = @children.classify: {
                 given %prop-ast{$_} {
-                    when .<expr>.elems > 1      {'nah'}
-                    when .<expr>[0]<keyw> ~~ Handling    {'nah'}     # 'default', 'initial'
+                    when .<expr>.elems > 1              # complex expression
+                    || .<expr>[0]<keyw> ~~ Handling  {  # 'initial', or 'inherit'
+                        'omit'
+                    }
                     when .<prio> ~~ 'important' {'important'}
                     default {'normal'}
                 }
             }
 
-            %groups<nah>:delete;
+            %groups<omit>:delete;
 
             #| find largest consolidation group
             my $group = do with %groups.pairs.sort(*.key).sort({+.value}).tail {
