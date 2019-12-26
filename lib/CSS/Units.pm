@@ -6,15 +6,15 @@ my enum Lengths is export(:Lengths) «
     :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
 »;
 
-my enum Resolutions « :dpi(72.0) :dpcm(28.346) :dppx(.75) »;
+my enum Resolutions is export(:Resolutions) « :dpi(72.0) :dpcm(28.346) :dppx(.75) »;
 
-my enum Angles « :deg(1.0) :turn(360.0) :rad(57.2958) »;
+my enum Angles is export(:Angles) « :deg(1.0) :turn(360.0) :rad(57.2958) »;
 
-my enum Time « :s(1.0) :ms(0.001) »;
+my enum Time is export(:Time) « :s(1.0) :ms(0.001) »;
 
-my enum Frequency « :hz(1.0) :khz(1000.0) »;
+my enum Frequency is export(:Frequency) « :hz(1.0) :khz(1000.0) »;
 
-my enum Percentages ('%' => 100);
+my enum Percentages is export(:Percentages) ('%' => 100);
 
 role CSS::Units[\dimension, \units] {
 
