@@ -1,3 +1,6 @@
+0.5.0
+   - renamed classes CSS::Properties::Units -> CSS::Units, CSS::Properties::Box
+     -> CSS::Box, CSS::Properties::PageBox -> CSS::PageBox
 0.4.5
    - issue #4 !important is not inherited and has no affect on inheritance.
    - add '.important()' (parameterless) candidate, which returns a map of all
