@@ -1,4 +1,9 @@
 use v6;
 
-die "The CSS::Properties::Box class is deprecated. Please use the CSS::Box class";
+use CSS::Box;
 
+warn "CSS::Properties::Box is deprecated. Please use CSS::Box";
+
+unit class CSS::Properties::Box is CSS::Box;
+
+my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
