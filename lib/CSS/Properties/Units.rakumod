@@ -2,7 +2,7 @@ use v6;
 
 use CSS::Units :Resolutions, :Angles, :Time, :Frequency, :Percentages;
 ## This class is about to undergo deprecation - do not use in new code
-## warn "CSS::Properties::Units is deprecated, Please use CSS::Units";
+warn "CSS::Properties::Units is deprecated, Please use CSS::Units";
 unit role CSS::Properties::Units does CSS::Units;
 
 my enum Lengths is export(:Lengths) «

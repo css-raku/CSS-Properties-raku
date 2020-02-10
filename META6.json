@@ -1,37 +1,40 @@
 {
-  "auth" : "github:p6-css",
-  "authors" : [
+  "auth": "github:p6-css",
+  "authors": [
     "David Warring"
   ],
-  "build-depends" : [ ],
-  "depends" : [
+  "build-depends": [
+  ],
+  "depends": [
     "CSS::Module",
     "CSS::Writer",
-    "CSS::Box",  
+    "CSS::Box",
     "Color",
     "Method::Also"
   ],
-  "description" : "CSS property manipulation library",
-  "license" : "Artistic-2.0",
-  "name" : "CSS::Properties",
-  "perl" : "6.*",
-  "provides" : {
-    "CSS::Box" : "lib/CSS/Box.pm",
-    "CSS::PageBox" : "lib/CSS/PageBox.pm",
-    "CSS::Properties" : "lib/CSS/Properties.pm",
-    "CSS::Properties::Box" : "lib/CSS/Properties/Box.pm",
-    "CSS::Properties::Edges" : "lib/CSS/Properties/Edges.pm",
-    "CSS::Properties::Font" : "lib/CSS/Properties/Font.pm",
-    "CSS::Properties::PageBox" : "lib/CSS/Properties/PageBox.pm",
-    "CSS::Properties::Property" : "lib/CSS/Properties/Property.pm",
-    "CSS::Properties::Units" : "lib/CSS/Properties/Units.pm",
-    "CSS::Units" : "lib/CSS/Units.pm"
+  "description": "CSS property manipulation library",
+  "license": "Artistic-2.0",
+  "name": "CSS::Properties",
+  "perl": "6.*",
+  "provides": {
+    "CSS::Box": "lib/CSS/Box.rakumod",
+    "CSS::PageBox": "lib/CSS/PageBox.rakumod",
+    "CSS::Properties": "lib/CSS/Properties.rakumod",
+    "CSS::Properties::Box": "lib/CSS/Properties/Box.rakumod",
+    "CSS::Properties::Edges": "lib/CSS/Properties/Edges.rakumod",
+    "CSS::Properties::Font": "lib/CSS/Properties/Font.rakumod",
+    "CSS::Properties::PageBox": "lib/CSS/Properties/PageBox.rakumod",
+    "CSS::Properties::Property": "lib/CSS/Properties/Property.rakumod",
+    "CSS::Properties::Units": "lib/CSS/Properties/Units.rakumod",
+    "CSS::Units": "lib/CSS/Units.rakumod"
   },
-  "resources" : [ ],
-  "source-url" : "git://github.com/p6-css/CSS-Properties-p6.git",
-  "tags" : [
+  "resources": [
+  ],
+  "source-url": "git://github.com/p6-css/CSS-Properties-p6.git",
+  "tags": [
     "css"
   ],
-  "test-depends" : [ ],
-  "version" : "0.5.0"
+  "test-depends": [
+  ],
+  "version": "0.5.1"
 }

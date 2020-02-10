@@ -1,3 +1,5 @@
+0.5.1
+   - rename sources *.pm6 -> *.rakumod
 0.5.0
    - renamed classes CSS::Properties::Units -> CSS::Units, CSS::Properties::Box
      -> CSS::Box, CSS::Properties::PageBox -> CSS::PageBox
