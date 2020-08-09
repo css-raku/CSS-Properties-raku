@@ -6,7 +6,7 @@ my enum Lengths is export(:Lengths) «
     :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
 »;
 
-my enum Resolutions is export(:Resolutions) « :dpi(72.0) :dpcm(28.346) :dppx(.75) »;
+my enum Resolutions is export(:Resolutions) « :dpi(1.0/in) :dpcm(1.0/cm) :dppx(1.0/px) »;
 
 my enum Angles is export(:Angles) « :deg(1.0) :turn(360.0) :rad(57.2958) »;
 
@@ -20,7 +20,8 @@ role CSS::Units[\dimension, \units] {
 
     method dimension{dimension}
     method type{units}
-    method gist {self~ units}
+    method units {units}
+    method gist {self ~ units}
 
     multi method scale(Str $u) {
         self * (units eq $u ?? 1 !! dimension.enums{units} / dimension.enums{$u});
