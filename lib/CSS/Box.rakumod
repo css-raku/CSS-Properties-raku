@@ -180,34 +180,35 @@ class CSS::Box {
     }
 
     method can(Str \name) {
-       my @meth = callsame;
-       unless @meth {
+       callsame() || do {
            given name {
                when /^ (padding|border|margin)'-'(top|right|bottom|left) $/ {
                    #| absolute positions
                    my Str $box = ~$0;
                    my UInt \edge = %( :top(Top), :right(Right), :bottom(Bottom), :left(Left) ){$1};
-                   @meth.push: method { self."$box"()[edge] };
+                   ( method { self."$box"()[edge] }, );
                }
                when /^ (padding|border|margin)'-'(width|height) $/ {
                    #| cumulative widths and heights
                    my Str $box = ~$0;
-                   @meth.push: do given ~$1 {
-                       when 'width'  { method { .[Right] - .[Left] with self."$box"() } }
-                       when 'height' { method { .[Top] - .[Bottom] with self."$box"() } }
-                   }
+                   my &meth :=  $1 eq 'width'
+                         ??  method { .[Right] - .[Left] with self."$box"() }
+                         !!  method { .[Top] - .[Bottom] with self."$box"() };
+                   ( &meth, );
                }
+               default { () }
            }
-           self.^add_method(name, $_) with @meth[0];
        }
-       @meth;
     }
     method dispatch:<.?>(\name, |c) is raw {
-        self.can(name) ?? self."{name}"(|c) !! Nil
+        given self.can(name) {
+            .so ?? .[0](self, |c) !! Nil;
+        }
     }
     method FALLBACK(Str \name, |c) {
-        self.can(name)
-            ?? self."{name}"(|c)
-            !! die die X::Method::NotFound.new( :method(name), :typename(self.^name) );
+        given self.can(name) {
+            .so ?? .[0](self, |c)
+                !! die X::Method::NotFound.new: :method(name), :typename(self.^name);
+        }
     }
 }
