@@ -1,3 +1,7 @@
+0.5.2
+   - refactor .can() .dispatch() and .FALLBACK() methods
+   - reactor 'dpi', 'dpcm', and 'dppx' units. Express as reciprocals
+     of 'in', 'cm', and 'px'
 0.5.1
    - rename sources *.pm6 -> *.rakumod
 0.5.0
