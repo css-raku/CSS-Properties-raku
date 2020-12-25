@@ -334,7 +334,7 @@ class CSS::Properties:ver<0.5.2> {
     }
 
     multi method inherited(Str $prop) {
-        with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit} 
+        with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit}
     }
     multi method inherited {
         %!values.keys.grep({ $.inherited($_) }).sort;
