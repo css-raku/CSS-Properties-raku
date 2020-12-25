@@ -80,7 +80,7 @@ class CSS::Properties::Font {
         }
     }
 
-    multi method measure($v) is default {
+    multi method measure($v) {
         $!css.measure($v, :$!em, :$!ex);
     }
 
@@ -118,7 +118,7 @@ class CSS::Properties::Font {
                 }
             }
         }
-        $_ = 'arial' without @!family[0];
+        @!family[0] //= 'arial';
 
         $!style = $css.font-style;
         $!weight = self!font-weight($css.font-weight);
