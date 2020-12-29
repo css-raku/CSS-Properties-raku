@@ -55,26 +55,24 @@ class CSS::Properties::Font {
             });
     }
 
-    multi method measure($_, :$font! where .so) returns Numeric {
+    multi method measure($_, :font($)! where .so) returns Numeric {
         if $_ ~~ Numeric {
             .?type ~~ 'percent'
                 ?? $!em * $_ / 100
                 !! self.measure($_);
         }
         else {
+            my constant %Sizes = %(
+                :xx-small(6pt), :x-small(7.5pt), :small(10pt),
+                :medium(12pt), :large(13.5pt), :x-large(18pt), :xx-large(24pt)
+            );
             given .lc {
-                when 'xx-small' { 6pt }
-                when 'x-small'  { 7.5pt }
-                when 'small'    { 10pt }
-                when 'medium'   { 12pt }
-                when 'large'    { 13.5pt }
-                when 'x-large'  { 18pt }
-                when 'xx-large' { 24pt }
+                when %Sizes{$_}:exists {  %Sizes{$_}.scale: $.units }
                 when 'larger'   { $!em * 1.2 }
                 when 'smaller'  { $!em / 1.2 }
                 default {
                     warn "unhandled font-size: $_";
-                    12pt;
+                    self.measure: 'medium', :font;
                 }
             }
         }
