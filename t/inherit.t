@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 21;
+plan 23;
 use CSS::Properties;
 
 my $inherit = CSS::Properties.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255)!important");
@@ -46,10 +46,12 @@ is ~$css, 'color:red; font-size:12pt;', 'inherit absolute font-size';
 
 $inherit = CSS::Properties.new: :style("font-size: larger;");
 $css = CSS::Properties.new: :style("color:red; font-size:inherit;"), :$inherit;
-is ~$css, 'color:red; font-size:inherit;', 'non-inheritance of relative font-size';
+is ~$css, 'color:red; font-size:14.4pt;', 'inheritance of relative font-size';
 
-$inherit = CSS::Properties.new: :style("font-size: 1.5em;");
-$css = CSS::Properties.new: :style("color:red;"), :$inherit;
-is ~$css, 'color:red; font-size:inherit;', 'non-inheritance of relative font-size';
+$inherit = CSS::Properties.new: :style("font-size: 40pt;");
+$css = CSS::Properties.new: :style("font-size:75%;"), :$inherit;
+is ~$css, 'font-size:75%;', 'relative font-size inheritance';
+is $inherit.measure(:font-size), 40, 'inherited font size measurement';
+is $css.measure(:font-size), 30, 'relative font size measurement';
 
 done-testing;

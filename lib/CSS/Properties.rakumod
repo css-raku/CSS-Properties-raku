@@ -11,10 +11,13 @@ class CSS::Properties:ver<0.5.2> {
     use CSS::Module::Property;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Units :Lengths, :&dimension;
+    use CSS::Units :Lengths, :&dimension, :pt;
     use Method::Also;
     use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
+
+    subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
+    subset Handling of Str where 'initial'|'inherit';
 
     my %module-index{CSS::Module};        # per-module objects
     my %module-properties{CSS::Module};   # per-module property attributes
@@ -25,7 +28,6 @@ class CSS::Properties:ver<0.5.2> {
     has Array %!box;
     has Hash  %!struct;
     has Bool  %!important{Int};
-    my subset Handling of Str where 'initial'|'inherit';
     has Handling %!handling{Int};
     has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; #| associated CSS module
     has Exception @.warnings;
@@ -37,6 +39,8 @@ class CSS::Properties:ver<0.5.2> {
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
     has CSS::Properties $.parent is rw; # for building rendering trees
+    has Numeric $.em is rw = 12pt.scale($!units);
+    method ex { $!em * 3/4 }
 
     my subset ZeroPoint of Associative where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -67,9 +71,79 @@ class CSS::Properties:ver<0.5.2> {
     multi sub css-eqv(Any $a, Any $b) is default {
         !$a.defined && !$b.defined
     }
-    method measure($_,
-                   Numeric :$em = 12,
-                   Numeric :$ex = $em * 3/4,
+    #| converts a weight name to a three digit number:
+    #| 100 lightest ... 900 heaviest
+    method weigh($_, Int $delta = 0) returns FontWeight {
+        my $v = do given .lc {
+            when FontWeight       { .Int }
+            when 'normal'         { 400 }
+            when 'bold'           { 700 }
+            when 'lighter'        { 100 }
+            when 'bolder'         { 700 }
+            default {
+                if /^ <[1..9]>00 $/ {
+                    .Int
+                }
+                else {
+                    warn "unhandled font-weight: $_";
+                    400;
+                }
+            }
+        };
+        min(900, max(100, $v + $delta));  
+    }
+
+    multi method measure(:line-height($_)!) {
+        given .isa(Bool) ?? self.line-height !! $_ {
+            when .type eq 'num' { $_ * $!em }
+            when 'normal' { $!em * 1.2 }
+            default { $.measure($_, :font); }
+        }
+    }
+    multi method measure(:font-size($_)!) {
+        .isa(Bool)
+            ?? $!em
+            !! $.measure($_, :font)
+    }
+    multi method measure(:font-weight($_)!) {
+        my $v = .isa(Bool) ?? self.font-weight !! $_;
+        self.weigh($v);
+    }
+    multi method measure(*%misc where .elems == 1) {
+        my ($prop, $value) = %misc.kv;
+        given $value {
+            my $v = .isa(Bool) ?? self."$prop"() !! $_;
+            $.measure($v);
+        }
+    }
+
+    my constant %FontSizes = %(
+        :xx-small(6pt), :x-small(7.5pt), :small(10pt),
+        :medium(12pt), :large(13.5pt), :x-large(18pt), :xx-large(24pt)
+    );
+
+    multi method measure($_, :font($)! where .so) returns Numeric {
+        if $_ ~~ Numeric {
+            .?type ~~ 'percent'
+                ?? $!em * $_ / 100
+                !! self.measure($_);
+        }
+        else {
+            given .lc {
+                when %FontSizes{$_}:exists {  %FontSizes{$_}.scale: $.units }
+                when 'larger'   { $!em * 1.2 }
+                when 'smaller'  { $!em / 1.2 }
+                default {
+                    warn "unhandled font-size: $_";
+                    self.measure: 'medium', :font;
+                }
+            }
+        }
+    }
+
+    multi method measure($_,
+                   Numeric :$em = $!em,
+                   Numeric :$ex = $.ex,
                   ) {
         when Numeric {
             my Str $units = .?type // $!units;
@@ -86,6 +160,44 @@ class CSS::Properties:ver<0.5.2> {
             CSS::Units.value($_ * $scale / $!scale, $!units);
         }
         default { Nil }
+    }
+    multi method computed('font-size') {
+        CSS::Units.value($!em, $!units)
+    }
+    multi method computed(Str $prop) {
+        my $v = self."$prop"();
+        given $v.units {
+            when 'em' {
+                $v = CSS::Units.value($v * $!em, $!units);
+            }
+            when 'ex' {
+                $v = CSS::Units.value($v * $.ex, $!units);
+            }
+            when 'percent' {
+                $v = CSS::Units.value($!em * $v / 100, $!units)
+                    if $prop ~~ 'font-size'|'line-height';
+            }
+            when 'keyw' {
+                given $v {
+                    when 'larger' {
+                        $v = CSS::Units.value($!em * 1.2, $!units)
+                    }
+                    when 'smaller' {
+                        $v = CSS::Units.value($!em / 1.2, $!units)
+                    }
+                    when 'bolder' {
+                        $v = CSS::Units.value(self.weigh($_, 300), 'int');
+                    }
+                    when 'lighter' {
+                        $v = CSS::Units.value(self.weigh($_, -300), 'int');
+                    }
+                    when %FontSizes{$_}:exists {
+                        $v = %FontSizes{$_};
+                    }
+                }
+            }
+        }
+        $v;
     }
 
     sub make-property(CSS::Module $module, UInt:D $prop-num) {
@@ -186,22 +298,24 @@ class CSS::Properties:ver<0.5.2> {
     }
 
 
-    submethod TWEAK( Str :$style, List :$ast, :$inherit = [], :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, CSS::Properties() :$inherit, :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
         $!index = %module-index{$!module} //= $!module.index
             // die "module {$!module.name} lacks an index";
         $!properties = %module-properties{$!module} //= [];
+        $!scale = Lengths.enums{$!units};
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
+        $!em = .em with $inherit;
         self!build-declarations(@declarations);
-        self.inherit($_) for $inherit.list;
+        self.inherit($_) with $inherit;
         self!copy($_) with $copy;
         self.set-properties(|%props);
-        $!scale = Lengths.enums{$!units};
     }
+    multi method COERCE(Str:D $style) { self.new: :$style }
 
     method !box-value(Str $prop, CArray $edges) is rw {
 	Proxy.new(
@@ -300,6 +414,8 @@ class CSS::Properties:ver<0.5.2> {
             },
             STORE => -> $, $v {
                 with self!coerce( $v, :$prop ) {
+                    $!em = self.measure($_, :font)
+                        if $prop eq 'font-size';
                     %!values{$prop} = $_;
                 }
                 else {
@@ -460,11 +576,8 @@ class CSS::Properties:ver<0.5.2> {
     #| - handling of 'initial' and 'inherit' in the child declarations
     #| - !important override properties in parent
     #| - not all properties are inherited. e.g. color is, margin isn't
-    multi method inherit(Str $style) {
-        my $css = $.new( :$.module, :$style);
-        $.inherit($css);
-    }
-    multi method inherit(CSS::Properties:D $css) {
+
+    multi method inherit(CSS::Properties:D() $css) {
         for $css.properties -> \name {
             # skip unknown extension properties
             next if name.starts-with('-') && !self.prop-num(name).defined;
@@ -480,17 +593,7 @@ class CSS::Properties:ver<0.5.2> {
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
-                    my $val := $css."{name}"();
-                    # static inheritance only works so well.
-                    if $val ~~ CSS::Units
-                    && ($val.type ~~ 'em'|'ex'|'%'
-                        || ($val.type ~~ 'keyw' && $val ~~ 'larger'|'smaller'|'bolder'|'lighter')) {
-                        # ignore what we can't handle
-                        self.handling(name) = 'inherit';
-                    }
-                    else {
-                        %!values{name} = $val;
-                    }
+                    %!values{name} = $css.computed(name);
                 }
             }
         }
