@@ -73,7 +73,7 @@ class CSS::Properties:ver<0.5.2> {
     }
     #| converts a weight name to a three digit number:
     #| 100 lightest ... 900 heaviest
-    method weigh($_, Int $delta = 0) returns FontWeight {
+    method !weigh($_, Int $delta = 0) returns FontWeight {
         my $v = do given .lc {
             when FontWeight       { .Int }
             when 'normal'         { 400 }
@@ -107,7 +107,7 @@ class CSS::Properties:ver<0.5.2> {
     }
     multi method measure(:font-weight($_)!) {
         my $v = .isa(Bool) ?? self.font-weight !! $_;
-        self.weigh($v);
+        self!weigh($v);
     }
     multi method measure(*%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
@@ -122,28 +122,10 @@ class CSS::Properties:ver<0.5.2> {
         :medium(12pt), :large(13.5pt), :x-large(18pt), :xx-large(24pt)
     );
 
-    multi method measure($_, :font($)! where .so) returns Numeric {
-        if $_ ~~ Numeric {
-            .?type ~~ 'percent'
-                ?? $!em * $_ / 100
-                !! self.measure($_);
-        }
-        else {
-            given .lc {
-                when %FontSizes{$_}:exists {  %FontSizes{$_}.scale: $.units }
-                when 'larger'   { $!em * 1.2 }
-                when 'smaller'  { $!em / 1.2 }
-                default {
-                    warn "unhandled font-size: $_";
-                    self.measure: 'medium', :font;
-                }
-            }
-        }
-    }
-
-    multi method measure($_,
-                   Numeric :$em = $!em,
-                   Numeric :$ex = $.ex,
+    multi method measure(Numeric $_,
+                         Numeric :$em = $!em,
+                         Numeric :$ex = $.ex,
+                         Bool    :$font,
                   ) {
         when Numeric {
             my Str $units = .?type // $!units;
@@ -154,50 +136,50 @@ class CSS::Properties:ver<0.5.2> {
                 when 'vh'   { $!viewport-height }
                 when 'vmin' { min($!viewport-width, $!viewport-height) }
                 when 'vmax' { max($!viewport-width, $!viewport-height) }
-                when 'percent' { 0 }
+                when $_ eq 'percent' && $font {
+                    $!em * $!scale / 100;
+                }
                 default { dimension($_).enums{$_} }
             } // die "unknown units: $units";
-            CSS::Units.value($_ * $scale / $!scale, $!units);
+            if $scale.defined  {
+                CSS::Units.value($_ * $scale / $!scale, $!units);
+            }
+            else {
+                Nil;
+            }
         }
-        default { Nil }
     }
+    multi method measure($_, :$font) {
+        my $v;
+
+        if $_ ~~ Str:D && $font {
+            when %FontSizes{$_}:exists { $v := %FontSizes{$_}.scale: $!units }
+            when 'larger'   { $v := $!em * 1.2 }
+            when 'smaller'  { $v := $!em / 1.2 }
+        }
+
+        with $v {
+            CSS::Units.value($_, $!units);
+        }
+        else {
+            Nil;
+        }
+    }
+
     multi method computed('font-size') {
         CSS::Units.value($!em, $!units)
     }
+    multi method computed('font-weight') {
+        self!weigh: self.font-weight;
+    }
     multi method computed(Str $prop) {
-        my $v = self."$prop"();
-        given $v.units {
-            when 'em' {
-                $v = CSS::Units.value($v * $!em, $!units);
-            }
-            when 'ex' {
-                $v = CSS::Units.value($v * $.ex, $!units);
-            }
-            when 'percent' {
-                $v = CSS::Units.value($!em * $v / 100, $!units)
-                    if $prop ~~ 'font-size'|'line-height';
-            }
-            when 'keyw' {
-                given $v {
-                    when 'larger' {
-                        $v = CSS::Units.value($!em * 1.2, $!units)
-                    }
-                    when 'smaller' {
-                        $v = CSS::Units.value($!em / 1.2, $!units)
-                    }
-                    when 'bolder' {
-                        $v = CSS::Units.value(self.weigh($_, 300), 'int');
-                    }
-                    when 'lighter' {
-                        $v = CSS::Units.value(self.weigh($_, -300), 'int');
-                    }
-                    when %FontSizes{$_}:exists {
-                        $v = %FontSizes{$_};
-                    }
-                }
-            }
+        my $v := self."$prop"();
+        with self.measure($v) {
+            CSS::Units.value($_, $!units);
         }
-        $v;
+        else {
+            $v;
+        }
     }
 
     sub make-property(CSS::Module $module, UInt:D $prop-num) {

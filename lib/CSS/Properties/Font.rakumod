@@ -9,9 +9,7 @@ class CSS::Properties::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <units viewport-width viewport-height Str> .= new();
-    has Numeric $.em;
-    has Numeric $.ex;
+    has CSS::Properties $.css handles <em ex measure units viewport-width viewport-height Str> .= new();
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -54,13 +52,7 @@ class CSS::Properties::Font {
             });
     }
 
-    method measure(|c) {
-        $!css.measure(:$!em, :$!ex, |c);
-    }
-
     method setup(CSS::Properties $css = $!css) {
-        $!em = $!css.em;
-        $!ex = $!css.ex;
         @!family = [];
         with $css.font-family {
             for .grep(* ne ',') {
@@ -76,7 +68,7 @@ class CSS::Properties::Font {
         @!family[0] //= 'arial';
 
         $!style = $css.font-style;
-        $!weight = $css.weigh($css.font-weight);
+        $!weight = $css.computed('font-weight');
         $!stretch = $css.font-stretch;
         $!line-height = $css.measure(:line-height);
 	self;
