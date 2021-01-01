@@ -90,7 +90,8 @@ class CSS::Properties:ver<0.5.2> {
                 }
             }
         };
-        min(900, max(100, $v + $delta));  
+        $v = min(900, max(100, $v + $delta));
+        CSS::Units.value($v, 'int');
     }
 
     multi method measure(:line-height($_)!) {
@@ -175,7 +176,7 @@ class CSS::Properties:ver<0.5.2> {
     multi method computed(Str $prop) {
         my $v := self."$prop"();
         with self.measure($v) {
-            CSS::Units.value($_, $!units);
+            $_;
         }
         else {
             $v;
@@ -280,7 +281,7 @@ class CSS::Properties:ver<0.5.2> {
     }
 
 
-    submethod TWEAK( Str :$style, List :$ast, CSS::Properties() :$inherit, :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, CSS::Properties() :$inherit, CSS::Properties() :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
