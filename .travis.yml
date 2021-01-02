@@ -2,10 +2,10 @@ language: perl6
 sudo: false
 perl6:
   - latest
-  - '2020.12'
+  - '2018.12'
 install:
   - rakudobrew build zef
   - zef --depsonly install .
 script:
-  - prove -ve "raku -I."
+  - prove -ve "perl6 -I."
   - zef install .

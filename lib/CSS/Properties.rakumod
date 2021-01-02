@@ -280,8 +280,7 @@ class CSS::Properties:ver<0.5.2> {
         }
     }
 
-
-    submethod TWEAK( Str :$style, List :$ast, CSS::Properties() :$inherit, CSS::Properties() :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, :$inherit is copy, CSS::Properties :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
@@ -292,12 +291,18 @@ class CSS::Properties:ver<0.5.2> {
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
+        with $inherit {
+            # pre Rakudo 2012 compatiblity
+            $_ = self.COERCE: $_
+                unless $_ ~~ CSS::Properties
+        }
         $!em = .em with $inherit;
         self!build-declarations(@declarations);
         self.inherit($_) with $inherit;
         self!copy($_) with $copy;
         self.set-properties(|%props);
     }
+
     multi method COERCE(Str:D $style) { self.new: :$style }
 
     method !box-value(Str $prop, CArray $edges) is rw {
