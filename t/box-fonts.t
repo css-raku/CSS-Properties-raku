@@ -5,6 +5,7 @@ plan 19;
 use CSS::Properties;
 use CSS::Properties::Font;
 use CSS::Units :px, :percent;
+sub keyw($v) { CSS::Units.value($v, 'keyw') }
 my $font-style = 'italic bold 10pt/12pt times-roman';
 my $font = CSS::Properties::Font.new: :$font-style;
 is $font.em, 10, 'em';
@@ -21,8 +22,8 @@ is $font.measure(15px), 11.25, 'measure numeric';
 is $font.measure(:font-size(120%)), 12, 'measure percentage font-size';
 is $font.measure(:font-size(80%)), 8, 'measure percentage font-size';
 is $font.measure(:font-size(0%)), 0, 'measure percentage font-size';
-is $font.measure(:font-size<medium>), 12, 'measure named font-size';
-is $font.measure(:font-size<smaller>), 10/1.2, 'measure named font-size';
+is $font.measure(:font-size(keyw('medium'))), 12, 'measure named font-size';
+is $font.measure(:font-size(keyw('smaller'))), 10/1.2, 'measure named font-size';
 is $font.fontconfig-pattern, 'times-roman:slant=italic:weight=bold', 'fontconfig-pattern';
 is $font.Str, "font:{$font-style};", '$font.Str';
 

@@ -66,15 +66,15 @@ Options:
 
 ### measure
 
-    multi method measure(:$line-height! --> Numeric)
-    multi method measure(:$font-size! --> Numeric)
-    multi method measure(:$font-weight! --> Numeric)
+    multi method measure(:$line-height! --> Numeric); # in $.units
+    multi method measure(:$font-size! --> Numeric);   # in $.units;
+    multi method measure(:$font-weight! --> Numeric); # e.g. 400, 700
 
     my Numeric $font-size = $css.measure: :font-size;
     $font-size = $css.measure: :font-size<smaller>;
     $font-size = $css.measure: :font-size(120%);
 
-Selected measurements in `$css.units` units. See also l<CSS::Box>, which can measure a wider
+Selected measurements. See also l<CSS::Box>, which can measure a wider
 range of properties.
 
 ## CSS Property Accessors 

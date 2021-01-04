@@ -96,14 +96,14 @@ class CSS::Properties:ver<0.5.2> {
 
     multi method measure(:line-height($_)!) {
         given .isa(Bool) ?? self.line-height !! $_ {
-            when .type eq 'num' { $_ * $!em }
-            when 'normal' { $!em * 1.2 }
+            when .type eq 'num' { CSS::Units.value($_ * $!em, $!units) }
+            when 'normal' { CSS::Units.value($!em * 1.2, $!units) }
             default { $.measure($_, :font); }
         }
     }
     multi method measure(:font-size($_)!) {
         .isa(Bool)
-            ?? $!em
+            ?? CSS::Units.value($!em, $!units)
             !! $.measure($_, :font)
     }
     multi method measure(:font-weight($_)!) {
@@ -120,7 +120,7 @@ class CSS::Properties:ver<0.5.2> {
 
     my constant %FontSizes = %(
         :xx-small(6pt), :x-small(7.5pt), :small(10pt),
-        :medium(12pt), :large(13.5pt), :x-large(18pt), :xx-large(24pt)
+        :large(13.5pt), :x-large(18pt), :xx-large(24pt)
     );
 
     multi method measure(Numeric $_,
@@ -128,8 +128,7 @@ class CSS::Properties:ver<0.5.2> {
                          Numeric :$ex = $.ex,
                          Bool    :$font,
                   ) {
-        when Numeric {
-            my Str $units = .?type // $!units;
+        my Str $units = .?type // $!units;
             my Numeric $scale = do given $units {
                 when 'em'   { $em }
                 when 'ex'   { $ex }
@@ -148,13 +147,15 @@ class CSS::Properties:ver<0.5.2> {
             else {
                 Nil;
             }
-        }
     }
-    multi method measure($_, :$font) {
+    multi method measure(Str $_, :$font) {
         my $v;
 
-        if $_ ~~ Str:D && $font {
+        if .?type ~~ 'keyw' {
             when %FontSizes{$_}:exists { $v := %FontSizes{$_}.scale: $!units }
+            when 'thin'     { $v := 1pt.scale: $!units }
+            when 'medium'   { $v := ($font ?? 12pt !! 3pt).scale: $!units }
+            when 'thick'    { $v := 5pt.scale: $!units }
             when 'larger'   { $v := $!em * 1.2 }
             when 'smaller'  { $v := $!em / 1.2 }
         }
@@ -166,6 +167,7 @@ class CSS::Properties:ver<0.5.2> {
             Nil;
         }
     }
+    multi method measure($_) { $_ }
 
     multi method computed('font-size') {
         CSS::Units.value($!em, $!units)
@@ -280,7 +282,7 @@ class CSS::Properties:ver<0.5.2> {
         }
     }
 
-    submethod TWEAK( Str :$style, List :$ast, :$inherit is copy, CSS::Properties :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, CSS::Properties :$inherit is copy, CSS::Properties :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
@@ -291,11 +293,7 @@ class CSS::Properties:ver<0.5.2> {
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
-        with $inherit {
-            # pre Rakudo 2012 compatiblity
-            $_ = self.COERCE: $_
-                unless $_ ~~ CSS::Properties
-        }
+
         $!em = .em with $inherit;
         self!build-declarations(@declarations);
         self.inherit($_) with $inherit;
