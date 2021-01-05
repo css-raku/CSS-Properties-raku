@@ -170,10 +170,10 @@ class CSS::Properties:ver<0.5.2> {
     multi method measure($_) { $_ }
 
     multi method computed('font-size') {
-        CSS::Units.value($!em, $!units)
+        self.measure: :font-size;
     }
     multi method computed('font-weight') {
-        self!weigh: self.font-weight;
+        self.measure: :font-weight;
     }
     multi method computed(Str $prop) {
         my $v := self."$prop"();
@@ -243,18 +243,6 @@ class CSS::Properties:ver<0.5.2> {
         @props;
     }
 
-    method !build-property($prop, $expr, :$important) {
-        my \keyw = $expr[0]<keyw>;
-        if keyw ~~ Handling {
-            self.handling($prop) = keyw;
-        }
-        else {
-            self."$prop"() = $expr;
-            self.important($prop) = $_
-                with $important;
-        }
-    }
-
     method !parse-style(Str $style) {
         my $rule = "declaration-list";
         my $actions = $!module.actions.new;
@@ -268,21 +256,33 @@ class CSS::Properties:ver<0.5.2> {
     }
 
     method !build-declarations(@declarations) {
-
+        my %props;
         for @declarations {
             with .<property> -> \decl {
                 with decl<expr> -> \expr {
                     my $important = True
                         if decl<prio> ~~ 'important';
 
-                    self!build-property( .key, .value, :$important)
-                        for self!get-container-prop(decl<ident>, expr).list;
+                    for self!get-container-prop(decl<ident>, expr).list {
+                        my $prop := .key;
+                        my $expr := .value;
+                        my $keyw := $expr[0]<keyw>;
+                        if $keyw ~~ Handling {
+                            self.handling($prop) = $keyw;
+                        }
+                        else {
+                            %props{$prop} = $expr;
+                            self.important($prop) = $_
+                                with $important;
+                        }
+                    }
                 }
             }
         }
+        %props;
     }
 
-    submethod TWEAK( Str :$style, List :$ast, CSS::Properties :$inherit is copy, CSS::Properties :$copy, :$declarations,
+    submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
                      :module($), :warn($), :units($), # stop these leaking through to %props
                      :viewport-width($), :viewport-height($),
                      *%props, ) {
@@ -294,9 +294,14 @@ class CSS::Properties:ver<0.5.2> {
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
 
-        $!em = .em with $inherit;
-        self!build-declarations(@declarations);
-        self.inherit($_) with $inherit;
+        my %decls = self!build-declarations(@declarations);
+        with $inherit -> $_ is copy {
+            $_ = CSS::Properties.COERCE($_)
+                unless .isa(CSS::Properties);
+            $!em = .em;
+            self.inherit: $_;
+         }
+        self.set-properties(|%decls);
         self!copy($_) with $copy;
         self.set-properties(|%props);
     }
