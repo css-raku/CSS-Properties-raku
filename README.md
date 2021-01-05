@@ -3,7 +3,7 @@
 <a href="https://travis-ci.org/p6-css/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
  <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
-The CSS::Properties module is a set of related classes for parsing and generation of CSS property lists, including inheritance, and defaults.
+The CSS::Properties module is a set of related classes for parsing, manipulation and generation of CSS property sets, including inheritance, and defaults.
 
 Classess in this module
 --------
@@ -38,6 +38,44 @@ $css.text-align = 'right';
 
 say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
+
+## Methods
+
+### new
+    method new(
+    Str :$style,
+    CSS::Properties() :$inherit,
+    CSS::Properties() :$copy,
+    Str :$units = 'pt',
+    Numeric :$em = $inherit.em // 12,
+    Numeric :$viewport-width,
+    Numeric :$viewport-height,
+    *%props,
+    ) returns CSS::Properties
+
+Options:
+
+  - `Str :$style` CSS property list to parse
+  - `CSS::Properties() :$inherit` Properties to be formally inherited
+  - `CSS::Properties() :$copy` Additional properties to be copied in
+  - `Str :$units` # measurement units, such as 'pt', 'px', 'in', etc
+  - `Numeric :$em = 12` initial font size
+  - `Numeric :$viewport-width` for use as `vw` length units
+  - `Numeric :$viewport-height` for use as `vh` length units
+  - `*%props` - CSS property settings
+
+### measure
+
+    multi method measure(:$line-height! --> Numeric); # in $.units
+    multi method measure(:$font-size! --> Numeric);   # in $.units;
+    multi method measure(:$font-weight! --> Numeric); # e.g. 400, 700
+
+    my Numeric $font-size = $css.measure: :font-size;
+    $font-size = $css.measure: :font-size<smaller>;
+    $font-size = $css.measure: :font-size(120%);
+
+Selected measurements. See also l<CSS::Box>, which can measure a wider
+range of properties.
 
 ## CSS Property Accessors 
 
@@ -367,7 +405,7 @@ The box `new` constructor accepts:
 
     say "font-size is {$box.font.em}";
 
-The '.font' accessor returns an object of type `CSS::Properties::Font`, with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font` and `fontconfig-pattern`.
+The '.font' accessor returns an object of type `CSS::Properties::Font`, with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font`, `fontconfig-pattern` and `measure` methods.
 
 #### measure
 

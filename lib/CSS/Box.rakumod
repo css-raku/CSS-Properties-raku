@@ -28,12 +28,14 @@ class CSS::Box {
         Numeric :$!bottom = $!top - $height,
         Numeric :$!right = $!left + $width,
         Str :$style = '',
-        Numeric :$em = 12pt,
-        Numeric :$ex = 0.75 * $em,
+        Numeric :$em is copy,
+        Numeric :$ex is copy,
         :font($),
         |c
     ) {
-        $!css //= CSS::Properties.new(:$style, |c),
+        $!css //= CSS::Properties.new(:$style, |c);
+        $em //= $!css.em,
+        $ex //= $!css.ex,
         $!font //= CSS::Properties::Font.new: :$em, :$ex, :$!css;
         self!resize;
     }

@@ -3,16 +3,13 @@ class CSS::Properties::Font {
     use CSS::Properties;
     use CSS::Units :pt;
 
-    has Numeric $.em is rw = 10;
-    has Numeric $.ex is rw = $!em * 0.75;
-    my subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
-    has FontWeight $.weight is rw = 400;
+    has CSS::Properties::FontWeight $.weight is rw = 400;
     has Str @!family = ['times-roman'];
     method family { @!family[0] }
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <units viewport-width viewport-height Str> = CSS::Properties.new;
+    has CSS::Properties $.css handles <em ex measure units viewport-width viewport-height Str> .= new();
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -55,54 +52,6 @@ class CSS::Properties::Font {
             });
     }
 
-    multi method measure($_, :font($)! where .so) returns Numeric {
-        if $_ ~~ Numeric {
-            .?type ~~ 'percent'
-                ?? $!em * $_ / 100
-                !! self.measure($_);
-        }
-        else {
-            my constant %Sizes = %(
-                :xx-small(6pt), :x-small(7.5pt), :small(10pt),
-                :medium(12pt), :large(13.5pt), :x-large(18pt), :xx-large(24pt)
-            );
-            given .lc {
-                when %Sizes{$_}:exists {  %Sizes{$_}.scale: $.units }
-                when 'larger'   { $!em * 1.2 }
-                when 'smaller'  { $!em / 1.2 }
-                default {
-                    warn "unhandled font-size: $_";
-                    self.measure: 'medium', :font;
-                }
-            }
-        }
-    }
-
-    multi method measure($v) {
-        $!css.measure($v, :$!em, :$!ex);
-    }
-
-    #| converts a weight name to a three digit number:
-    #| 100 lightest ... 900 heaviest
-    method !font-weight($_) returns FontWeight {
-        given .lc {
-            when FontWeight       { .Int }
-            when 'normal'         { 400 }
-            when 'bold'           { 700 }
-            when 'lighter'        { max($!weight - 100, 100) }
-            when 'bolder'         { min($!weight + 100, 900) }
-            default {
-                if /^ <[1..9]>00 $/ {
-                    .Int
-                }
-                else {
-                    warn "unhandled font-weight: $_";
-                    400;
-                }
-            }
-        }
-    }
-
     method setup(CSS::Properties $css = $!css) {
         @!family = [];
         with $css.font-family {
@@ -119,14 +68,9 @@ class CSS::Properties::Font {
         @!family[0] //= 'arial';
 
         $!style = $css.font-style;
-        $!weight = self!font-weight($css.font-weight);
-        $!em = self.measure($css.font-size, :font);
+        $!weight = $css.computed('font-weight');
         $!stretch = $css.font-stretch;
-        $!line-height = do given $css.line-height {
-            when .type eq 'num'     { $_ * $!em }
-            when 'normal'           { $!em * 1.2 }
-            default                 { self.measure($_, :font) }
-        }
+        $!line-height = $css.measure(:line-height);
 	self;
     }
 
