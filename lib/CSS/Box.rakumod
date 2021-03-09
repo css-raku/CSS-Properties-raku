@@ -16,6 +16,7 @@ class CSS::Box {
     use CSS::Properties::Font;
     has CSS::Properties::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
     has CSS::Properties $.css;
+    has CSS::Box $.parent; # for measuring etc
 
     has Hash @.save;
 
@@ -87,12 +88,27 @@ class CSS::Box {
     }
 
     method !width($qty is copy) {
-        $qty = $_ with { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty};
-        self.measure($qty);
+        if $qty.?units ~~ 'percent' {
+            ($!parent // self).width * $qty / 100
+        }
+        else {
+            $qty = $_ with { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty};
+            self.measure($qty);
+        }
     }
 
-    method measurements(List $qtys) {
-        [ $qtys.map: { self!width($_) } ]
+    method !height($qty is copy) {
+        if $qty.?units ~~ 'percent' {
+            ($!parent // self).height * $qty / 100
+        }
+        else {
+            $qty = $_ with { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty};
+            self.measure($qty);
+        }
+    }
+
+    method measurements(@ ($top, $right, $bottom, $left)) {
+        [ self!height($top), self!width($right), self!height($bottom), self!width($left) ];
     }
 
     method padding returns Array {

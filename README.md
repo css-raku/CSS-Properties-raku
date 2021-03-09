@@ -393,13 +393,16 @@ The margin edge surrounds the box margin. If the margin has 0 width, the margin 
 
 #### new
 
-    my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
+    my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css, :$parent );
 
 The box `new` constructor accepts:
 
   - any two of `:top`, `:bottom` or `:height`,
 
   - and any two of `:left`, `:right` or `:width`.
+
+  - `:$parent` is an optional parent box. It is required to compute certain percentage
+     length quantities such as 'border: 10%';
 
 #### font
 
