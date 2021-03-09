@@ -2,8 +2,8 @@
    - refactored .can() .dispatch() and .FALLBACK() methods
    - rework 'dpi', 'dpcm', and 'dppx' units. Express as reciprocals
      of 'in', 'cm', and 'px'
-   - fixed CSS::Properities::Font measure() method to always return
-     undimensioned quantities.
+   - further development of CSS::Properties::Font measure() method;
+     add computed() method
 0.5.1
    - rename sources *.pm6 -> *.rakumod
 0.5.0

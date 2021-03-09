@@ -123,12 +123,12 @@ class CSS::Properties:ver<0.5.2> {
         :large(13.5pt), :x-large(18pt), :xx-large(24pt)
     );
 
-    multi method measure(Numeric $_,
+    multi method measure(Numeric $v,
                          Numeric :$em = $!em,
                          Numeric :$ex = $.ex,
                          Bool    :$font,
                   ) {
-        my Str $units = .?type // $!units;
+        my Str $units = $v.?type // $!units;
             my Numeric $scale = do given $units {
                 when 'em'   { $em }
                 when 'ex'   { $ex }
@@ -136,13 +136,15 @@ class CSS::Properties:ver<0.5.2> {
                 when 'vh'   { $!viewport-height }
                 when 'vmin' { min($!viewport-width, $!viewport-height) }
                 when 'vmax' { max($!viewport-width, $!viewport-height) }
-                when $_ eq 'percent' && $font {
+                when 'percent' {
+                    # something we don't handle yet, e.g. border-width as a percentage
+                    warn "not yet implemented: {$v}%" unless $font;
                     $!em * $!scale / 100;
                 }
                 default { dimension($_).enums{$_} }
             } // die "unknown units: $units";
             if $scale.defined  {
-                CSS::Units.value($_ * $scale / $!scale, $!units);
+                CSS::Units.value($v * $scale / $!scale, $!units);
             }
             else {
                 Nil;
