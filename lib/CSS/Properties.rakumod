@@ -38,6 +38,7 @@ class CSS::Properties:ver<0.5.2> {
     has Numeric $!scale;
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
+    has CSS::Properties $.parent is rw; # for building rendering trees
     has Numeric $.em is rw = 12pt.scale($!units);
     method ex { $!em * 3/4 }
 
@@ -136,7 +137,8 @@ class CSS::Properties:ver<0.5.2> {
                 when 'vmin' { min($!viewport-width, $!viewport-height) }
                 when 'vmax' { max($!viewport-width, $!viewport-height) }
                 when 'percent' {
-                    warn "unable to resolve: {$v}%" unless $font;
+                    # something we don't handle yet, e.g. border-width as a percentage
+                    warn "not yet implemented: {$v}%" unless $font;
                     $!em * $!scale / 100;
                 }
                 default { dimension($_).enums{$_} }
