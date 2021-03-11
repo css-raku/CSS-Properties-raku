@@ -38,7 +38,6 @@ class CSS::Properties:ver<0.5.2> {
     has Numeric $!scale;
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
-    has CSS::Properties $.parent is rw; # for building rendering trees
     has Numeric $.em is rw = 12pt.scale($!units);
     method ex { $!em * 3/4 }
 
@@ -98,17 +97,22 @@ class CSS::Properties:ver<0.5.2> {
         given .isa(Bool) ?? self.line-height !! $_ {
             when .type eq 'num' { CSS::Units.value($_ * $!em, $!units) }
             when 'normal' { CSS::Units.value($!em * 1.2, $!units) }
-            default { $.measure($_, :font); }
+            default { $.measure(:font-size($_)); }
         }
-    }
-    multi method measure(:font-size($_)!) {
-        .isa(Bool)
-            ?? CSS::Units.value($!em, $!units)
-            !! $.measure($_, :font)
     }
     multi method measure(:font-weight($_)!) {
         my $v = .isa(Bool) ?? self.font-weight !! $_;
         self!weigh($v);
+    }
+    my constant %FontSizes = %(
+        :xx-small(6pt), :x-small(7.5pt), :small(10pt), :medium(12pt),
+        :large(13.5pt), :x-large(18pt), :xx-large(24pt)
+    );
+
+    multi method measure(:font-size($_)!) {
+        when Bool     {  CSS::Units.value($!em, $!units) }
+        when  %FontSizes{$_}:exists {  %FontSizes{$_}.scale: $!units }
+        default { $.measure($_, :ref($!em)) }
     }
     multi method measure(*%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
@@ -118,15 +122,10 @@ class CSS::Properties:ver<0.5.2> {
         }
     }
 
-    my constant %FontSizes = %(
-        :xx-small(6pt), :x-small(7.5pt), :small(10pt),
-        :large(13.5pt), :x-large(18pt), :xx-large(24pt)
-    );
-
     multi method measure(Numeric $v,
                          Numeric :$em = $!em,
                          Numeric :$ex = $.ex,
-                         Bool    :$font,
+                         Numeric :$ref = $!em,
                   ) {
         my Str $units = $v.?type // $!units;
             my Numeric $scale = do given $units {
@@ -137,9 +136,7 @@ class CSS::Properties:ver<0.5.2> {
                 when 'vmin' { min($!viewport-width, $!viewport-height) }
                 when 'vmax' { max($!viewport-width, $!viewport-height) }
                 when 'percent' {
-                    # something we don't handle yet, e.g. border-width as a percentage
-                    warn "not yet implemented: {$v}%" unless $font;
-                    $!em * $!scale / 100;
+                    $ref * $!scale / 100;
                 }
                 default { dimension($_).enums{$_} }
             } // die "unknown units: $units";
@@ -150,14 +147,13 @@ class CSS::Properties:ver<0.5.2> {
                 Nil;
             }
     }
-    multi method measure(Str $_, :$font) {
+    multi method measure(Str $_) {
         my $v;
 
         if .?type ~~ 'keyw' {
-            when %FontSizes{$_}:exists { $v := %FontSizes{$_}.scale: $!units }
             when 'thin'     { $v := 1pt.scale: $!units }
-            when 'medium'   { $v := ($font ?? 12pt !! 3pt).scale: $!units }
-            when 'thick'    { $v := 5pt.scale: $!units }
+            when 'medium'   { $v := 2pt.scale: $!units }
+            when 'thick'    { $v := 3pt.scale: $!units }
             when 'larger'   { $v := $!em * 1.2 }
             when 'smaller'  { $v := $!em / 1.2 }
         }
@@ -407,7 +403,7 @@ class CSS::Properties:ver<0.5.2> {
             },
             STORE => -> $, $v {
                 with self!coerce( $v, :$prop ) {
-                    $!em = self.measure($_, :font)
+                    $!em = self.measure(:font-size($_))
                         if $prop eq 'font-size';
                     %!values{$prop} = $_;
                 }

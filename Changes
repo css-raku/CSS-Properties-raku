@@ -1,3 +1,8 @@
+{{$NEXT}}
+   - Fix handling of percentage values for margin-width and padding-width.
+     Ignore (treat as zero for border-width). Better conformance (hopefully)
+     with https://www.w3.org/TR/CSS2/box.html#border-properties
+
 0.5.2
    - refactored .can() .dispatch() and .FALLBACK() methods
    - rework 'dpi', 'dpcm', and 'dppx' units. Express as reciprocals

@@ -17,6 +17,8 @@ class CSS::Box {
     has CSS::Properties::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
     has CSS::Properties $.css;
 
+    has CSS::Box $.parent; # for percentage calculations
+
     has Hash @.save;
 
     my subset BoundingBox of Str where 'content'|'border'|'margin'|'padding';
@@ -86,23 +88,20 @@ class CSS::Box {
         box[Top] - box[Bottom]
     }
 
-    method !width($qty is copy) {
-        $qty = $_ with { :thin(1pt), :medium(2pt), :thick(3pt) }{$qty};
-        self.measure($qty);
-    }
-
-    method measurements(List $qtys) {
-        [ $qtys.map: { self!width($_) } ]
+    method measurements(List $qtys, Numeric:D :$ref = 0) {
+        [ $qtys.map: { self.measure($_, :$ref) } ]
     }
 
     method padding returns Array {
-        $!padding //= self!enclose($.Array, self.measurements($!css.padding));
+        my $ref := ($!parent // self).width;
+        $!padding //= self!enclose: $.Array, self.measurements($!css.padding, :$ref);
     }
     method border returns Array {
-        $!border //= self!enclose($.padding, self.measurements($!css.border-width));
+        $!border //= self!enclose: $.padding, self.measurements($!css.border-width);
     }
     method margin returns Array {
-        $!margin //= self!enclose($.border, self.measurements($!css.margin));
+        my $ref := ($!parent // self).width;
+        $!margin //= self!enclose: $.border, self.measurements($!css.margin, :$ref);
     }
 
     method content returns Array is rw { self.Array }
