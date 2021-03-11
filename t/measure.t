@@ -21,10 +21,10 @@ is '%0.2f'.sprintf($css.measure(value(1, "ex"))), '9.00', '$css.measure(ex)';
 is '%0.2f'.sprintf($css.measure(.1vw)), '20.00', '$css.measure(vw)';
 is '%0.2f'.sprintf($css.measure(.1vh)), '10.00', '$css.measure(vh)';
 is '%0.2f'.sprintf($css.measure: keyw('thin')), '1.00', '$css.measure("thin")';
-is '%0.2f'.sprintf($css.measure: keyw('medium')), '3.00', '$css.measure("medium")';
-is '%0.2f'.sprintf($css.measure: keyw(:font-size<medium>), :font), '12.00', '$css.measure(:font-size<medium>)';
-is '%0.2f'.sprintf($css.measure: keyw('thick')), '5.00', '$css.measure("thick")';
-is '%0.2f'.sprintf($css.measure: keyw('x-large')), '18.00', '$css.measure("x-large")';
+is '%0.2f'.sprintf($css.measure: keyw('medium')), '2.00', '$css.measure("medium")';
+is '%0.2f'.sprintf($css.measure: :font-size(keyw('medium'))), '12.00', '$css.measure(:font-size<medium>)';
+is '%0.2f'.sprintf($css.measure: :font-size(keyw('thick'))), '3.00', '$css.measure("thick")';
+is '%0.2f'.sprintf($css.measure: :font-size(keyw('x-large'))), '18.00', '$css.measure("x-large")';
 
 # change base units
 $css .= new: :units<pc>;
