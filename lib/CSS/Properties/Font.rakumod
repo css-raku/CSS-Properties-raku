@@ -1,9 +1,10 @@
 use v6;
 class CSS::Properties::Font {
     use CSS::Properties;
+    use CSS::Properties::Context;
     use CSS::Units :pt;
 
-    has CSS::Properties::FontWeight $.weight is rw = 400;
+    has CSS::Properties::Context::FontWeight $.weight is rw = 400;
     has Str @!family = ['times-roman'];
     method family { @!family[0] }
     has Str $.style = 'normal';
@@ -48,7 +49,6 @@ class CSS::Properties::Font {
             STORE => sub ($, Str \font-prop) {
                 $!css.font = font-prop;
                 self.setup;
-                $!css.font;
             });
     }
 

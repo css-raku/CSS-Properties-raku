@@ -1,4 +1,5 @@
 {{$NEXT}}
+   - Added new CSS::Properties::Context class.
    - Fix handling of percentage values for margin and padding. Ignore
      (treat as zero) for border-width. Better conformance (hopefully)
      with https://www.w3.org/TR/CSS2/box.html#border-properties
