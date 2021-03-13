@@ -12,7 +12,7 @@ class CSS::Properties:ver<0.5.2> {
     use CSS::Properties::Context;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Units;
+    use CSS::Units :pt;
     use Method::Also;
     use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
@@ -34,7 +34,7 @@ class CSS::Properties:ver<0.5.2> {
     has Bool $.warn = True;
     has Array $!properties;
     has CArray $!index;
-    has CSS::Properties::Context $!ctx handles<em ex units computed measure viewport-width viewport-height>;
+    has CSS::Properties::Context $!ctx handles<em ex units computed measure viewport-width viewport-height reference-width>;
 
     my subset ZeroPoint of Associative where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -165,7 +165,9 @@ class CSS::Properties:ver<0.5.2> {
 
     submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
                      :module($), :warn($), :$units = 'pt', # stop these leaking through to %props
+                     Numeric :$em = 12pt.scale($units),
                      Numeric :$viewport-width, Numeric :$viewport-height,
+                     Numeric :$reference-width = 0,
                      *%props, ) {
         $!index = %module-index{$!module} //= $!module.index
             // die "module {$!module.name} lacks an index";
@@ -173,7 +175,7 @@ class CSS::Properties:ver<0.5.2> {
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
-        $!ctx .= new: :css(self), :$units, :$viewport-width, :$viewport-height;
+        $!ctx .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
         my %decls = self!build-declarations(@declarations);
         with $inherit -> $_ is copy {
@@ -492,7 +494,7 @@ class CSS::Properties:ver<0.5.2> {
 
     #| create a deep copy of a CSS declarations object
     method clone(*%props) {
-        my $obj = self.new( :copy(self), :$!module );
+        my $obj = self.new( :copy(self), :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
         $obj.set-properties(|%props);
         $obj;
     }

@@ -12,17 +12,11 @@ $css.padding = 10%;
 $css.border-width = 3pt;
 $css.margin = 5pt;
 
-my $top    = 80e0pt;
-my $right  = 50e0pt;
-my $bottom = 0e0pt;
-my $left   = 0e0pt;
-
-my %psides = :top(80pt), :right(60pt), :bottom(0pt), :left(0pt);
-my CSS::Box $parent .= new: :$css, |%psides;
-my $pw := $parent.width/10;
+$css.reference-width = 80;
+my $pw := $css.reference-width/10;
 
 my %sides = :top(80pt), :right(50pt), :bottom(0pt), :left(0pt);
-my CSS::Box $box .= new: :$css, :$parent, |%sides;
+my CSS::Box $box .= new: :$css, |%sides;
 
 is-deeply $box.Array, [%sides<top>, %sides<right>, %sides<bottom>, %sides<left>], '.Array';
 is $box.padding, [%sides<top>+$pw, %sides<right>+$pw, %sides<bottom>-$pw, %sides<left>-$pw], '.padding';

@@ -8,6 +8,7 @@ class CSS::Properties::Context {
     method ex { $!em * 3/4 }
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
+    has Numeric $.reference-width is rw = 0;
 
     subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
 
@@ -71,8 +72,11 @@ class CSS::Properties::Context {
     multi method measure(*%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
         given $value {
+            my $ref = $prop.contains('width') || $prop.contains('height')
+                ?? $!reference-width
+                !! $!em;
             my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
-            $.measure($v);
+            $.measure($v, :$ref);
         }
     }
 

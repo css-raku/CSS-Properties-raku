@@ -17,8 +17,6 @@ class CSS::Box {
     has CSS::Properties::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
     has CSS::Properties $.css;
 
-    has CSS::Box $.parent; # for percentage calculations
-
     has Hash @.save;
 
     my subset BoundingBox of Str where 'content'|'border'|'margin'|'padding';
@@ -30,15 +28,11 @@ class CSS::Box {
         Numeric :$!bottom = $!top - $height,
         Numeric :$!right = $!left + $width,
         Str :$style = '',
-        Numeric :$em is copy,
-        Numeric :$ex is copy,
         :font($),
         |c
     ) {
         $!css //= CSS::Properties.new(:$style, |c);
-        $em //= $!css.em,
-        $ex //= $!css.ex,
-        $!font //= CSS::Properties::Font.new: :$em, :$ex, :$!css;
+        $!font //= CSS::Properties::Font.new: :$!css;
         self!resize;
     }
 
@@ -93,14 +87,14 @@ class CSS::Box {
     }
 
     method padding returns Array {
-        my $ref := ($!parent // self).width;
+        my $ref := $!css.reference-width;
         $!padding //= self!enclose: $.Array, self.measurements($!css.padding, :$ref);
     }
     method border returns Array {
-        $!border //= self!enclose: $.padding, self.measurements($!css.border-width);
+        $!border //= self!enclose: $.padding, self.measurements($!css.border-width, :ref(0));
     }
     method margin returns Array {
-        my $ref := ($!parent // self).width;
+        my $ref := $!css.reference-width;
         $!margin //= self!enclose: $.border, self.measurements($!css.margin, :$ref);
     }
 
@@ -115,26 +109,26 @@ class CSS::Box {
         ]
     }
 
-    method css-height($css = $!css) {
-        my Numeric $height = $_ with $.measure($css.height);
-        with $.measure($css.max-height) {
+    method css-height($css = $!css, :$ref = $css.reference-width) {
+        my Numeric $height = $_ with $.measure($css.height, :$ref);
+        with $.measure($css.max-height, :$ref) {
             $height = $_
                 if $height.defined && $height > $_;
         }
-        with $.measure($css.min-height) {
+        with $.measure($css.min-height, :$ref) {
             $height = $_
                 if $height.defined && $height < $_;
         }
         $height;
     }
 
-    method css-width($css = $!css) {
-        my Numeric $width = $_ with $.measure($css.width);
-        with $.measure($css.max-width) {
+    method css-width($css = $!css, :$ref = $css.reference-width) {
+        my Numeric $width = $_ with $.measure($css.width, :$ref);
+        with $.measure($css.max-width, :$ref) {
             $width = $_
                 if !$width.defined || $width > $_;
         }
-        with $.measure($css.min-width) {
+        with $.measure($css.min-width, :$ref) {
             $width = $_
                 if $width.defined && $width < $_;
         }
