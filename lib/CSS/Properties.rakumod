@@ -9,7 +9,7 @@ class CSS::Properties:ver<0.5.2> {
     use Color;
     use Color::Conversion;
     use CSS::Module::Property;
-    use CSS::Properties::Context;
+    use CSS::Properties::Calculator;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
     use CSS::Units :pt;
@@ -34,7 +34,7 @@ class CSS::Properties:ver<0.5.2> {
     has Bool $.warn = True;
     has Array $!properties;
     has CArray $!index;
-    has CSS::Properties::Context $!ctx handles<em ex units computed measure viewport-width viewport-height reference-width>;
+    has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
 
     my subset ZeroPoint of Associative where {
         # e.g. { :px(0) } === { :mm(0.0) }
@@ -175,13 +175,13 @@ class CSS::Properties:ver<0.5.2> {
         my @declarations = .list with $declarations;
         @declarations.append: self!parse-style($_) with $style;
         @declarations.append: .list with $ast;
-        $!ctx .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
+        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
         my %decls = self!build-declarations(@declarations);
         with $inherit -> $_ is copy {
             $_ = CSS::Properties.COERCE($_)
                 unless .isa(CSS::Properties);
-            $!ctx.em = .em;
+            $!calc.em = .em;
             self.inherit: $_;
          }
         self.set-properties(|%decls);
@@ -288,7 +288,7 @@ class CSS::Properties:ver<0.5.2> {
             },
             STORE => -> $, $v {
                 with self!coerce( $v, :$prop ) {
-                    $!ctx.em = self.measure(:font-size($_))
+                    $!calc.em = self.measure(:font-size($_))
                         if $prop eq 'font-size';
                     %!values{$prop} = $_;
                 }

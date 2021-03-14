@@ -1,4 +1,4 @@
-class CSS::Properties::Context {
+class CSS::Properties::Calculator {
     use CSS::Units :Lengths, :&dimension, :pt;
 
     has $.css is required;
@@ -125,20 +125,8 @@ class CSS::Properties::Context {
     }
     multi method measure($_) { $_ }
 
-    multi method computed('font-size') {
-        self.measure: :font-size;
-    }
-    multi method computed('font-weight') {
-        self.measure: :font-weight;
-    }
-    multi method computed(Str $prop) {
-        my $v := $!css."$prop"();
-        with self.measure($v) {
-            $_;
-        }
-        else {
-            $v;
-        }
+    method computed(Str $prop) {
+        self.measure: |($prop => True);
     }
 
 }
