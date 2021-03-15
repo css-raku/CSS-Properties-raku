@@ -101,7 +101,7 @@ class CSS::Properties::Calculator {
         }
     }
 
-    multi method measure(Numeric $v,
+    multi method measure(Numeric $v is copy,
                          Numeric :$ref = $!em,
                          :$em, :$ex
                   ) {
@@ -109,38 +109,39 @@ class CSS::Properties::Calculator {
         warn 'deprecated measure: :$em' with $em;
         warn 'deprecated measure: :$ex' with $ex;
         my Numeric $scale = do given $units {
+            when 'none' { $v = Nil }
             when 'em'   { $!em }
             when 'ex'   { $.ex }
             when 'vw'   { $!viewport-width }
             when 'vh'   { $!viewport-height }
             when 'vmin' { min($!viewport-width, $!viewport-height) }
             when 'vmax' { max($!viewport-width, $!viewport-height) }
-            when 'percent' {
-                $ref * $!scale / 100;
-            }
-            default { dimension($_).enums{$_} }
-        } // die "unknown units: $units";
-        if $scale.defined  {
-            CSS::Units.value($v * $scale / $!scale, $!units);
+            when 'percent' { $ref * $!scale / 100; }
+            default     { dimension($_).enums{$_} }
+        };
+        with $scale {
+            CSS::Units.value($v * $_ / $!scale, $!units);
         }
         else {
-            Nil;
+            $v;
         }
     }
-    multi method measure(Str $_) {
-        my $v;
-
-        if .?type ~~ 'keyw' {
-            when 'thin'     { $v := 1pt.scale: $!units }
-            when 'medium'   { $v := 2pt.scale: $!units }
-            when 'thick'    { $v := 3pt.scale: $!units }
+    multi method measure(Str $v is copy) {
+        my Numeric $n;
+        with $v {
+            if .?type ~~ 'keyw' {
+                when 'none'   { $v = Nil }
+                when 'thin'   { $n := 1pt.scale: $!units }
+                when 'medium' { $n := 2pt.scale: $!units }
+                when 'thick'  { $n := 3pt.scale: $!units }
+            }
         }
 
-        with $v {
+        with $n {
             CSS::Units.value($_, $!units);
         }
         else {
-            Nil;
+            $v;
         }
     }
     multi method measure($_) { $_ }

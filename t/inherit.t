@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 25;
+plan 26;
 use CSS::Properties;
 
 my $inherit = CSS::Properties.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255)!important");
@@ -55,5 +55,17 @@ is $inherit.measure(:font-size), 40, 'inherited font size measurement';
 is $inherit.computed('font-size'), 40, 'computed font size measurement';
 is $css.measure(:font-size), 30, 'relative font size measurement';
 is $css.computed('font-size'), 30, 'relative font size measurement';
+
+subtest 'issue#11', {
+    plan 2;
+    my $style = "color:purple; font-style:italic;";
+    my CSS::Properties $parent .= new: :$style;
+    my CSS::Properties $child .= new;
+
+    $child.inherit($parent);
+
+    is $parent, $style;
+    is $child, $style;
+}
 
 done-testing;
