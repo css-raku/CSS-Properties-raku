@@ -12,6 +12,46 @@ class CSS::Properties::Calculator {
 
     subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
 
+    my constant %FontSizes = %(
+        :xx-small(6pt), :x-small(7.5pt), :small(10pt), :medium(12pt),
+        :large(13.5pt), :x-large(18pt), :xx-large(24pt)
+    );
+
+    method !em($v = $!em) { CSS::Units.value: $v, $!units }
+
+    my Method %Compute;
+    BEGIN %Compute = (
+        font-size => method ($_) {
+            when %FontSizes{$_}:exists { %FontSizes{$_}.scale: $!units }
+            when 'larger'   { self!em: $!em * 1.2 }
+            when 'smaller'  { self!em: $!em / 1.2 }
+            default { $.measure($_, :ref($!em)) }
+        },
+        font-weight => method ($_) {
+            self!weigh($_);
+        },
+        letter-spacing => method ($_) {
+            when .?type ~~ 'num'  { self!em: $_ * $!em; }
+            when 'normal' { self!em: 0.0 }
+            default { %Compute<font-size>(self, $_) }
+        },
+        line-height => method ($_) {
+            when .type eq 'num' { self!em: $!em * $_  }
+            when 'normal'       { self!em: $!em * 1.2 }
+            default { %Compute<font-size>(self, $_) }
+        },
+        word-spacing => method ($_) {
+            when 'normal' { self!em }
+            default { self.measure: $_, :ref($!em) }
+        },
+        'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_) {
+            self.measure($_, :ref(0)); # percentage quantities are ignored
+        },
+        'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height' => method ($_) {
+            self.measure($_, :ref($!reference-width));
+        },
+    );
+
     #| converts a weight name to a three digit number:
     #| 100 lightest ... 900 heaviest
     method !weigh($_, Int $delta = 0) returns FontWeight {
@@ -35,60 +75,33 @@ class CSS::Properties::Calculator {
         CSS::Units.value($v, 'int');
     }
 
-    multi method measure(:line-height($_)!) {
-        given (.isa(Bool) ?? $!css.line-height !! $_) {
-            when .type eq 'num' { CSS::Units.value($_ * $!em, $!units) }
-            when 'normal' { CSS::Units.value($!em * 1.2, $!units) }
-            default { $.measure(:font-size($_)); }
-        }
-    }
-    multi method measure(:font-weight($_)!) {
-        my $v = .isa(Bool) ?? $!css.font-weight !! $_;
-        self!weigh($v);
-    }
-    my constant %FontSizes = %(
-        :xx-small(6pt), :x-small(7.5pt), :small(10pt), :medium(12pt),
-        :large(13.5pt), :x-large(18pt), :xx-large(24pt)
-    );
-
     multi method measure(:font-size($_)!) {
-        when Bool     {  CSS::Units.value($!em, $!units) }
-        when  %FontSizes{$_}:exists {  %FontSizes{$_}.scale: $!units }
-        default { $.measure($_, :ref($!em)) }
-    }
-    multi method measure(:letter-spacing($_)!) {
-        given .isa(Bool) ?? $!css.letter-spacing !! $_ {
-            when .?type ~~ 'num'  { $_ * $!em }
-            when 'normal' { 0.0 }
-            default { $.measure: :font-size($_) }
-        }
-    }
-    multi method measure(:word-spacing($_)!) {
-        given .isa(Bool) ?? $!css.word-spacing !! $_ {
-            when 'normal' { $!em }
-            default { $.measure: $_ }
-        }
+        when Bool { CSS::Units.value($!em, $!units) }
+        default   { %Compute<font-size>(self, $_) }
     }
     multi method measure(*%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
         given $value {
-            my $ref = $prop.contains('width') || $prop.contains('height')
-                ?? $!reference-width
-                !! $!em;
             my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
-            $.measure($v, :$ref);
+            with %Compute{$prop} {
+                .(self, $v);
+            }
+            else {
+                $.measure($v);
+            }
         }
     }
 
     multi method measure(Numeric $v,
-                         Numeric :$em = $!em,
-                         Numeric :$ex = $.ex,
                          Numeric :$ref = $!em,
+                         :$em, :$ex
                   ) {
         my Str $units = $v.?type // $!units;
+        warn 'deprecated measure: :$em' with $em;
+        warn 'deprecated measure: :$ex' with $ex;
         my Numeric $scale = do given $units {
-            when 'em'   { $em }
-            when 'ex'   { $ex }
+            when 'em'   { $!em }
+            when 'ex'   { $.ex }
             when 'vw'   { $!viewport-width }
             when 'vh'   { $!viewport-height }
             when 'vmin' { min($!viewport-width, $!viewport-height) }
@@ -112,8 +125,6 @@ class CSS::Properties::Calculator {
             when 'thin'     { $v := 1pt.scale: $!units }
             when 'medium'   { $v := 2pt.scale: $!units }
             when 'thick'    { $v := 3pt.scale: $!units }
-            when 'larger'   { $v := $!em * 1.2 }
-            when 'smaller'  { $v := $!em / 1.2 }
         }
 
         with $v {
