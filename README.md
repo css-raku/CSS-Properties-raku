@@ -66,16 +66,20 @@ Options:
 
 ### measure
 
-    multi method measure(:$line-height! --> Numeric); # in $.units
-    multi method measure(:$font-size! --> Numeric);   # in $.units;
-    multi method measure(:$font-weight! --> Numeric); # e.g. 400, 700
+    # Converts a value to a numeric quantity;
+    my Numeric $font-size = $css.measure: :font-size; # get current font size
+    $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
+    $font-size = $css.measure: :font-size(120%);      # compute a larger font
+    my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+    $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
 
-    my Numeric $font-size = $css.measure: :font-size;
-    $font-size = $css.measure: :font-size<smaller>;
-    $font-size = $css.measure: :font-size(120%);
+This function is implemented for `font-size`, `font-weight`, `letter-spacing`, `line-height`, and `word-spacing`.
 
-Selected measurements. See also l<CSS::Box>, which can measure a wider
-range of properties.
+It also works for box related properties: `width`, `height`, `{min|max}-{width|height}`, `border-{top|right|bottom|left}-width`, and `{padding|margin}-{top|right|bottom|left}`.
+The `reference-width` attribute represents the width of a containing element; which needs to set for correct calculation of percentage box related quantities:
+
+    $css.reference-width = 80pt;
+    say $css.measure: :width(75%); # 60
 
 ## CSS Property Accessors 
 

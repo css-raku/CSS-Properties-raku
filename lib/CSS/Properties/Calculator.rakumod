@@ -8,7 +8,16 @@ class CSS::Properties::Calculator {
     method ex { $!em * 3/4 }
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
-    has Numeric $.reference-width is rw = 0;
+    has Numeric $.reference-width;
+    method reference-width is rw {
+        Proxy.new(
+            FETCH => { $!reference-width // 0 },
+            STORE => -> $, Numeric:D() $v {
+                my $units = $v.?units // $!units;
+                $!reference-width = CSS::Units.value($v, $units).scale: $!units;
+            }
+        );
+    }
 
     subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
 
@@ -47,7 +56,7 @@ class CSS::Properties::Calculator {
         'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_) {
             self.measure($_, :ref(0)); # percentage quantities are ignored
         },
-        'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height' => method ($_) {
+        'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height'|'padding-top'|'padding-right'|'padding-bottom'|'padding-left'|'margin-top'|'margin-right'|'margin-bottom'|'margin-left' => method ($_) {
             self.measure($_, :ref($!reference-width));
         },
     );
