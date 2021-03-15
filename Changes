@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.6.1  2021-03-16T10:56:25+13:00
+   - Fix computed() and inherit() regressions #11
+
 0.6.0  2021-03-16T08:49:00+13:00
    - Added new CSS::Properties::Calculator class; factored out from
      CSS::Properties.
