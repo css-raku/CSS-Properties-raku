@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.6.0  2021-03-16T08:49:00+13:00
    - Added new CSS::Properties::Calculator class; factored out from
      CSS::Properties.
    - Fix handling of percentage values for margin and padding. Ignore

@@ -43,14 +43,15 @@ say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; tex
 
 ### new
     method new(
-    Str :$style,
-    CSS::Properties() :$inherit,
-    CSS::Properties() :$copy,
-    Str :$units = 'pt',
-    Numeric :$em = $inherit.em // 12,
-    Numeric :$viewport-width,
-    Numeric :$viewport-height,
-    *%props,
+        Str :$style,
+        CSS::Properties() :$inherit,
+        CSS::Properties() :$copy,
+        Str :$units = 'pt',
+        Numeric :$em = $inherit.em // 12,
+        Numeric :$viewport-width,
+        Numeric :$viewport-height,
+        Numeric :$reference-width,
+        *%props,
     ) returns CSS::Properties
 
 Options:
@@ -62,6 +63,7 @@ Options:
   - `Numeric :$em = 12` initial font size
   - `Numeric :$viewport-width` for use as `vw` length units
   - `Numeric :$viewport-height` for use as `vh` length units
+  - `Numeric :$reference-width` for use in box values
   - `*%props` - CSS property settings
 
 ### measure
