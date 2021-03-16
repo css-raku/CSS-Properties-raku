@@ -129,12 +129,10 @@ class CSS::Properties::Calculator {
     multi method measure(Str $v is copy) {
         my Numeric $n;
         with $v {
-            if .?type ~~ 'keyw' {
-                when 'none'   { $v = Nil }
-                when 'thin'   { $n := 1pt.scale: $!units }
-                when 'medium' { $n := 2pt.scale: $!units }
-                when 'thick'  { $n := 3pt.scale: $!units }
-            }
+            when 'none'   { $v = Nil }
+            when 'thin'   { $n := 1pt.scale: $!units }
+            when 'medium' { $n := 2pt.scale: $!units }
+            when 'thick'  { $n := 3pt.scale: $!units }
         }
 
         with $n {
