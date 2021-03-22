@@ -602,9 +602,9 @@ class CSS::Properties:ver<0.6.1> {
             # -- otherwise they need to all need to have or lack
             #    the !important indicator
 
-            my %groups = @children.classify: {
-                given %prop-ast{$_} {
-                    when .<expr>.elems > 1              # complex expression
+            my %groups = @children.classify: -> $p {
+                given %prop-ast{$p} {
+                    when (.<expr>.elems > 1 && $.info($p) ~~ CSS::Properties::Edges)  # complex expression
                     || .<expr>[0]<keyw> ~~ Handling  {  # 'initial', or 'inherit'
                         'omit'
                     }
@@ -643,14 +643,17 @@ class CSS::Properties:ver<0.6.1> {
         %prop-ast;
     }
 
-    multi sub tweak-ast(% ( :%font! ( :$expr! is rw ))) {
-        # reinsert font '/' operator if needed...
-        # e.g.: font: italic bold 10pt/12pt times-roman;
-        $_ = [ flat .map: { .key eq 'expr:line-height' ?? [ :op('/'), $_, ] !! $_ } ]
-            given $expr;
-    }
-    multi sub tweak-ast(%) is default {
-        # nothing to do
+    sub tweak-ast($_) {
+        with .<font> {
+            given .<expr> -> @expr {
+                with @expr.first({.<expr:line-height>}, :k) {
+                    # reinsert font '/' operator if needed...
+                    # e.g.: font: italic bold 10pt/12pt times-roman;
+                    splice @expr, $_, 0, %(:op('/'))
+                        unless $_ == 0 || @expr[$_-1]<op> ~~ '/';
+                }
+            }
+        }
     }
 
     #| assemble property list

@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 10;
+plan 14;
 
 use CSS::Properties;
 use CSS::Module::CSS3;
@@ -17,6 +17,8 @@ for (
     "border-top-width:5px!important;" => Unchanged,
     "border:5pt solid; border-color:red green blue yellow;" => Unchanged,
     "font-family:times; font-size:inherit; font-weight:inherit;" => Unchanged,
+    "background:no-repeat 50% 75%;" => Unchanged,
+    "font:1.1em/1.3 Verdana, Arial, sans-serif;" => Unchanged,
     ) -> \t {
     my $actions = $module.actions.new;
     my $p = $module.grammar.parse(t.key, :rule<declaration-list>, :$actions)
