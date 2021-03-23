@@ -2,7 +2,9 @@
    - Fixed font inheritance and improved other optimisations E.g.
      background-repeat: no-repeat; background-position: 50% 75%;
      now combines to: background:no-repeat 50% 75%;
-   - Fixed property assignment sequence #13
+   - Fixed property assignment sequence #13; border: 2px; border-bottom: 1px;
+     now works as expected.
+   - Fixed dropping of some terms with zef first value, background-position: 0 50%
 
 0.6.1  2021-03-16T10:56:25+13:00
    - Fix computed() and inherit() regressions #11

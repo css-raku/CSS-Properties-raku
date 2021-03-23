@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 12;
+plan 13;
 
 use CSS::Properties;
 
@@ -25,5 +25,8 @@ is $css.margin, [2, 2, 1, 2];
 
 $css .= new: :style("border: 2px; border-bottom: 1px;");
 is $css.border-width, [2, 2, 1, 2];
+
+$css .= new: :style("background-position: 0 50%;");
+is $css.Str, "background-position:0 50%;";
 
 done-testing;

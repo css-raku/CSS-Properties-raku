@@ -557,7 +557,7 @@ class CSS::Properties:ver<0.6.1> {
 
             with %prop-ast{prop}<expr> -> \val {
                 %prop-ast{prop}:delete
-                    if css-eqv(val[0], info.default-value[0]);
+                    if (val ~~ List ?? css-eqv(val, info.default-value) !! css-eqv(val[0], info.default-value[0]));
             }
             %edges{info.edge}++ if info.edge;
         }
