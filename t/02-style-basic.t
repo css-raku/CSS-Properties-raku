@@ -1,10 +1,10 @@
 use v6;
 use Test;
-plan 10;
+plan 12;
 
 use CSS::Properties;
 
-my $css = CSS::Properties.new: :style("color: orange; text-align: center!important; margin: 2pt; border-width: 1px 2px 3pt");
+my CSS::Properties $css .= new: :style("color: orange; text-align: center!important; margin: 2pt; border-width: 1px 2px 3pt");
 
 is $css.color, '#FFA500';
 is $css.color.type, 'rgb';
@@ -19,5 +19,11 @@ nok $css.important("color"), "unimportant property";
 
 $css = CSS::Properties.new: :style("border: 2.5px");
 is $css.border-width, [2.5 xx 4];
+
+$css .= new: :style("margin: 2px; margin-bottom: 1px;");
+is $css.margin, [2, 2, 1, 2];
+
+$css .= new: :style("border: 2px; border-bottom: 1px;");
+is $css.border-width, [2, 2, 1, 2];
 
 done-testing;

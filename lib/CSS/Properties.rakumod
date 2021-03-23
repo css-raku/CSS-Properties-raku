@@ -136,9 +136,9 @@ class CSS::Properties:ver<0.6.1> {
         $/.ast.list
     }
 
-    method !build-declarations(@declarations) {
-        my %props;
-        for @declarations {
+    method !build-declarations(@style) {
+        my @decls;
+        for @style {
             with .<property> -> \decl {
                 with decl<expr> -> \expr {
                     my $important = True
@@ -152,7 +152,7 @@ class CSS::Properties:ver<0.6.1> {
                             self.handling($prop) = $keyw;
                         }
                         else {
-                            %props{$prop} = $expr;
+                            @decls.push: $prop => $expr;
                             self.important($prop) = $_
                                 with $important;
                         }
@@ -160,7 +160,7 @@ class CSS::Properties:ver<0.6.1> {
                 }
             }
         }
-        %props;
+        @decls;
     }
 
     submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
@@ -172,19 +172,19 @@ class CSS::Properties:ver<0.6.1> {
         $!index = %module-index{$!module} //= $!module.index
             // die "module {$!module.name} lacks an index";
         $!properties = %module-properties{$!module} //= [];
-        my @declarations = .list with $declarations;
-        @declarations.append: self!parse-style($_) with $style;
-        @declarations.append: .list with $ast;
+        my @style = .list with $declarations;
+        @style.append: self!parse-style($_) with $style;
+        @style.append: .list with $ast;
         $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
-        my %decls = self!build-declarations(@declarations);
+        my @decls = self!build-declarations(@style);
         with $inherit -> $_ is copy {
             $_ = CSS::Properties.COERCE($_)
                 unless .isa(CSS::Properties);
             $!calc.em = .em;
             self.inherit: $_;
          }
-        self.set-properties(|%decls);
+        self!set-decls(@decls);
         self!copy($_) with $copy;
         self.set-properties(|%props);
     }
@@ -479,6 +479,17 @@ class CSS::Properties:ver<0.6.1> {
             for $css.properties;
     }
 
+    method !set-decls(@decls) {
+        for @decls -> \p {
+            with $.property-number(p.key) {
+                self."{p.key}"() = $_ with p.value;
+            }
+            else {
+                warn "unknown property/option: {p.key}";
+            }
+        }
+        self;
+    }
     #| set a list of properties as hash pairs
     method set-properties(*%props) {
         for %props.pairs.sort -> \p {
@@ -493,8 +504,9 @@ class CSS::Properties:ver<0.6.1> {
     }
 
     #| create a deep copy of a CSS declarations object
-    method clone(*%props) {
+    method clone(*@decls, *%props) {
         my $obj = self.new( :copy(self), :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
+        $obj!set-decls(@decls);
         $obj.set-properties(|%props);
         $obj;
     }
@@ -604,7 +616,7 @@ class CSS::Properties:ver<0.6.1> {
 
             my %groups = @children.classify: -> $p {
                 given %prop-ast{$p} {
-                    when (.<expr>.elems > 1 && $.info($p) ~~ CSS::Properties::Edges)  # complex expression
+                    when (.<expr>.elems > 1 && $.info($p) ~~ CSS::Properties::Edges)
                     || .<expr>[0]<keyw> ~~ Handling  {  # 'initial', or 'inherit'
                         'omit'
                     }
