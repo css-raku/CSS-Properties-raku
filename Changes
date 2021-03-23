@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.6.2  2021-03-24T09:19:40+13:00
    - Fixed font inheritance and improved other optimisations E.g.
      background-repeat: no-repeat; background-position: 50% 75%;
      now combines to: background:no-repeat 50% 75%;
