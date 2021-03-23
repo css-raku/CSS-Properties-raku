@@ -570,6 +570,7 @@ class CSS::Properties:ver<0.6.1> {
             next unless info.box;
             my @edges;
             my @asts;
+
             for info.edges -> \side {
                 my $prop := self.property-name(side);
                 with %prop-ast{$prop} {
@@ -581,8 +582,8 @@ class CSS::Properties:ver<0.6.1> {
                 }
             }
 
-            if @asts > 1 && @asts.map( *<prio> ).unique == 1 {
-                # consecutive edges present at the same priority; consolidate
+            if @asts == 4 && @asts.map( *<prio> ).unique == 1 {
+                # all edges present at the same priority; consolidate
                 %prop-ast{$_}:delete for @edges;
 
                 my constant DefaultIdx = [Mu, Mu, 0, 0, 1];

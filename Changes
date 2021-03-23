@@ -4,7 +4,11 @@
      now combines to: background:no-repeat 50% 75%;
    - Fixed property assignment sequence #13; border: 2px; border-bottom: 1px;
      now works as expected.
-   - Fixed dropping of some terms with zef first value, background-position: 0 50%
+   - Fixed dropping of some terms with zef first value #14; background-position: 0 50%
+     now serialises as expected
+   - Fixed box property optmisations #15; border-style: solid; border-bottom-style: none;
+     now serialises to: border-left-style:solid; border-right-style:solid; border-top-style:solid;
+     (todo optimise to: border-style:solid solid none;)
 
 0.6.1  2021-03-16T10:56:25+13:00
    - Fix computed() and inherit() regressions #11

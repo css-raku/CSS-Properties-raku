@@ -57,7 +57,7 @@ $css = CSS::Properties.new: :style("border-style:dotted solid double dashed;");
 is $css.write, "border-style:dotted solid double dashed;";
 
 $css = CSS::Properties.new: :style("margin-top: 1pt; margin-right: 2pt;");
-is $css.write, "margin:1pt 2pt;";
+is $css.write, "margin-right:2pt; margin-top:1pt;";
 
 $css = CSS::Properties.new: :style("margin-top: 1pt; margin-left: 2pt;");
 is $css.write, "margin-left:2pt; margin-top:1pt;";
