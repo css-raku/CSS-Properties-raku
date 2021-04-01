@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "CSS::Module:ver<0.5.3+>",
+    "CSS::Module:ver<0.5.5+>",
     "CSS::Writer:ver<0.2.6+>",
     "Color",
     "Method::Also"
@@ -30,7 +30,7 @@
   },
   "resources": [
   ],
-  "source-url": "git://github.com/p6-css/CSS-Properties-p6.git",
+  "source-url": "git://github.com/css-raku/CSS-Properties-raku.git",
   "tags": [
     "css"
   ],

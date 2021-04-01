@@ -109,32 +109,6 @@ class CSS::Box {
         ]
     }
 
-    method css-height($css = $!css, :$ref = $css.reference-width) {
-        my Numeric $height = $_ with $.measure($css.height, :$ref);
-        with $.measure($css.max-height, :$ref) {
-            $height = $_
-                if $height.defined && $height > $_;
-        }
-        with $.measure($css.min-height, :$ref) {
-            $height = $_
-                if $height.defined && $height < $_;
-        }
-        $height;
-    }
-
-    method css-width($css = $!css, :$ref = $css.reference-width) {
-        my Numeric $width = $_ with $.measure($css.width, :$ref);
-        with $.measure($css.max-width, :$ref) {
-            $width = $_
-                if !$width.defined || $width > $_;
-        }
-        with $.measure($css.min-width, :$ref) {
-            $width = $_
-                if $width.defined && $width < $_;
-        }
-        $width;
-    }
-
     method Array is rw {
         Proxy.new(
             FETCH => sub ($) {

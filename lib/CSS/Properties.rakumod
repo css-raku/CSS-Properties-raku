@@ -355,8 +355,9 @@ class CSS::Properties:ver<0.6.2> {
         %!important.pairs.map: { $.property-name(.key) => .value }
     }
 
-    multi method from-ast(ColorAST $v) {
-        my @channels = $v.value.map: {self.from-ast: $_};
+    proto sub from-ast($) is export(:from-ast) {*}
+    multi sub from-ast(ColorAST $v) {
+        my @channels = $v.value.map: {from-ast($_)};
         my Color $color;
         my $type = $v.key;
         @channels.tail *= 256
@@ -366,36 +367,36 @@ class CSS::Properties:ver<0.6.2> {
 
         $color does CSS::Units[Colors, $type];
     }
-    multi method from-ast(Keyword $v) {
+    multi sub from-ast(Keyword $v) {
         state $cache //= %(
             'transparent' => (Color
                               but CSS::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
         );
         $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
     }
-    multi method from-ast(Pair $v) {
-        my \r = self.from-ast( $v.value );
+    multi sub from-ast(Pair $v) {
+        my \r = from-ast( $v.value );
         r ~~ CSS::Units
             ?? r
             !! CSS::Units.value(r, $v.key);
     }
-    multi method from-ast(List $v) {
+    multi sub from-ast(List $v) {
         $v.elems == 1
-            ?? self.from-ast( $v[0] )
-            !! [ $v.map: { self.from-ast($_) } ];
+            ?? from-ast( $v[0] )
+            !! [ $v.map: { from-ast($_) } ];
     }
     #| { :int(42) } => :int(42)
-    multi method from-ast(Hash $v where .keys == 1) {
-        self.from-ast( $v.pairs[0] );
+    multi sub from-ast(Hash $v where .keys == 1) {
+        from-ast( $v.pairs[0] );
     }
-    multi method from-ast($v) is default {
+    multi sub from-ast($v) {
         $v
     }
 
     multi sub coerce-str(List $_) {
         .map({ coerce-str($_) // return }).join: ' ';
     }
-    multi sub coerce-str($_) is default {
+    multi sub coerce-str($_) {
         .Str if $_ ~~ Str|Numeric && ! .can('type');
     }
     has %!ast-cache{Str}; # cache, for performance
@@ -406,7 +407,7 @@ class CSS::Properties:ver<0.6.2> {
         else {
             $val;
         }
-        self.from-ast(expr);
+        from-ast(expr);
     }
 
     #| convert 0 .. 255  =>  0.0 .. 1.0. round to 2 decimal places
@@ -414,9 +415,11 @@ class CSS::Properties:ver<0.6.2> {
         :num(($a * 100/256).round / 100);
     }
 
-    multi method to-ast(Pair $v) { $v }
+    proto sub to-ast(|) is export(:to-ast) {*}
 
-    multi method to-ast($v, :$get = True) is default {
+    multi sub to-ast(Pair $v) { $v }
+
+    multi sub to-ast($v, :$get = True) is default {
         my $key = $v.?type if $get;
         my @ast;
         my $val = do given $v {
@@ -431,12 +434,12 @@ class CSS::Properties:ver<0.6.2> {
             }
             when List  {
                 .elems == 1
-                    ?? self.to-ast( .[0] )
-                    !! [ .map: { self.to-ast($_) } ];
+                    ?? to-ast( .[0] )
+                    !! [ .map: { to-ast($_) } ];
             }
             default {
                 $key
-                    ?? self.to-ast($_, :!get)
+                    ?? to-ast($_, :!get)
                     !! $_;
             }
         }
@@ -699,7 +702,7 @@ class CSS::Properties:ver<0.6.2> {
         #| expressions
         for %!values.keys.sort -> \prop {
             with %!values{prop} -> \value {
-                my $ast = self.to-ast: value;
+                my $ast = to-ast(value);
                 $ast .= List
                     unless $ast ~~ List;
                 %prop-ast{prop}<expr> = $ast;
