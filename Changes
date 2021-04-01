@@ -1,4 +1,8 @@
 {{$NEXT}}
+
+0.6.3  2021-04-01T15:21:18+13:00
+    - Widthdraw box css-width() and css-height() methods - Not
+      strongly related to the box model. Moved to PDF::Style.  
     - Changed from-ast() and to-ast() from methods to subroutines
 
 0.6.2  2021-03-24T09:19:40+13:00
