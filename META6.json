@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "CSS::Module:ver<0.5.5+>",
+    "CSS::Module:ver<0.5.7+>",
     "CSS::Writer:ver<0.2.6+>",
     "Color",
     "Method::Also"

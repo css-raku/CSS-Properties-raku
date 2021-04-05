@@ -12,7 +12,7 @@ class CSS::Properties:ver<0.6.3> {
     use CSS::Properties::Calculator;
     use CSS::Properties::Property;
     use CSS::Properties::Edges;
-    use CSS::Properties::Optimizer :&tweak-ast, :&assemble-ast;
+    use CSS::Properties::Optimizer :&tweak-properties, :&make-declaration-list;
     use CSS::Units :pt;
     use Method::Also;
     use NativeCall;
@@ -104,7 +104,7 @@ class CSS::Properties:ver<0.6.3> {
 
     method !parse-style(Str $style) {
         my $rule = "declaration-list";
-        my $actions = $!module.actions.new;
+        my $actions = $!module.actions.new: :lax;
         $!module.grammar.parse($style, :$rule, :$actions)
             or die "unable to parse CSS style declarations: $style";
         @!warnings = $actions.warnings;
@@ -466,7 +466,7 @@ class CSS::Properties:ver<0.6.3> {
                 self."{p.key}"() = $_ with p.value;
             }
             else {
-                warn "unknown property/option: {p.key}";
+                warn "unknown {$!module.name} property: {p.key}";
             }
         }
         self;
@@ -521,8 +521,8 @@ class CSS::Properties:ver<0.6.3> {
         self.optimizer.optimize-ast(%prop-ast)
             if $optimize;
 
-        tweak-ast(%prop-ast);
-        assemble-ast(%prop-ast);
+        tweak-properties(%prop-ast);
+        make-declaration-list(%prop-ast);
     }
 
     #| write a set of declarations. By default, it is formatted as a single-line,

@@ -61,8 +61,8 @@ method optimize( @ast ) {
     }
 
     self.optimize-ast(%prop-ast);
-    tweak-ast(%prop-ast);
-    assemble-ast(%prop-ast);
+    tweak-properties(%prop-ast);
+    make-declaration-list(%prop-ast);
 }
 
 has Array $!container-properties;
@@ -70,7 +70,7 @@ method !container-properties {
     $!container-properties //= [$!index.grep(*.children).map(*.name)];
 }
 
-sub tweak-ast($_) is export(:tweak-ast) {
+sub tweak-properties($_) is export(:tweak-properties) {
     with .<font> {
         given .<expr> -> @expr {
             with @expr.first({.<expr:line-height>}, :k) {
@@ -83,8 +83,7 @@ sub tweak-ast($_) is export(:tweak-ast) {
     }
 }
 
-#| assemble property list
-multi sub assemble-ast(%prop-ast) is export(:assemble-ast) {
+multi sub make-declaration-list(%prop-ast) is export(:make-declaration-list) {
     my @declaration-list = %prop-ast.keys.sort.map: -> \prop {
         my %property = %prop-ast{prop};
         %property<ident> = prop;

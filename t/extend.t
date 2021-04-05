@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 10;
+plan 13;
 require CSS::Module::CSS3;
 use CSS::Properties;
 
@@ -12,7 +12,7 @@ my %extensions = %(
     ),
     '-my-span' => %(
         :synopsis<integer>,
-        :default<1>,
+        :default(1),
         :coerce(-> Int() $num { :$num }),
     ),
 );
@@ -35,6 +35,13 @@ is $css.properties.sort.join(','), '-my-align,-my-span', 'properties';
 is $css.Str, '-my-align:left; -my-span:5;', 'serialization';
 
 $css."-my-align"() = 'middle';
+
 is $css.Str, '-my-span:5;', 'serialization (default)';
+
+$css .= new: :style($css.Str), :$module;
+
+is $css.Str, '-my-span:5;', 'reserialization';
+is $css."-my-span"(), 5;
+is $css."-my-align"(), 'middle';
 
 done-testing;
