@@ -22,7 +22,7 @@ $css.margin = 3mm;
 $css.border-width = 2mm;
 $css.padding = 5mm;
 $css.size = 'a4';
-is $css.Str, "border-width:2mm; margin:3mm; padding:5mm; size:a4;", "css";
+is $css.Str, "border:2mm; margin:3mm; padding:5mm; size:a4;", "css";
 $box .= new(:$css, :units<mm>);
 
 is-deeply mm(|$box.margin), [297, 210, 0, 0], '.margin (mm)';

@@ -145,18 +145,25 @@ Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be config
 
 ```
 use CSS::Properties;
+use CSS::Module;
 use CSS::Module::CSS1;
 use CSS::Module::CSS21;
+use CSS::Module::CSS3;
 
 my $style = 'color: red; azimuth: left';
 
-my $module = CSS::Module::CSS1.module;
-my CSS::Properties $css1 .= new( :$style, :$module);
+my CSS::Module $module = CSS::Module::CSS1.module;
+my CSS::Properties $css1 .= new: :$style, :$module;
 ## warnings: dropping unknown property: azimuth
 
 $module = CSS::Module::CSS21.module;
-my CSS::Properties $css21 .= new( :$style, :$module);
+my CSS::Properties $css21 .= new: :$style, :$module;
 ## (no warnings)
+
+my CSS::Properties $css3 .= new: :$style; # CSS3 is the default
+# -- or --
+$module = CSS::Module::CSS3.module;
+$css3 .= new: :$style, :$module;
 ```
 
 ### '@font-face' Properties

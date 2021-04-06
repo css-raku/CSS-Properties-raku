@@ -6,7 +6,7 @@ use CSS::Properties;
 
 my $css = CSS::Properties.new( :style("border-style: groove!important") );
 is $css.write(:!optimize), "border-bottom-style:groove!important; border-left-style:groove!important; border-right-style:groove!important; border-top-style:groove!important;", "unoptimized edge property";
-is $css.write, "border-style:groove!important;", "edge property";
+is $css.write, "border:groove!important;", "edge property";
 
 $css = CSS::Properties.new( :style("margin-top: 1pt; margin-left: 1pt; margin-bottom: 1pt; margin-right: 1pt;") );
 is $css.write, "margin:1pt;", "consolidation of edge properties";
@@ -35,7 +35,7 @@ $css = CSS::Properties.new( :style("margin-top: 0; margin-right: 0mm; margin-lef
 is $css.write, "margin-left:2pt;", "optimization of default values";
 
 $css = CSS::Properties.new( :style("cue-before: url(foo)") );
-is $css.write, "cue-before:url('foo');";
+is $css.write, "cue:url('foo');";
 
 $css = CSS::Properties.new( :style("cue-before: url(foo); cue-after: url(bar)") );
 is $css.write, "cue:url('foo') url('bar');";
@@ -63,8 +63,8 @@ $css = CSS::Properties.new: :style("margin-top: 1pt; margin-left: 2pt;");
 is $css.write, "margin-left:2pt; margin-top:1pt;";
 
 $css = CSS::Properties.new: :style("border-top:2px; border-right:solid red;");
-is $css.write, "border-right:solid red; border-top-width:2px;";
-is $css.write(:!color-names), "border-right:solid #F00; border-top-width:2px;";
+is $css.write, "border-right:solid red; border-top:2px;";
+is $css.write(:!color-names), "border-right:solid #F00; border-top:2px;";
 is $css.write(:!optimize), "border-right-color:red; border-right-style:solid; border-top-width:2px;";
 
 done-testing;

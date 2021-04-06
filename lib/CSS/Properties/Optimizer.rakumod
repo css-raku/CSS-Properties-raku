@@ -37,6 +37,9 @@ multi sub css-eqv(Any $a, Any $b) is default {
 #| into container properties, e.g. font-family font-style ... into font
 proto sub optimizable(Str $cont-prop, :%props) { * }
 
+# cue-after requires a cue-before entry
+multi sub  optimizable('cue', :%props) { %props<cue-before>:exists }
+
 # Avoid these font serialization optimizations, which won't parse correctly:
 #     font: bold;            // font-weight or font-style only
 #     font: bold Helvetica;  // ... + family-name
@@ -47,9 +50,8 @@ multi sub optimizable('font', :%props (:$font-size, :$font-family, |c) ) {
     $font-size.defined && $font-family.defined;
 }
 
-# only worthwhile, if there's more than one component
-multi sub optimizable(Str $, :%props) is default {
-    %props.elems >= 2;
+multi sub optimizable(Str $, :props(%)) {
+    True;
 }
 
 method optimize( @ast ) {
@@ -150,9 +152,7 @@ method optimize-ast( %prop-ast ) {
         my @children = $!css.info(container-prop).child-names.grep: {
             %prop-ast{$_}:exists
         }
-
-        my %props = %(@children.Set);
-        next unless @children && optimizable(container-prop, :%props);
+        next unless @children;
 
         # agregrate related children to a container property, where possible.
         # -- if child properties are 'initial', or 'inherit', they all
@@ -174,10 +174,8 @@ method optimize-ast( %prop-ast ) {
         %groups<omit>:delete;
 
         #| find largest consolidation group
-        my $group = do with %groups.pairs.sort(*.key).sort({+.value}).tail {
-            .key
-                if + .value > 1;
-        }
+        my $group = .key
+            with %groups.pairs.sort(*.key).sort({+.value}).tail;
 
         with $group {
             # all of the same type
@@ -187,13 +185,16 @@ method optimize-ast( %prop-ast ) {
                     %prop-ast{container-prop} = { :expr[ :keyw($_) ] };
                 }
                 when 'important'|'normal' {
-                    my %ast = :expr[ @children.map: {
-                        my \sub-prop = %prop-ast{$_}:delete;
-                        'expr:'~$_ => sub-prop<expr>;
-                    } ];
-                    %ast<prio> = $_
-                        when 'important';
-                    %prop-ast{container-prop} = %ast;
+                    my %props = %(@children.Set);
+                    if optimizable(container-prop, :%props) {
+                        my %ast = :expr[ @children.map: {
+                            my \sub-prop = %prop-ast{$_}:delete;
+                            'expr:'~$_ => sub-prop<expr>;
+                        } ];
+                        %ast<prio> = $_
+                            when 'important';
+                        %prop-ast{container-prop} = %ast;
+                    }
                 }
             }
         }

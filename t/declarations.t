@@ -29,14 +29,14 @@ is $css.margin-left, 0, 'default margin-left';
 is $css.margin-left.type, 'px', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is $css.background-color.rgba.Str, '0 0 0 0', 'default background-color';
-is ~$css, 'border-top-color:red;', 'basic css rewritten';
+is ~$css, 'border-top:red;', 'basic css rewritten';
 $css.background-position = <top left>;
 is $css.background-position[0], 'top', 'list parse';
 is $css.background-position[0].type, 'keyw', 'list parse';
-is ~$css, 'background-position:top left; border-top-color:red;', 'list parse';
+is ~$css, 'background:top left; border-top:red;', 'list parse';
 $css.background-position = Nil;
 is-deeply $css.background-color.rgba.Str, '0 0 0 0', 'background-color reset';
-is ~$css, 'border-top-color:red;', 'background-color reset';
+is ~$css, 'border-top:red;', 'background-color reset';
 
 $css.margin-top = 10pt;
 is $css.margin-top, 10, 'updated margin-right value';
@@ -84,10 +84,10 @@ lives-ok { $css.info("background"); }, "info on a container property";
 $css = CSS::Properties.new: :style("border-top-color:red");
 my $original-css = $css;
 $css = $css.clone;
-is ~$css, "border-top-color:red;", 'cloned css';
+is ~$css, "border-top:red;", 'cloned css';
 $css.border-color = 'blue';
-is ~$css, "border-color:blue;", 'cloned css';
-is ~$original-css, "border-top-color:red;", 'original css';
+is ~$css, "border:blue;", 'cloned css';
+is ~$original-css, "border-top:red;", 'original css';
 
 # special handling of text-align. Default depends on direction
 
