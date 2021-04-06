@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.6.4  2021-04-06T12:17:57+12:00
     - Factored out CSS::Properties::Optimizer from CSS::Properties
 
 0.6.3  2021-04-01T15:21:18+13:00
