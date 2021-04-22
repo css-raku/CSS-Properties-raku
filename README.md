@@ -1,7 +1,7 @@
 # CSS-Properties-p6
 
-<a href="https://travis-ci.org/p6-css/CSS-Properties-p6"><img src="https://travis-ci.org/p6-css/CSS-Properties-p6.svg?branch=master"></a>
- <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-css/CSS-Properties-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
+<a href="https://travis-ci.org/css-raku/CSS-Properties-raku"><img src="https://travis-ci.org/css-raku/CSS-Properties-raku.svg?branch=master"></a>
+ <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-raku/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/css-raku/CSS-Properties-raku?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
 The CSS::Properties module is a set of related classes for parsing, manipulation and generation of CSS property sets, including inheritance, and defaults.
 
@@ -16,7 +16,7 @@ Classess in this module
 See Also
 --------
 
-  * [CSS](https://github.com/p6-css/CSS-raku) - Top level CSS manipulation class
+  * [CSS](https://github.com/css-raku/CSS-raku) - Top level CSS manipulation class
 
 
 ## Basic Construction
