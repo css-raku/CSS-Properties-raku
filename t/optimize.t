@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 14;
+plan 16;
 
 use CSS::Properties;
 use CSS::Module::CSS3;
@@ -19,6 +19,7 @@ for (
     "font-family:times; font-size:inherit; font-weight:inherit;" => Unchanged,
     "background:no-repeat 50% 75%;" => Unchanged,
     "font:1.1em/1.3 Verdana, Arial, sans-serif;" => Unchanged,
+    "list-style-type:circle;" => "list-style:circle;",
     ) -> \t {
     my $actions = $module.actions.new;
     my $p = $module.grammar.parse(t.key, :rule<declaration-list>, :$actions)

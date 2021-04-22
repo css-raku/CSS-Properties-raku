@@ -54,7 +54,7 @@ multi sub optimizable(Str $, :props(%)) {
     True;
 }
 
-method optimize( @ast ) {
+method optimize( @ast, Bool :$keep-defaults ) {
     my %prop-ast;
     for @ast.grep(*.key eq 'property') {
         my %v = .value;
@@ -62,6 +62,8 @@ method optimize( @ast ) {
             with %v<ident>:delete;
     }
 
+    self.purge-defaults(%prop-ast)
+        unless $keep-defaults;
     self.optimize-ast(%prop-ast);
     tweak-properties(%prop-ast);
     make-declaration-list(%prop-ast);
@@ -95,10 +97,8 @@ multi sub make-declaration-list(%prop-ast) is export(:make-declaration-list) {
     :@declaration-list;
 }
 
-method optimize-ast( %prop-ast ) {
-    my %edges{Int};
-
-    for %prop-ast.keys.sort -> \prop {
+method purge-defaults(%prop-ast) {
+   for %prop-ast.keys.sort -> \prop {
         # delete properties that match the default value
         my \info = $!css.info(prop);
 
@@ -106,12 +106,15 @@ method optimize-ast( %prop-ast ) {
             %prop-ast{prop}:delete
                 if (val ~~ List ?? css-eqv(val, info.default-value) !! css-eqv(val[0], info.default-value[0]));
         }
-        %edges{info.edge}++ if info.edge;
-    }
+   }
+}
+
+method optimize-ast( %prop-ast ) {
+    my Int @parent-props = %prop-ast.keys.map({$!css.info($_).edge}).grep(*).sort;
 
     # consolidate box properties with common values
     # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt
-    for %edges.keys.sort -> Int $prop {
+    for @parent-props -> Int $prop {
         # bottom up aggregation of edges. e.g. border-top-width, border-right-width ... => border-width
         my \info = $!css.info($prop);
         next unless info.box;

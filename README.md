@@ -237,7 +237,16 @@ say $css.margin-left;               # 15pt
 
 ## Optimization and Serialization
 
-The `.write` or `.Str` methods can be used to produce CSS. Properties are optimized and normalized:
+    method write(
+        Bool :$optimize = True,        # consolidate properties
+        Bool :$terse = True,           # single line output
+        Bool :$color-names = True,     # use color names, where possible
+        Bool :$keep-defaults = False,  # don't omit default values
+        |c
+    ) is also<Str gist> {
+
+
+The `.write` (alias `.Str`, or .`gist`) method can be used to produce CSS. Properties are optimized and normalized:
 
 - properties with default values are omitted
 

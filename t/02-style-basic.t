@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 14;
+plan 15;
 
 use CSS::Properties;
 
@@ -31,5 +31,6 @@ is $css.Str, "background:0 50%;";
 
 $css .= new: :style("border-style: solid; border-bottom-style: none;");
 is $css.Str, "border-left:solid; border-right:solid; border-top:solid;";
+is $css.Str(:keep-defaults), "border-style:solid solid none;";
 
 done-testing;

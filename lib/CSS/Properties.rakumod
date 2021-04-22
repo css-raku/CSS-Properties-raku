@@ -329,7 +329,7 @@ class CSS::Properties:ver<0.6.5> {
             }
         }
     }
-    multi method important is default {
+    multi method important {
         %!important.pairs.map: { $.property-name(.key) => .value }
     }
 
@@ -495,7 +495,7 @@ class CSS::Properties:ver<0.6.5> {
     #| return an AST for the declarations.
     #| This is more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>,
     #| but with optimization. Suitable for reserialization with CSS::Writer
-    method ast(Bool :$optimize = True) {
+    method ast(Bool :$optimize = True, Bool :$keep-defaults) {
         my %prop-ast;
         # '!important'
         for %!important.pairs {
@@ -518,6 +518,9 @@ class CSS::Properties:ver<0.6.5> {
             }
         }
 
+        self.optimizer.purge-defaults(%prop-ast)
+            unless $keep-defaults;
+
         self.optimizer.optimize-ast(%prop-ast)
             if $optimize;
 
@@ -530,9 +533,10 @@ class CSS::Properties:ver<0.6.5> {
     method write(Bool :$optimize = True,
                  Bool :$terse = True,
                  Bool :$color-names = True,
+                 Bool :$keep-defaults = False,
                  |c) is also<Str gist> {
         my CSS::Writer $writer .= new( :$terse, :$color-names, |c);
-        $writer.write: self.ast(:$optimize);
+        $writer.write: self.ast(:$optimize, :$keep-defaults);
     }
 
     #| return all known module properties
