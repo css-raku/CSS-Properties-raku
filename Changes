@@ -1,5 +1,6 @@
 {{$NEXT}}
-    - Remove deprecated properties CSS::Properties::Box and CSS::Properties::PageBox
+    - Remove deprecated classes CSS::Properties::Box and CSS::Properties::PageBox
+    - Rename class CSS::Properties::Font -> CSS::Font
 
 0.6.6  2021-04-22T15:56:11+12:00
     - Add ast(:keep-defaults) option. These need to be retained in CSS::Rulesets

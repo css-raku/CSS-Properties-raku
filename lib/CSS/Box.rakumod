@@ -13,8 +13,8 @@ class CSS::Box {
     has Array $!border;
     has Array $!margin;
 
-    use CSS::Properties::Font;
-    has CSS::Properties::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
+    use CSS::Font;
+    has CSS::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
     has CSS::Properties $.css;
 
     has Hash @.save;
@@ -32,7 +32,7 @@ class CSS::Box {
         |c
     ) {
         $!css //= CSS::Properties.new(:$style, |c);
-        $!font //= CSS::Properties::Font.new: :$!css;
+        $!font //= CSS::Font.new: :$!css;
         self!resize;
     }
 

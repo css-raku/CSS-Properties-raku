@@ -17,6 +17,7 @@
   "perl": "6.*",
   "provides": {
     "CSS::Box": "lib/CSS/Box.rakumod",
+    "CSS::Font": "lib/CSS/Font.rakumod",
     "CSS::PageBox": "lib/CSS/PageBox.rakumod",
     "CSS::Properties": "lib/CSS/Properties.rakumod",
     "CSS::Properties::Calculator": "lib/CSS/Properties/Calculator.rakumod",
