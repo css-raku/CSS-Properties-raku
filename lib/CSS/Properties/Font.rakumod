@@ -1,10 +1,10 @@
 use v6;
 class CSS::Properties::Font {
     use CSS::Properties;
-    use CSS::Properties::Calculator;
+    use CSS::Properties::Calculator :FontWeight;
     use CSS::Units :pt;
 
-    has CSS::Properties::Calculator::FontWeight $.weight is rw = 400;
+    has FontWeight $.weight is rw = 400;
     has Str @!family = ['times-roman'];
     method family { @!family[0] }
     has Str $.style = 'normal';
@@ -18,8 +18,12 @@ class CSS::Properties::Font {
         );
     }
 
-    submethod TWEAK(Str :$font-style) {
-        self.font-style = $_ with $font-style;
+    submethod TWEAK(Str :$font-style, Str :$font-props) {
+        with $font-style {
+            warn 'CSS::Properties::Font.new(:$font-style) is deprecated. Please use :$font-props';
+            self.font-props = $_;
+        }
+        self.font-props = $_ with $font-props;
         self.setup;
     }
 
@@ -41,16 +45,17 @@ class CSS::Properties::Font {
         $pat;
     }
 
-    #| sets/gets the css font property
-    #| e.g. $font.font-style = 'italic bold 10pt/12pt sans-serif';
-    method font-style is rw {
+    #| sets/gets the css font properties as a whole
+    #| e.g. $font.font-css = 'italic bold 10pt/12pt sans-serif';
+    method font-props is rw {
         Proxy.new(
             FETCH => sub ($) { $!css.font },
-            STORE => sub ($, Str \font-prop) {
-                $!css.font = font-prop;
+            STORE => sub ($, Str \font-props) {
+                $!css.font = font-props;
                 self.setup;
             });
     }
+    method font-style(|c) is rw is DEPRECATED<font-props> { self.font-props(|c) }
 
     method setup(CSS::Properties $css = $!css) {
         @!family = [];
