@@ -19,7 +19,7 @@ class CSS::Properties::Calculator {
         );
     }
 
-    subset FontWeight of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
+    subset FontWeight is export(:FontWeight) of Numeric where { 100 <= $_ <= 900 && $_ %% 100 }
 
     my constant %FontSizes = %(
         :xx-small(6pt), :x-small(7.5pt), :small(10pt), :medium(12pt),

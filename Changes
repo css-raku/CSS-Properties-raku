@@ -1,8 +1,9 @@
 {{$NEXT}}
+    - Remove deprecated properties CSS::Properties::Box and CSS::Properties::PageBox
 
 0.6.6  2021-04-22T15:56:11+12:00
-    - Add ast(:keep-defaults) option. These need to be retained in CSS::Rulesets when
-      writing.
+    - Add ast(:keep-defaults) option. These need to be retained in CSS::Rulesets
+      when writing.
 
 0.6.5  2021-04-07T09:10:49+12:00
     - Optimize to parent properties, for example 'background-color:blue;'
