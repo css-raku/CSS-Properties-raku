@@ -3,6 +3,34 @@ use v6;
 #| management class for a set of CSS Properties
 class CSS::Properties:ver<0.6.6> {
 
+    =begin pod
+
+    =head2 Synopsis
+    =begin code :lang<raku>
+    use CSS::Units :pt;
+    use CSS::Properties;
+
+    my $style = "color:red !important; padding: 1pt";
+    my CSS::Properties $css .= new( :$style );
+    say $css.important("color"); # True
+    $css.border-color = 'red';
+
+    $css.margin = [5pt, 2pt, 5pt, 2pt];
+    $css.margin = 5pt;  # set margin on all 4 sides
+
+    # set text alignment
+    $css.text-align = 'right';
+
+    say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
+        
+    =end code
+
+    =head2 Description
+    This classes manages a list of properties. These are typically parsed
+    from the body of a CSS rule-set or from an inline `style` tag.
+
+    =end pod
+
     use CSS::Module:ver(v0.4.6+);
     use CSS::Module::CSS3;
     use CSS::Writer:ver(v0.2.4+);
@@ -40,6 +68,65 @@ class CSS::Properties:ver<0.6.6> {
         $!optimizer //= CSS::Properties::Optimizer.new: :$css, :$!index;
     }
     has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
+
+    =begin pod
+    =head2  Methods
+
+    =head3  new
+    =begin code :lang<raku>
+    method new(
+        Str :$style,
+        CSS::Properties() :$inherit,
+        CSS::Properties() :$copy,
+        Str :$units = 'pt',
+        Numeric :$em = $inherit.em // 12,
+        Numeric :$viewport-width,
+        Numeric :$viewport-height,
+        Numeric :$reference-width,
+        *%props,
+    ) returns CSS::Properties
+    =end code
+
+    Options:
+
+    =item `Str :$style` CSS property list to parse
+    =item `CSS::Properties() :$inherit` Properties to be formally inherited
+    =item `CSS::Properties() :$copy` Additional properties to be copied in
+    =item `Str :$units` # measurement units, such as 'pt', 'px', 'in', etc
+    =item `Numeric :$em = 12` initial font size
+    =item `Numeric :$viewport-width` for use as `vw` length units
+    =item `Numeric :$viewport-height` for use as `vh` length units
+    =item `Numeric :$reference-width` for use in box values
+    =item `*%props` - CSS property settings
+    =end pod
+
+   submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
+                     :module($), :warn($), :$units = 'pt', # stop these leaking through to %props
+                     Numeric :$em = 12pt.scale($units),
+                     Numeric :$viewport-width, Numeric :$viewport-height,
+                     Numeric :$reference-width = 0,
+                     *%props, ) {
+        $!index = %module-index{$!module} //= $!module.index
+            // die "module {$!module.name} lacks an index";
+        $!properties = %module-properties{$!module} //= [];
+        my @style = .list with $declarations;
+        @style.append: self!parse-style($_) with $style;
+        @style.append: .list with $ast;
+        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
+
+        my @decls = self!build-declarations(@style);
+        with $inherit -> $_ is copy {
+            $_ = CSS::Properties.COERCE($_)
+                unless .isa(CSS::Properties);
+            $!calc.em = .em;
+            self.inherit: $_;
+         }
+        self!set-decls(@decls);
+        self!copy($_) with $copy;
+        self.set-properties(|%props);
+    }
+
+    multi method COERCE(Str:D $style) { self.new: :$style }
 
     my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
     my subset Keyword  of Pair where {.key ~~ 'keyw'}
@@ -140,34 +227,6 @@ class CSS::Properties:ver<0.6.6> {
         }
         @decls;
     }
-
-    submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
-                     :module($), :warn($), :$units = 'pt', # stop these leaking through to %props
-                     Numeric :$em = 12pt.scale($units),
-                     Numeric :$viewport-width, Numeric :$viewport-height,
-                     Numeric :$reference-width = 0,
-                     *%props, ) {
-        $!index = %module-index{$!module} //= $!module.index
-            // die "module {$!module.name} lacks an index";
-        $!properties = %module-properties{$!module} //= [];
-        my @style = .list with $declarations;
-        @style.append: self!parse-style($_) with $style;
-        @style.append: .list with $ast;
-        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
-
-        my @decls = self!build-declarations(@style);
-        with $inherit -> $_ is copy {
-            $_ = CSS::Properties.COERCE($_)
-                unless .isa(CSS::Properties);
-            $!calc.em = .em;
-            self.inherit: $_;
-         }
-        self!set-decls(@decls);
-        self!copy($_) with $copy;
-        self.set-properties(|%props);
-    }
-
-    multi method COERCE(Str:D $style) { self.new: :$style }
 
     method !box-value(Str $prop, CArray $edges) is rw {
 	Proxy.new(

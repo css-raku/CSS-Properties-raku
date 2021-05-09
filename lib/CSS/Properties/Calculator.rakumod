@@ -1,3 +1,4 @@
+#| property calculator and measurement tool.
 class CSS::Properties::Calculator {
     use CSS::Units :Lengths, :&dimension, :pt;
 
