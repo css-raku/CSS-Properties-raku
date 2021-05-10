@@ -26,8 +26,65 @@ class CSS::Properties:ver<0.6.6> {
     =end code
 
     =head2 Description
+
     This classes manages a list of properties. These are typically parsed
     from the body of a CSS rule-set or from an inline `style` tag.
+
+    =head2 CSS Property Accessors
+
+    CSS Properties provides `rw` accessors for all standard CSS3 properties.
+
+    =item color values are converted to Color objects
+    =item other values are converted to strings or numeric, as appropriate
+    =item the .type method returns additional type information
+    =item box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
+    =item there are also some container properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
+
+    =begin code :lang<raku> 
+    use CSS::Properties;
+
+    my CSS::Properties $css .= new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
+
+    say $css.color.hex;       # (FF A5 00)
+    say $css.color.type;      # 'rgb'
+    say $css.text-align;      # 'center'
+    say $css.text-align.type; # 'keyw' (keyword)
+
+    # access margin-top, directly and through margin container
+    say $css.margin-top;      # '2'
+    say $css.margin-top.type; # 'pt'
+    say $css.margin;          # [2 2 2 2]
+    say $css.margin[0];       # '2'
+    say $css.margin[0].type;  # 'pt'
+
+    # access font-family directly and through font container
+    say $css.font-family;       # 'Helvetica'
+    say $css.font-family.type;  # 'ident'
+    say $css.font<font-family>; # 'Helvetica;
+    =end code
+
+    =item The simplest ways of setting a property is to assign a string value which is parsed as CSS.
+    =item Unit values are also recognized. E.g. `16pt`.
+    =item Colors can be assigned to color objects
+    =item Also the type and value can be assigned as a pair.
+
+    =begin code :lang<raku>
+    use CSS::Properties;
+    use CSS::Units :pt;
+    use Color;
+    my CSS::Properties $css .= new;
+
+    # assign to container
+    $css.font = "14pt Helvetica";
+
+    # assign to component properties
+    $css.font-weight = 'bold'; # string
+    $css.line-height = 16pt;   # unit value
+    $css.border-color = Color.new(0, 255, 0);
+    $css.font-style = :keyw<italic>; # type/value pair
+
+    say ~$css; # font:italic bold 14pt/16pt Helvetica;
+    =end code
 
     =end pod
 
@@ -58,7 +115,7 @@ class CSS::Properties:ver<0.6.6> {
     has Hash  %!struct;
     has Bool  %!important{Int};
     has Handling %!handling{Int};
-    has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; #| associated CSS module
+    has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; # associated CSS module
     has Exception @.warnings;
     has Bool $.warn = True;
     has Array $!properties;
@@ -70,7 +127,7 @@ class CSS::Properties:ver<0.6.6> {
     has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
 
     =begin pod
-    =head2  Methods
+    =head2 Other Methods
 
     =head3  new
     =begin code :lang<raku>
@@ -126,6 +183,28 @@ class CSS::Properties:ver<0.6.6> {
         self.set-properties(|%props);
     }
 
+    =begin pod
+    =head3 measure
+    =begin code :lang<raku>
+    # Converts a value to a numeric quantity;
+    my Numeric $font-size = $css.measure: :font-size; # get current font size
+    $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
+    $font-size = $css.measure: :font-size(120%);      # compute a larger font
+    my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+    $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
+    =end code
+
+    This function is implemented for `font-size`, `font-weight`, `letter-spacing`, `line-height`, and `word-spacing`.
+
+    It also works for box related properties: `width`, `height`, `{min|max}-{width|height}`, `border-{top|right|bottom|left}-width`, and `{padding|margin}-{top|right|bottom|left}`.
+The `reference-width` attribute represents the width of a containing element; which needs to set for correct calculation of percentage box related quantities:
+
+    =begin code :lang<raku>
+    $css.reference-width = 80pt;
+    say $css.measure: :width(75%); # 60
+    =end code
+    =end pod
+
     multi method COERCE(Str:D $style) { self.new: :$style }
 
     my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
@@ -152,12 +231,12 @@ class CSS::Properties:ver<0.6.6> {
     }
 
     #| return module meta-data for a property
-    multi method info(Str:D $prop-name) {
+    multi method info(Str:D $prop-name --> CSS::Properties::Property) {
         my $prop-num := self.property-number($prop-name)
             // die "unknown property: $prop-name";
         self.info($prop-num);
     }
-    multi method info(Int:D $prop-num) {
+    multi method info(Int:D $prop-num --> CSS::Properties::Property) {
         with $!properties[$prop-num] {
             $_;
         }
@@ -360,10 +439,12 @@ class CSS::Properties:ver<0.6.6> {
         }
     }
 
-    multi method inherited(Str $prop) {
+    # True if the given property will be inherited
+    multi method inherited(Str $prop --> Bool) {
         with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit}
     }
-    multi method inherited {
+    # Returns all properties that will be inherited
+    multi method inherited returns Seq {
         %!values.keys.grep({ $.inherited($_) }).sort;
     }
 
@@ -388,6 +469,7 @@ class CSS::Properties:ver<0.6.6> {
             }
         }
     }
+    #| Return all properties that have the !important attribute
     multi method important {
         %!important.pairs.map: { $.property-name(.key) => .value }
     }
@@ -422,7 +504,7 @@ class CSS::Properties:ver<0.6.6> {
             ?? from-ast( $v[0] )
             !! [ $v.map: { from-ast($_) } ];
     }
-    #| { :int(42) } => :int(42)
+    # { :int(42) } => :int(42)
     multi sub from-ast(Hash $v where .keys == 1) {
         from-ast( $v.pairs[0] );
     }
@@ -486,11 +568,7 @@ class CSS::Properties:ver<0.6.6> {
             !! $val;
     }
 
-    #| CSS conformant inheritance from the given parent declaration list. Note:
-    #| - handling of 'initial' and 'inherit' in the child declarations
-    #| - !important override properties in parent
-    #| - not all properties are inherited. e.g. color is, margin isn't
-
+    #| CSS conformant inheritance from the given parent declaration list.
     multi method inherit(CSS::Properties:D() $css) {
         for $css.properties -> \name {
             # skip unknown extension properties
@@ -513,6 +591,12 @@ class CSS::Properties:ver<0.6.6> {
         }
         self;
     }
+    =begin pod
+    =para Note:
+    =item handling of 'initial' and 'inherit' in the child declarations
+    =item !important override properties in parent
+    =item not all properties are inherited. e.g. color is, margin isn't
+    =end pod
 
     method !copy(CSS::Properties $css) {
         %!values{$_} = $css."$_"()
@@ -552,8 +636,6 @@ class CSS::Properties:ver<0.6.6> {
     }
 
     #| return an AST for the declarations.
-    #| This is more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>,
-    #| but with optimization. Suitable for reserialization with CSS::Writer
     method ast(Bool :$optimize = True, Bool :$keep-defaults) {
         my %prop-ast;
         # '!important'
@@ -567,7 +649,7 @@ class CSS::Properties:ver<0.6.6> {
                 if .value;
         }
 
-        #| expressions
+        # expressions
         for %!values.keys.sort -> \prop {
             with %!values{prop} -> \value {
                 my $ast = to-ast(value);
@@ -586,9 +668,11 @@ class CSS::Properties:ver<0.6.6> {
         tweak-properties(%prop-ast);
         make-declaration-list(%prop-ast);
     }
+    =para This is more-or-less the inverse of the L<CSS::Grammar::CSS3> C<<declaration-list>> rule,
+    but with optimization. Suitable for reserialization with CSS::Writer
 
-    #| write a set of declarations. By default, it is formatted as a single-line,
-    #| suited to an HTML inline-style (style attribute).
+
+    #| write a set of declarations.
     method write(Bool :$optimize = True,
                  Bool :$terse = True,
                  Bool :$color-names = True,
@@ -597,6 +681,8 @@ class CSS::Properties:ver<0.6.6> {
         my CSS::Writer $writer .= new( :$terse, :$color-names, |c);
         $writer.write: self.ast(:$optimize, :$keep-defaults);
     }
+    =para By default, it is formatted as a single-line,
+    suited to an HTML inline-style (style attribute).
 
     #| return all known module properties
     multi method properties(:$all! where .so) {

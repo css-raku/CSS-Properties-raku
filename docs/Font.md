@@ -1,3 +1,8 @@
+class CSS::Font
+---------------
+
+Abstract CSS font object
+
 ### method fontconfig-pattern
 
 ```raku
@@ -12,5 +17,19 @@ compute a fontconfig pattern for the font
 method font-props() returns Mu
 ```
 
-sets/gets the css font properties as a whole e.g. $font.font-css = 'italic bold 10pt/12pt sans-serif';
+sets/gets the css font properties as a whole
+
+e.g. `$font.font-css = 'italic bold 10pt/12pt sans-serif';`
+
+### method find-font
+
+```raku
+method find-font(
+    Str $name = Code.new
+) returns Str
+```
+
+Return a path to a matching system font
+
+Actually calls `fc-match` on `$.font-config-patterm()`
 

@@ -2,6 +2,33 @@
 class CSS::Properties::Calculator {
     use CSS::Units :Lengths, :&dimension, :pt;
 
+    =begin pod
+    =head2 Synopsis
+    =begin code :lang<raku>
+    use CSS::Properties;
+    use CSS::Properties::Calculator;
+    my CSS::Properties $css .= new: :style("font:12pt Helvetica;");
+    my CSS::Properties::Calculator $calc .= new: :$css, :units<mm>, :veiwport-width<250>;
+    # Converts a value to a numeric quantity;
+    my Numeric $font-size = $css.measure: :font-size; # get current font size (mm)
+    $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
+    $font-size = $css.measure: :font-size(120%);      # compute a larger font
+    my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+    $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
+    =end code
+
+    =head2 Description
+
+    This module supports evaluation of relative CSS quantities that rely on context. Furthermore
+    the `measure` method converts lengths to preferred units (by default `pt`).
+
+    Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
+    =begin code
+    my CSS::Properties $css .= new: :style("font:12pt Helvetica;"), :units<mm>, :veiwport-width<250>;
+    my Numeric $font-size = $css.measure: :font-size;
+    =end code
+    =end pod
+
     has $.css is required;
     has Str $.units = 'pt';
     has Numeric $!scale = Lengths.enums{$!units};

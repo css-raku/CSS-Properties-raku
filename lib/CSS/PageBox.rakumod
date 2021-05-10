@@ -1,6 +1,7 @@
 use v6;
 use CSS::Box :Edges;
 
+#| Outer CSS Page Box
 class CSS::PageBox
     is CSS::Box {
 

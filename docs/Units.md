@@ -2,6 +2,15 @@
 
 utility definitions and operators for handing CSS Units
 
+### Snyposis
+
+```raku
+use CSS::Units :ops, :pt, :px, :in, :mm;
+my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
+```
+
+### Methods
+
 ### multi sub infix:<+css>
 
 ```raku

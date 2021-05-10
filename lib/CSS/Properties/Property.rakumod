@@ -3,6 +3,7 @@ use v6;
 use CSS::Module;
 use CSS::Module::Property;
 
+#| Meta-data for a given property
 class CSS::Properties::Property {
 
     has CSS::Module::Property $!meta handles<name prop-num inherit initial important synopsis default default-type edge edges edge-names children child-names>;

@@ -24,15 +24,77 @@ $css.text-align = 'right';
 say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
 
-Description This classes manages a list of properties. These are typically parsed from the body of a CSS rule-set or from an inline `style` tag.
-------------------------------------------------------------------------------------------------------------------------------------------------
+Description
+-----------
 
-### has Positional[Exception] @.warnings
+This classes manages a list of properties. These are typically parsed from the body of a CSS rule-set or from an inline `style` tag.
 
-associated CSS module
+CSS Property Accessors
+----------------------
 
-Methods
--------
+CSS Properties provides `rw` accessors for all standard CSS3 properties.
+
+  * color values are converted to Color objects
+
+  * other values are converted to strings or numeric, as appropriate
+
+  * the .type method returns additional type information
+
+  * box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
+
+  * there are also some container properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
+
+```raku
+use CSS::Properties;
+
+my CSS::Properties $css .= new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
+
+say $css.color.hex;       # (FF A5 00)
+say $css.color.type;      # 'rgb'
+say $css.text-align;      # 'center'
+say $css.text-align.type; # 'keyw' (keyword)
+
+# access margin-top, directly and through margin container
+say $css.margin-top;      # '2'
+say $css.margin-top.type; # 'pt'
+say $css.margin;          # [2 2 2 2]
+say $css.margin[0];       # '2'
+say $css.margin[0].type;  # 'pt'
+
+# access font-family directly and through font container
+say $css.font-family;       # 'Helvetica'
+say $css.font-family.type;  # 'ident'
+say $css.font<font-family>; # 'Helvetica;
+```
+
+  * The simplest ways of setting a property is to assign a string value which is parsed as CSS.
+
+  * Unit values are also recognized. E.g. `16pt`.
+
+  * Colors can be assigned to color objects
+
+  * Also the type and value can be assigned as a pair.
+
+```raku
+use CSS::Properties;
+use CSS::Units :pt;
+use Color;
+my CSS::Properties $css .= new;
+
+# assign to container
+$css.font = "14pt Helvetica";
+
+# assign to component properties
+$css.font-weight = 'bold'; # string
+$css.line-height = 16pt;   # unit value
+$css.border-color = Color.new(0, 255, 0);
+$css.font-style = :keyw<italic>; # type/value pair
+
+say ~$css; # font:italic bold 14pt/16pt Helvetica;
+```
+
+Other Methods
+-------------
 
 ### new
 
@@ -70,12 +132,32 @@ Options:
 
   * `*%props` - CSS property settings
 
+### measure
+
+```raku
+# Converts a value to a numeric quantity;
+my Numeric $font-size = $css.measure: :font-size; # get current font size
+$font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
+$font-size = $css.measure: :font-size(120%);      # compute a larger font
+my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+$weight = $css.measure: :font-weight<bold>;       # compute bold font weight
+```
+
+This function is implemented for `font-size`, `font-weight`, `letter-spacing`, `line-height`, and `word-spacing`.
+
+It also works for box related properties: `width`, `height`, `{min|max}-{width|height}`, `border-{top|right|bottom|left}-width`, and `{padding|margin}-{top|right|bottom|left}`. The `reference-width` attribute represents the width of a containing element; which needs to set for correct calculation of percentage box related quantities:
+
+```raku
+$css.reference-width = 80pt;
+say $css.measure: :width(75%); # 60
+```
+
 ### multi method info
 
 ```raku
 multi method info(
     Str:D $prop-name
-) returns Mu
+) returns CSS::Properties::Property
 ```
 
 return module meta-data for a property
@@ -110,15 +192,13 @@ multi method important(
 
 return true of the property has the !important attribute
 
-### multi sub from-ast
+### multi method important
 
 ```raku
-multi sub from-ast(
-    Hash $v where { ... }
-) returns Mu
+multi method important() returns Mu
 ```
 
-{ :int(42) } => :int(42)
+Return all properties that have the !important attribute
 
 ### sub alpha
 
@@ -138,7 +218,15 @@ multi method inherit(
 ) returns Mu
 ```
 
-CSS conformant inheritance from the given parent declaration list. Note: - handling of 'initial' and 'inherit' in the child declarations - !important override properties in parent - not all properties are inherited. e.g. color is, margin isn't
+CSS conformant inheritance from the given parent declaration list.
+
+Note:
+
+  * handling of 'initial' and 'inherit' in the child declarations
+
+  * !important override properties in parent
+
+  * not all properties are inherited. e.g. color is, margin isn't
 
 ### method set-properties
 
@@ -170,7 +258,9 @@ method ast(
 ) returns Mu
 ```
 
-return an AST for the declarations. This is more-or-less the inverse of CSS::Grammar::CSS3::declaration-list>, but with optimization. Suitable for reserialization with CSS::Writer
+return an AST for the declarations.
+
+This is more-or-less the inverse of the [CSS::Grammar::CSS3](https://css-raku.github.io/CSS-raku/Grammar/CSS3) `declaration-list` rule, but with optimization. Suitable for reserialization with CSS::Writer
 
 ### method write
 
@@ -184,7 +274,9 @@ method write(
 ) returns Mu
 ```
 
-write a set of declarations. By default, it is formatted as a single-line, suited to an HTML inline-style (style attribute).
+write a set of declarations.
+
+By default, it is formatted as a single-line, suited to an HTML inline-style (style attribute).
 
 ### multi method properties
 

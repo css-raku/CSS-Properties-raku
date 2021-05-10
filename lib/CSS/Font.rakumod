@@ -1,4 +1,5 @@
 use v6;
+#| Abstract CSS font object
 class CSS::Font {
     use CSS::Properties;
     use CSS::Properties::Calculator :FontWeight;
@@ -46,7 +47,6 @@ class CSS::Font {
     }
 
     #| sets/gets the css font properties as a whole
-    #| e.g. $font.font-css = 'italic bold 10pt/12pt sans-serif';
     method font-props is rw {
         Proxy.new(
             FETCH => sub ($) { $!css.font },
@@ -55,6 +55,8 @@ class CSS::Font {
                 self.setup;
             });
     }
+    =para e.g. `$font.font-css = 'italic bold 10pt/12pt sans-serif';`
+
     method font-style(|c) is rw is DEPRECATED<font-props> { self.font-props(|c) }
 
     method setup(CSS::Properties $css = $!css) {
@@ -79,7 +81,8 @@ class CSS::Font {
 	self;
     }
 
-    method find-font(Str $name = $.fontconfig-pattern) {
+    #| Return a path to a matching system font
+    method find-font(Str $name = $.fontconfig-pattern --> Str) {
         my $cmd =  run('fc-match',  '-f', '%{file}', $name, :out, :err);
         given $cmd.err.slurp {
             note chomp($_) if $_;
@@ -88,5 +91,7 @@ class CSS::Font {
         $file
           || die "unable to resolve font-name: $name"
     }
+    =para Actually calls `fc-match` on `$.font-config-patterm()`
+
 }
 

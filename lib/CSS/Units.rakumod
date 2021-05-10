@@ -1,7 +1,5 @@
 use v6;
 
-#| utility definitions and operators for handing CSS Units
-
 my enum Lengths is export(:Lengths) «
     :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
 »;
@@ -16,7 +14,17 @@ my enum Frequency is export(:Frequency) « :hz(1.0) :khz(1000.0) »;
 
 my enum Percentages is export(:Percentages) ('%' => 100);
 
+#| utility definitions and operators for handing CSS Units
 role CSS::Units[\dimension, \units] {
+
+    =begin pod
+    =head3 Snyposis
+    =begin code :lang<raku>
+    use CSS::Units :ops, :pt, :px, :in, :mm;
+    my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
+    =end code
+    =head3 Methods
+    =end pod
 
     method dimension{dimension}
     method type{units}
