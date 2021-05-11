@@ -1,6 +1,5 @@
 unit class CSS::Properties::Optimizer;
 
-use CSS::Properties::Edges;
 use NativeCall;
 has CArray $.index is required;
 has $.css is required;
@@ -165,7 +164,7 @@ method optimize-ast( %prop-ast ) {
 
         my %groups = @children.classify: -> $p {
             given %prop-ast{$p} {
-                when (.<expr>.elems > 1 && $!css.info($p) ~~ CSS::Properties::Edges)
+                when (.<expr>.elems > 1 && $!css.info($p).box)
                 || .<expr>[0]<keyw> ~~ 'initial'|'inherit' {
                     'omit'
                 }

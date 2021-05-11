@@ -96,7 +96,6 @@ class CSS::Properties:ver<0.6.6> {
     use CSS::Module::Property;
     use CSS::Properties::Calculator;
     use CSS::Properties::Property;
-    use CSS::Properties::Edges;
     use CSS::Properties::Optimizer :&tweak-properties, :&make-declaration-list;
     use CSS::Units :pt;
     use Method::Also;
@@ -214,19 +213,16 @@ The `reference-width` attribute represents the width of a containing element; wh
         my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
 
         %module-properties{$module}[$prop-num] //= do {
+            my %edges;
             with $meta.edges {
                 # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
                 my $n = 0;
-                my %edges;
                 for <top left bottom right> -> $side {
                     my $edge := .[$n++];
                     %edges{$side} = make-property($module, $edge);
                 }
-                CSS::Properties::Edges.new( :$prop-num, :$module, :$meta, |%edges);
             }
-            else {
-                CSS::Properties::Property.new( :$prop-num, :$module, :$meta );
-            }
+            CSS::Properties::Property.new( :$prop-num, :$module, :$meta, :%edges );
         }
     }
 

@@ -4,7 +4,6 @@ plan 47;
 
 use CSS::Properties;
 use CSS::Properties::Property;
-use CSS::Properties::Edges;
 use CSS::Units :pt, :px;
 use Color;
 
@@ -12,7 +11,7 @@ my $css = CSS::Properties.new( :!warn, :border-top-color<red> );
 is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
-isa-ok $margin-info, CSS::Properties::Edges, 'box property';
+ok $margin-info.box, 'box property';
 is-deeply [$margin-info.edges.list], [<margin-top margin-right margin-bottom margin-left>.map({$css.property-number($_)})], 'edges property';
 
 my $margin-left-info = $css.info('margin-left');

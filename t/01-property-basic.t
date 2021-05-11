@@ -1,9 +1,8 @@
 use v6;
 use Test;
-plan 13;
+plan 15;
 
 use CSS::Properties::Property;
-use CSS::Properties::Edges;
 use CSS::Properties;
 use CSS::Units :pt, :px;
 
@@ -15,12 +14,17 @@ is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, "none", '$prop.default';
 
-$sample-prop = CSS::Properties::Edges.new( :name<margin> );
+my CSS::Properties::Property %edges = <top right bottom left>.map: {
+    $_ => CSS::Properties::Property.new: :name('margin-' ~ $_);
+}
+dies-ok {CSS::Properties::Property.new( :name<margin> )}, 'missing edges detected';
+$sample-prop = CSS::Properties::Property.new( :name<margin>, :%edges );
 
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
 is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<margin-width>{1,4}', '$prop.synopsis';
+is-deeply $sample-prop.top.name, 'margin-top', '$prop.top.name';
 
 my $css = CSS::Properties.new: :margin(5pt), :width(4px);
 is $css.width, 4px, 'declared property';
