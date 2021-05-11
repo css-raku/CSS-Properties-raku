@@ -282,7 +282,7 @@ This method converts various length units to normalized base units (default 'pt'
     say [(1in, 72pt).map: {$box.measure($_)}];
     # produces: [1in, 1in]
 
-See also L<CSS::Propertues::Calculator>
+See also L<CSS::Properties::Calculator>
 
 =head3 top, right, bottom, left
 

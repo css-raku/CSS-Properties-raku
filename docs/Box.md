@@ -1,3 +1,7 @@
+[[Raku CSS Project]](https://css-raku.github.io)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [Box](https://css-raku.github.io/CSS-Properties-raku/Box)
+
 class CSS::Box
 --------------
 
@@ -80,7 +84,7 @@ The box `new` constructor accepts:
 
 ### font method font() returns CSS::Font; say "font-size is {$box.font.em}";
 
-The '.font' accessor returns an object of type [CSS::Font](https://css-raku.github.io/CSS-raku/Font), with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font`, `fontconfig-pattern` and `measure` methods.
+The '.font' accessor returns an object of type [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/Font), with accessor methods: `em`, `ex`, `weight`, `family`, `style`, `leading`, `find-font`, `fontconfig-pattern` and `measure` methods.
 
 ### measure method measure(|) returns Numeric;
 
@@ -98,7 +102,7 @@ This method converts various length units to normalized base units (default 'pt'
     say [(1in, 72pt).map: {$box.measure($_)}];
     # produces: [1in, 1in]
 
-See also [CSS::Propertues::Calculator](https://css-raku.github.io/CSS-raku/Propertues/Calculator)
+See also [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/Properties/Calculator)
 
 ### top, right, bottom, left
 
