@@ -1,7 +1,7 @@
 [[Raku CSS Project]](https://css-raku.github.io)
  / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
- / [Properties](https://css-raku.github.io/CSS-Properties-raku/Properties)
- :: [Property](https://css-raku.github.io/CSS-Properties-raku/Properties/Property)
+ / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
+ :: [Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property)
 
 class CSS::Properties::Property
 -------------------------------

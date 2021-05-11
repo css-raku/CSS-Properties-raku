@@ -1,6 +1,6 @@
 [[Raku CSS Project]](https://css-raku.github.io)
  / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
- / [Box](https://css-raku.github.io/CSS-Properties-raku/Box)
+ / [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box)
 
 class CSS::Box
 --------------

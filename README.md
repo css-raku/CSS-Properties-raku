@@ -23,7 +23,7 @@ Classess in this module
 See Also
 --------
 
-  * [CSS](https://github.com/css-raku/CSS-raku) - Top level CSS manipulation class
+  * [CSS](https://css-raku.github.io/CSS-raku/) - Top level CSS manipulation class
 
 
 ## CSS Modules

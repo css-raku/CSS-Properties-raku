@@ -1,6 +1,6 @@
 [[Raku CSS Project]](https://css-raku.github.io)
  / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
- / [PageBox](https://css-raku.github.io/CSS-Properties-raku/PageBox)
+ / [CSS::PageBox](https://css-raku.github.io/CSS-Properties-raku/CSS/PageBox)
 
 class CSS::PageBox
 ------------------

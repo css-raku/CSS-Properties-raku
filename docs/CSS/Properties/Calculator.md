@@ -1,7 +1,7 @@
 [[Raku CSS Project]](https://css-raku.github.io)
  / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
- / [Properties](https://css-raku.github.io/CSS-Properties-raku/Properties)
- :: [Calculator](https://css-raku.github.io/CSS-Properties-raku/Properties/Calculator)
+ / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
+ :: [Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator)
 
 class CSS::Properties::Calculator
 ---------------------------------
