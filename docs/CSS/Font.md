@@ -1,6 +1,6 @@
-[[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
- / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
+[[Raku CSS Project]](http://css-raku.github.io)
+ / [[CSS-Properties Module]](http://css-raku.github.io/CSS-Properties-raku)
+ / [CSS::Font](http://css-raku.github.io/CSS-Properties-raku/CSS/Font)
 
 class CSS::Font
 ---------------

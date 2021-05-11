@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](http://css-raku.github.io/CSS-Properties-raku)
 
 <a href="https://travis-ci.org/css-raku/CSS-Properties-raku"><img src="https://travis-ci.org/css-raku/CSS-Properties-raku.svg?branch=master"></a>
  <a href="https://ci.appveyor.com/project/dwarring/CSS-Properties-raku/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/css-raku/CSS-Properties-raku?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
@@ -12,13 +12,13 @@ The CSS::Properties module is a set of related classes for parsing, manipulation
 
 Classess in this module
 --------
-  * [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/Properties) - property list manipulation class.
-  * [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/Properties/Calculator) - property calculator and measurement tool.
-  * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/Properties/Property) - property meta-data.
-  * [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/Box) - CSS Box model implementation.
-  * [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/Font) - property font manipulation
-  * [CSS::PageBox](https://css-raku.github.io/CSS-Properties-raku/PageBox) - CSS Box model for paged media
-  * [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/Units) - units and postfix operators (e.g. `12pt`)
+  * [CSS::Properties](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties) - property list manipulation class.
+  * [CSS::Properties::Calculator](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator) - property calculator and measurement tool.
+  * [CSS::Properties::Property](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data.
+  * [CSS::Box](http://css-raku.github.io/CSS-Properties-raku/CSS/Box) - CSS Box model implementation.
+  * [CSS::Font](http://css-raku.github.io/CSS-Properties-raku/CSS/Font) - property font manipulation
+  * [CSS::PageBox](http://css-raku.github.io/CSS-Properties-raku/CSS/PageBox) - CSS Box model for paged media
+  * [CSS::Units](http://css-raku.github.io/CSS-Properties-raku/CSS/Units) - units and postfix operators (e.g. `12pt`)
 
 See Also
 --------
