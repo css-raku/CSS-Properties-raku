@@ -39,10 +39,10 @@ Methods
 
 Returns a new object containing inforation on the given property
 
-head
-====
+Accessors
+---------
 
-2 Accessors The following [CSS::Module::Property](https://css-raku.github.io/CSS-Module-raku/Property) accessors are handled by this object
+The following [CSS::Module::Property](https://css-raku.github.io/CSS-Module-raku/Property) accessors are handled by this object
 
 <table class="pod-table">
 <thead><tr>

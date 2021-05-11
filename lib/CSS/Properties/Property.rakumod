@@ -38,19 +38,21 @@ class CSS::Properties::Property {
     =end code
     =para Returns a new object containing inforation on the given property
 
-    =head 2 Accessors
+    =head2 Accessors
+
     The following L<CSS::Module::Property> accessors are handled by this object
+
     =begin table
     Name | Type | Description
     -----+------+------------
-    name        | Str  | Property name, e.g. 'top-margin'
-    prop-num    | UInt | A unique number for the property
-    inherit     | Bool | The property is inherited?
-    initial     | Bool | Property should reset to it's initial value?
-    important   | Bool | Property has !important inheritance mode
-    synposis    | Bool | Property value L<syntax|http://www.w3.org/TR/CSS21/about.html#property-defs> definition
+    name | Str | Property name, e.g. 'top-margin'
+    prop-num | UInt | A unique number for the property
+    inherit | Bool | The property is inherited?
+    initial | Bool | Property should reset to it's initial value?
+    important | Bool | Property has !important inheritance mode
+    synposis | Bool | Property value L<syntax|http://www.w3.org/TR/CSS21/about.html#property-defs> definition
     default-value | Any | Default value for the property
-    edge-names  | List | top, right, bottom, left components [1]
+    edge-names | List | top, right, bottom, left components [1]
     child-names | List | child components [2]
     =end table
 
