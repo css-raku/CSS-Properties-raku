@@ -1,6 +1,6 @@
-[[Raku CSS Project]](http://css-raku.github.io)
- / [[CSS-Properties Module]](http://css-raku.github.io/CSS-Properties-raku)
- / [CSS::Properties](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
+[[Raku CSS Project]](https://css-raku.github.io)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
 
 class CSS::Properties
 ---------------------
@@ -264,7 +264,7 @@ method ast(
 
 return an AST for the declarations.
 
-This is more-or-less the inverse of the [CSS::Grammar::CSS3](http://css-raku.github.io/CSS-Grammar-raku) `declaration-list` rule, but with optimization. Suitable for reserialization with CSS::Writer
+This is more-or-less the inverse of the [CSS::Grammar::CSS3](https://css-raku.github.io/CSS-Grammar-raku) `declaration-list` rule, but with optimization. Suitable for reserialization with CSS::Writer
 
 ### method write
 

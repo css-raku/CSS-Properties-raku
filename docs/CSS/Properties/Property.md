@@ -1,7 +1,7 @@
-[[Raku CSS Project]](http://css-raku.github.io)
- / [[CSS-Properties Module]](http://css-raku.github.io/CSS-Properties-raku)
- / [CSS::Properties](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
- :: [Property](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property)
+[[Raku CSS Project]](https://css-raku.github.io)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
+ :: [Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property)
 
 class CSS::Properties::Property
 -------------------------------
@@ -47,7 +47,7 @@ Returns a new object containing inforation on the given property
 Accessors
 ---------
 
-The following [CSS::Module::Property](http://css-raku.github.io/CSS-Module-raku) accessors are handled by this object
+The following [CSS::Module::Property](https://css-raku.github.io/CSS-Module-raku) accessors are handled by this object
 
 <table class="pod-table">
 <thead><tr>

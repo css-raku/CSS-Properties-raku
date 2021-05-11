@@ -1,7 +1,7 @@
-[[Raku CSS Project]](http://css-raku.github.io)
- / [[CSS-Properties Module]](http://css-raku.github.io/CSS-Properties-raku)
- / [CSS::Properties](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
- :: [Calculator](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator)
+[[Raku CSS Project]](https://css-raku.github.io)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
+ :: [Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator)
 
 class CSS::Properties::Calculator
 ---------------------------------
@@ -29,7 +29,7 @@ Description
 
 This module supports evaluation of relative CSS quantities that rely on context. Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
 
-Note: [CSS::Properties](http://css-raku.github.io/CSS-Properties-raku/CSS/Properties), [CSS::Box](http://css-raku.github.io/CSS-Properties-raku/CSS/Box) and [CSS::Font](http://css-raku.github.io/CSS-Properties-raku/CSS/Font) objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
+Note: [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties), [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) and [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
 
     my CSS::Properties $css .= new: :style("font:12pt Helvetica;"), :units<mm>, :veiwport-width<250>;
     my Numeric $font-size = $css.measure: :font-size;
