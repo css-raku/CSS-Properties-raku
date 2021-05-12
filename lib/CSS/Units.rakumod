@@ -18,11 +18,22 @@ my enum Percentages is export(:Percentages) ('%' => 100);
 role CSS::Units[\dimension, \units] {
 
     =begin pod
-    =head3 Snyposis
+    =head3 Synposis
     =begin code :lang<raku>
     use CSS::Units :ops, :pt, :px, :in, :mm;
     my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
     =end code
+    =head2 Description
+    This module implements the following CSS Units
+    =begin table
+    Type | Units
+    ---  | ----
+    Length | pt pc px mm cm in em ex vw vh
+    Resolution | dpi dpcm dpxx
+    Time | s ms
+    Frequency | hz khz
+    Percentage | %
+    =end table
     =head3 Methods
     =end pod
 

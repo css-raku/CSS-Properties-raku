@@ -7,6 +7,30 @@ class CSS::Font
 
 Abstract CSS font object
 
+Synopsis
+--------
+
+```raku
+use CSS::Font;
+my $font-props = 'italic bold 10pt/12pt times-roman';
+my $font = CSS::Font.new: :$font-props;
+say $font.em;                  # 10
+say $font.ex;                  # 7.5
+say $font.style;               # italic
+say $font.weight;              # 700
+say $font.family;              # times-roman
+say $font.line-height;         # 12
+say $font.units;               # pt
+say $font.measure(:font-size); # 10
+say $font.fontconfig-pattern;
+# times-roman:slant=italic:weight=bold
+
+=head2 Description
+
+=para L<CSS::Font> is utility class for managing font related
+properties and computing fontconfig patterns.
+```
+
 ### method fontconfig-pattern
 
 ```raku

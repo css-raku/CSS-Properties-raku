@@ -376,7 +376,6 @@ The `reference-width` attribute represents the width of a containing element; wh
             );
     }
 
-    #| return the default value for the property
     method !default($prop) {
         %!default{$prop} //= self!coerce( .default-value )
             with $.info($prop);
@@ -439,7 +438,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     multi method inherited(Str $prop --> Bool) {
         with $.handling($prop) { $_ ~~ 'inherit' } else { self.info($prop).inherit}
     }
-    # Returns all properties that will be inherited
+    # Returns all atomic properties that will be inherited
     multi method inherited returns Seq {
         %!values.keys.grep({ $.inherited($_) }).sort;
     }
@@ -680,14 +679,15 @@ The `reference-width` attribute represents the width of a containing element; wh
     =para By default, it is formatted as a single-line,
     suited to an HTML inline-style (style attribute).
 
-    #| return all known module properties
+    #| return the names of all properties
     multi method properties(:$all! where .so) {
         $!index.map(*.name);
     }
-    #| return in-use properties
+    #| return the names of in-use properties
     multi method properties {
         %!values.keys.sort;
     }
+    #| True if the property has been set
     method property-exists(Str $_) { %!values{.lc}:exists }
 
     #| delete property values from the list of populated properties
@@ -719,6 +719,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                      !! self!item-value(name)
                     )
     }
+    #| returns the value of the named property
     method property(Str \name) is rw {
         with $.property-number(name) {
             self!value($!index[$_], name)

@@ -1,3 +1,4 @@
+#| Optimizer for CSS Property ASTs
 unit class CSS::Properties::Optimizer;
 
 use NativeCall;

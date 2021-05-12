@@ -166,16 +166,6 @@ multi method info(
 
 return module meta-data for a property
 
-### method default
-
-```raku
-method default(
-    $prop
-) returns Mu
-```
-
-return the default value for the property
-
 ### multi method handling
 
 ```raku
@@ -290,7 +280,7 @@ multi method properties(
 ) returns Mu
 ```
 
-return all known module properties
+return the names of all properties
 
 ### multi method properties
 
@@ -298,7 +288,17 @@ return all known module properties
 multi method properties() returns Mu
 ```
 
-return in-use properties
+return the names of in-use properties
+
+### method property-exists
+
+```raku
+method property-exists(
+    Str $_
+) returns Mu
+```
+
+True if the property has been set
 
 ### method delete
 
@@ -309,4 +309,14 @@ method delete(
 ```
 
 delete property values from the list of populated properties
+
+### method property
+
+```raku
+method property(
+    Str \name
+) returns Mu
+```
+
+returns the value of the named property
 
