@@ -25,11 +25,15 @@ say $font.measure(:font-size); # 10
 say $font.fontconfig-pattern;
 # times-roman:slant=italic:weight=bold
 
-=head2 Description
-
-=para L<CSS::Font> is utility class for managing font related
-properties and computing fontconfig patterns.
+# requires fontconfig to be installed
+say $font.find-font;
+# /usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf
 ```
+
+Description
+-----------
+
+[CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) is utility class for managing font related properties and computing fontconfig patterns.
 
 ### method fontconfig-pattern
 

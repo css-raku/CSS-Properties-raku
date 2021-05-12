@@ -11,8 +11,8 @@ Synopsis
 --------
 
 ```raku
-use CSS::Box;
-use CSS::Units :px, :pt, :em, :percent;
+use CSS::PageBox;
+use CSS::Units :mm;
 use CSS::Properties;
 
 my $style = q:to"END";
@@ -24,7 +24,7 @@ my $style = q:to"END";
 
 my CSS::Properties $css .= new: :$style;
 
-my CSS::Box $box .= new: :$css, :units<mm>;
+my CSS::PageBox $box .= new: :$css, :units<mm>;
 say $box.margin;  # [297, 210, 0, 0]
 say $box.border;  # [294, 207, 3, 3]
 say $box.padding; # [292, 205, 5, 5]

@@ -1,4 +1,7 @@
 {{$NEXT}}
+
+0.7.0  2021-05-13T07:36:27+12:00
+    - Add POD documentation + generated markdown in docs/ directory.
     - Remove classes:
       -- CSS::Properties::Box (deprecated)
       -- CSS::Properties::PageBox (deprecated)

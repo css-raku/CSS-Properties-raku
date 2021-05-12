@@ -21,7 +21,7 @@ Description This module implements the following CSS Units
 <th>Type</th> <th>Units</th>
 </tr></thead>
 <tbody>
-<tr> <td>Length</td> <td>pt pc px mm cm in em ex vw vh</td> </tr> <tr> <td>Resolution</td> <td>dpi dpcm dpxx</td> </tr> <tr> <td>Time</td> <td>s ms</td> </tr> <tr> <td>Frequency</td> <td>hz khz</td> </tr> <tr> <td>Percentage</td> <td>%</td> </tr>
+<tr> <td>Length</td> <td>pt pc px mm cm in em ex vw vh</td> </tr> <tr> <td>Resolution</td> <td>dpi dpcm dpx</td> </tr> <tr> <td>Time</td> <td>s ms</td> </tr> <tr> <td>Frequency</td> <td>hz khz</td> </tr> <tr> <td>Percentage</td> <td>%</td> </tr>
 </tbody>
 </table>
 

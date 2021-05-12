@@ -29,7 +29,7 @@ role CSS::Units[\dimension, \units] {
     Type | Units
     ---  | ----
     Length | pt pc px mm cm in em ex vw vh
-    Resolution | dpi dpcm dpxx
+    Resolution | dpi dpcm dpx
     Time | s ms
     Frequency | hz khz
     Percentage | %

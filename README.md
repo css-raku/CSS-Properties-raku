@@ -26,8 +26,6 @@ See Also
   * [CSS](https://css-raku.github.io/CSS-raku/) - Top level CSS manipulation class
 
 
-## CSS Modules
-
 ## Conformance Levels
 
 Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be configured via the :module option:

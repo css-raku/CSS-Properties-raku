@@ -22,12 +22,16 @@ class CSS::Font {
     say $font.fontconfig-pattern;
     # times-roman:slant=italic:weight=bold
 
+    # requires fontconfig to be installed
+    say $font.find-font;
+    # /usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf
+    =end code
+
     =head2 Description
 
     =para L<CSS::Font> is utility class for managing font related
     properties and computing fontconfig patterns.
 
-    =end code
     =end pod
 
     has FontWeight $.weight is rw = 400;
