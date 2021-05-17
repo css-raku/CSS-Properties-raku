@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Deprecate CSS::Properties::Units in favor of CSS::Units
 
 0.7.0  2021-05-13T07:36:27+12:00
     - Add POD documentation + generated markdown in docs/ directory.
