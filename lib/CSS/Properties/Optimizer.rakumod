@@ -71,7 +71,7 @@ method optimize( @ast, Bool :$keep-defaults ) {
 
 has Array $!container-properties;
 method !container-properties {
-    $!container-properties //= [$!index.grep(*.children).map(*.name)];
+    $!container-properties //= [ $!index.grep(*.children)».name ];
 }
 
 sub tweak-properties($_) is export(:tweak-properties) {
@@ -132,7 +132,7 @@ method optimize-ast( %prop-ast ) {
             }
         }
 
-        if @asts == 4 && @asts.map( *<prio> ).unique == 1 {
+        if @asts == 4 && @asts»<prio>.unique == 1 {
             # all edges present at the same priority; consolidate
             %prop-ast{$_}:delete for @edges;
 

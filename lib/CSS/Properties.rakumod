@@ -108,7 +108,7 @@ class CSS::Properties:ver<0.7.0> {
     my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
-    has Any   %!values handles <keys>;    # property values
+    has Any   %!values handles <keys Bool>;    # property values
     has Any   %!default;
     has Array %!box;
     has Hash  %!struct;
@@ -681,7 +681,7 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     #| return the names of all properties
     multi method properties(:$all! where .so) {
-        $!index.map(*.name);
+        $!index».name;
     }
     #| return the names of in-use properties
     multi method properties {

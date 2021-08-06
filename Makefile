@@ -18,7 +18,7 @@ doc : $(DocLinker) docs/index.md docs/CSS/Properties.md docs/CSS/Properties/Calc
 docs/index.md : README.md
 	cp $< $@
 
-docs/CSS/%.md : lib/CSS/%.rakumod
+docs/%.md : lib/%.rakumod
 	raku -I . --doc=Markdown $< \
-	|  TRAIL=CSS/$* raku -p -n $(DocLinker) \
+	| TRAIL=$* raku -p -n $(DocLinker) \
 	> $@

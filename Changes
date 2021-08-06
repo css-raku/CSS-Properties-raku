@@ -1,5 +1,11 @@
 {{$NEXT}}
     - Deprecate CSS::Properties::Units in favor of CSS::Units
+    - Add CSS::Font select() method. Selects from a list of
+      @font-face properties and returns the first match. Purely
+      matches on font names (case insensitive), without considering
+      character sets.
+    - Fixed CSS::Font fontconfig-pattern() to corectly handle commas
+      as seperators.
 
 0.7.0  2021-05-13T07:36:27+12:00
     - Add POD documentation + generated markdown in docs/ directory.

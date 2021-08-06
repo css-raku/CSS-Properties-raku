@@ -10,7 +10,7 @@ class CSS::Font {
     =begin code :lang<raku>
     use CSS::Font;
     my $font-props = 'italic bold 10pt/12pt times-roman';
-    my $font = CSS::Font.new: :$font-props;
+    my CSS::Font $font .= new: :$font-props;
     say $font.em;                  # 10
     say $font.ex;                  # 7.5
     say $font.style;               # italic
@@ -35,7 +35,7 @@ class CSS::Font {
     =end pod
 
     has FontWeight $.weight is rw = 400;
-    has Str @!family = ['times-roman'];
+    has Str @!family;
     method family { @!family[0] }
     has Str $.style = 'normal';
     has Numeric $.line-height;
@@ -90,18 +90,19 @@ class CSS::Font {
 
     method setup(CSS::Properties $css = $!css) {
         @!family = [];
+        my $cont = False;
         with $css.font-family {
-            for .grep(* ne ',') {
-                if .type eq 'keyw' {
-                    $_ ~= ' ' with @!family.tail;
-                    @!family.tail ~= $_;
+            for .list {
+                when ',' { $cont = False }
+                when $cont && .type eq 'keyw' {
+                    @!family.tail ~= ' ' ~ $_;
                 }
-                else {
+                default {
                     @!family.push: $_;
+                    $cont = True;
                 }
             }
         }
-        @!family[0] //= 'arial';
 
         $!style = $css.font-style;
         $!weight = $css.computed('font-weight');
@@ -110,17 +111,46 @@ class CSS::Font {
 	self;
     }
 
+    multi method pattern(CSS::Font:D:) {
+        %( :@!family, :$!style, :$!weight, :$!stretch );
+    }
+    #
     #| Return a path to a matching system font
-    method find-font(Str $name = $.fontconfig-pattern --> Str) {
-        my $cmd =  run('fc-match',  '-f', '%{file}', $name, :out, :err);
+    method find-font(Str $patt = $.fontconfig-pattern --> Str) {
+        my $cmd =  run('fc-match',  '-f', '%{file}', $patt, :out, :err);
         given $cmd.err.slurp {
             note chomp($_) if $_;
         }
         my $file = $cmd.out.slurp;
         $file
-          || die "unable to resolve font-name: $name"
+          || die "unable to resolve font-pattern: $patt"
     }
     =para Actually calls `fc-match` on `$.font-config-patterm()`
 
+    #| Select matching @font-face font
+    method select(@font-face --> CSS::Properties) {
+        @font-face.first: {
+            my $family := .font-family.lc;
+            @!family.first: {$family eq .lc}
+        } // CSS::Properties;
+    }
+    =begin pod
+    Example:
+    =begin code :lang<raku>
+    use CSS::Font;
+    use CSS::Stylesheet;
+    my CSS::Font $font .= new: :font-style("italic bold 10pt/12pt Georgia,serif");
+    my $stylehseet = q:to<END>;
+        @font-face {
+          font-family:'Sans-serif'; src:url('/myfonts/sans-serif.otf');
+        }
+        @font-face {
+          font-family:'Serif'; src:url('/myfonts/serif.otf');
+        }
+    END
+    my CSS::Stylesheet $css .= load: :$stylesheet;
+    say $font.select($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+    =end code
+    =end pod
 }
 

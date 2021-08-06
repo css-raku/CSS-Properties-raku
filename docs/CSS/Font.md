@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
 
 class CSS::Font
@@ -13,7 +13,7 @@ Synopsis
 ```raku
 use CSS::Font;
 my $font-props = 'italic bold 10pt/12pt times-roman';
-my $font = CSS::Font.new: :$font-props;
+my CSS::Font $font .= new: :$font-props;
 say $font.em;                  # 10
 say $font.ex;                  # 7.5
 say $font.style;               # italic
@@ -57,11 +57,39 @@ e.g. `$font.font-css = 'italic bold 10pt/12pt sans-serif';`
 
 ```raku
 method find-font(
-    Str $name = Code.new
+    Str $patt = Code.new
 ) returns Str
 ```
 
 Return a path to a matching system font
 
 Actually calls `fc-match` on `$.font-config-patterm()`
+
+### method select
+
+```raku
+method select(
+    @font-face
+) returns CSS::Properties
+```
+
+Select matching @font-face font
+
+Example:
+
+```raku
+use CSS::Font;
+use CSS::Stylesheet;
+my CSS::Font $font .= new: :font-style("italic bold 10pt/12pt Georgia,serif");
+my $stylehseet = q:to<END>;
+    @font-face {
+      font-family:'Sans-serif'; src:url('/myfonts/sans-serif.otf');
+    }
+    @font-face {
+      font-family:'Serif'; src:url('/myfonts/serif.otf');
+    }
+END
+my CSS::Stylesheet $css .= load: :$stylesheet;
+say $font.select($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+```
 
