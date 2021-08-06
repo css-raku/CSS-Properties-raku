@@ -1,11 +1,13 @@
 {{$NEXT}}
+
+0.7.1  2021-08-07T09:21:25+12:00
     - Deprecate CSS::Properties::Units in favor of CSS::Units
-    - Add CSS::Font select() method. Selects from a list of
-      @font-face properties and returns the first match. Purely
-      matches on font names (case insensitive), without considering
+    - Add CSS::Font select() method. Scans a list of @font-face
+      properties and returns the first match. Purely matches on
+      font names (case insensitive), without considering
       character sets.
-    - Fixed CSS::Font fontconfig-pattern() to corectly handle commas
-      as seperators.
+    - Fixed CSS::Font fontconfig-pattern() to correctly handle commas
+      as separators.
 
 0.7.0  2021-05-13T07:36:27+12:00
     - Add POD documentation + generated markdown in docs/ directory.
@@ -27,7 +29,7 @@
     - Factored out CSS::Properties::Optimizer from CSS::Properties
 
 0.6.3  2021-04-01T15:21:18+13:00
-    - Widthdraw box css-width() and css-height() methods - Not
+    - Width draw box css-width() and css-height() methods - Not
       strongly related to the box model. Moved to PDF::Style.  
     - Changed from-ast() and to-ast() from methods to subroutines
 
@@ -39,7 +41,7 @@
      now works as expected.
    - Fixed dropping of some terms with zero first value #14; background-position: 0 50%
      now serialises as expected
-   - Fixed box property optmisations #15; border-style: solid; border-bottom-style: none;
+   - Fixed box property optimisations #15; border-style: solid; border-bottom-style: none;
      now serialises to: border-left-style:solid; border-right-style:solid; border-top-style:solid;
      (todo optimise to: border-style:solid solid none;)
 
@@ -66,7 +68,7 @@
      -> CSS::Box, CSS::Properties::PageBox -> CSS::PageBox
 0.4.5
    - issue #4 !important is not inherited and has no affect on inheritance.
-   - add '.important()' (parameterless) candidate, which returns a map of all
+   - add '.important()' (parameter-less) candidate, which returns a map of all
      !important properties: my Bool %important{Str} = $css.important();
    - issue #5 don't inherit relative quantities, e.g. 'font-size: 1.5em'.
      generally these shouldn't be propagated and re-applied.
@@ -95,7 +97,7 @@
 0.4.0
    - Reintroduce '+' and '-' infix overloading for
      units calculations. '+css' and '-css' are
-     still available as more explict and strongly
+     still available as more explicit and strongly
      typed operators.
    - Adding CSS::Properties::PageBox (WIP)
 0.3.10
