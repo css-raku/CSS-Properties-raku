@@ -178,6 +178,7 @@ class CSS::Font {
     }
     =para Actually calls `fc-match` on `$.font-config-patterm()`
 
+    #| Select matching @font-face font
     method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> CSS::Properties) {
         my %patt = self.pattern;
         my @patterns = @font-face.grep({
@@ -216,6 +217,6 @@ class CSS::Font {
     =end code
     =end pod
 
-    method select(|c) is DEPRECATED<match> { self.mathc(|c) }
+    method select(|c) is DEPRECATED<match> { self.match(|c) }
 }
 

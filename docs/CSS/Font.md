@@ -65,6 +65,17 @@ Return a path to a matching system font
 
 Actually calls `fc-match` on `$.font-config-patterm()`
 
+### method match
+
+```raku
+method match(
+    @font-face,
+    :$module = Code.new
+) returns CSS::Properties
+```
+
+Select matching @font-face font
+
 This method matches a list of `@font-face` properties against the font to select the best match, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
 
 ```raku

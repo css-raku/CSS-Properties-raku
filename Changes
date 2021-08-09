@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.7.2  2021-08-09T13:18:13+12:00
    - Rename CSS::Font select() to match() to match W3c terminology; more
      fully implement and test font matching to match on font stetch, style
      and weight.
