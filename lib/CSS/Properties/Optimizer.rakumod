@@ -141,7 +141,7 @@ method optimize-ast( %prop-ast ) {
                 while +@asts > 1
                 && css-eqv( @asts.tail, @asts[ DefaultIdx[+@asts] ] );
 
-            my @expr = flat @asts.map(*<expr>.list);
+            my @expr = @asts.map(*<expr>.Slip);
 
             my $name = $!css.property-name($prop);
             %prop-ast{$name} = { :@expr };

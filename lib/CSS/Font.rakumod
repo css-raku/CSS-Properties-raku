@@ -57,6 +57,17 @@ class CSS::Font {
         self.setup;
     }
 
+   method line-height { $!line-height //= $!css.measure(:line-height); }
+   method !fc-stretch {
+        my constant %Stretch = %(
+            :normal(100),
+            :semi-expanded(113), :expanded(125), :extra-expanded(150), :ultra-expanded(200),
+            :semi-condensed(87), :condensed(75), :extra-condensed(63), :ultra-condensed(50),
+        );
+
+        %Stretch{$!stretch};
+    }
+
     #| compute a fontconfig pattern for the font
     method fontconfig-pattern {
         my Str $pat = @!family.join: ',';
@@ -70,7 +81,7 @@ class CSS::Font {
             unless $!weight == 400;
 
         # [ultra|extra][condensed|expanded]
-        $pat ~= ':width=' ~ $!stretch.subst(/'-'/, '')
+        $pat ~= ':width=' ~ self!fc-stretch()
             unless $!stretch eq 'normal';
         $pat;
     }
@@ -107,14 +118,54 @@ class CSS::Font {
         $!style = $css.font-style;
         $!weight = $css.computed('font-weight');
         $!stretch = $css.font-stretch;
-        $!line-height = $css.measure(:line-height);
 	self;
     }
 
     multi method pattern(CSS::Font:D:) {
-        %( :@!family, :$!style, :$!weight, :$!stretch );
+        my $stretch = self!fc-stretch;
+        %( :@!family, :$!style, :$!weight, :$stretch );
     }
-    #
+
+    multi sub match-stretch([], $) {[]}
+    multi sub match-stretch(@patterns, Int:D $stretch!) {
+        @patterns.grep({.key<stretch> == $stretch})
+        || [ @patterns.sort({abs(.key<stretch> - $stretch)}) ];
+    }
+
+    multi sub match-style([], $) {[]}
+    multi sub match-style(@patterns, Str:D $style) {
+        my %s = @patterns.classify: { .key<style> }
+        my $m = do given $style {
+            when 'italic'  { %s{$_} || %s<oblique>  || %s<normal> }
+            when 'oblique' { %s{$_} || %s<italic>   || %s<normal> }
+            when 'normal'  { %s{$_} || %s<oblique>  || %s<italic> }
+            default { warn .raku; [] }
+        };
+        $m.list;
+    }
+
+    multi sub match-weight([], $) {[]}
+    multi sub match-weight(@patterns, Int:D $weight!) {
+        my @p = @patterns.grep({.key<weight> == $weight});
+        @p ||= do {
+            given $weight {
+                when * < 400 {
+                    @patterns.grep({.key<weight> < $weight}).sort.reverse.first;
+                }
+                when * > 500 {
+                    @patterns.grep({.key<weight> > $weight}).sort.first;
+                }
+                when 400 {
+                    @patterns.grep({.key<weight> == 500}) || match-weight(@patterns, 300);
+                }
+                when 500 {
+                    @patterns.grep({.key<weight> == 400}) || match-weight(@patterns, 300);
+                }
+            }
+        }
+        @p;
+    }
+
     #| Return a path to a matching system font
     method find-font(Str $patt = $.fontconfig-pattern --> Str) {
         my $cmd =  run('fc-match',  '-f', '%{file}', $patt, :out, :err);
@@ -127,14 +178,26 @@ class CSS::Font {
     }
     =para Actually calls `fc-match` on `$.font-config-patterm()`
 
-    #| Select matching @font-face font
-    method select(@font-face --> CSS::Properties) {
-        @font-face.first: {
+    method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> CSS::Properties) {
+        my %patt = self.pattern;
+        my @patterns = @font-face.grep({
             my $family := .font-family.lc;
             @!family.first: {$family eq .lc}
-        } // CSS::Properties;
+        })
+        .map(-> $css {
+            my %matching-patt = CSS::Font.new(:$css, :$module).pattern;
+            %matching-patt => $css
+        });
+
+        @patterns .= &match-stretch(%patt<stretch>);
+        @patterns .= &match-style(%patt<style>);
+        @patterns .= &match-weight(%patt<weight>);
+
+        with @patterns.first { .value } else { CSS::Properties };
     }
     =begin pod
+    This method matches a list of `@font-face` properties against the font
+    to select the best match, using the L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>.
     Example:
     =begin code :lang<raku>
     use CSS::Font;
@@ -149,8 +212,10 @@ class CSS::Font {
         }
     END
     my CSS::Stylesheet $css .= load: :$stylesheet;
-    say $font.select($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+    say $font.match($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
     =end code
     =end pod
+
+    method select(|c) is DEPRECATED<match> { self.mathc(|c) }
 }
 

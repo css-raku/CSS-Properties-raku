@@ -65,17 +65,7 @@ Return a path to a matching system font
 
 Actually calls `fc-match` on `$.font-config-patterm()`
 
-### method select
-
-```raku
-method select(
-    @font-face
-) returns CSS::Properties
-```
-
-Select matching @font-face font
-
-Example:
+This method matches a list of `@font-face` properties against the font to select the best match, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
 
 ```raku
 use CSS::Font;
@@ -90,6 +80,6 @@ my $stylehseet = q:to<END>;
     }
 END
 my CSS::Stylesheet $css .= load: :$stylesheet;
-say $font.select($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+say $font.match($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
 ```
 

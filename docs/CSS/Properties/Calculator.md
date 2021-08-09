@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
  :: [Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator)
 
@@ -27,7 +27,13 @@ $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
 Description
 -----------
 
-This module supports evaluation of relative CSS quantities that rely on context. Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
+This module supports conversion of quantities to numerical values.
+
+  * CSS length quantities may rely on context. For example `ex` depends on the current font and font-size
+
+  * Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
+
+  * `font-weight` is converted to a numerical value in the range 100 .. 900
 
 Note: [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties), [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) and [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
 

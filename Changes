@@ -1,4 +1,9 @@
 {{$NEXT}}
+   - Rename CSS::Font select() to match() to match W3c terminology; more
+     fully implement and test font matching to match on font stetch, style
+     and weight.
+   - convert font stretch to numeric in fontconfg-pattern() and pattern()
+     methods. This makes it easier to implment the select() method.
 
 0.7.1  2021-08-07T09:21:25+12:00
     - Deprecate CSS::Properties::Units in favor of CSS::Units

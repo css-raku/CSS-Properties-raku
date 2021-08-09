@@ -19,8 +19,10 @@ class CSS::Properties::Calculator {
 
     =head2 Description
 
-    This module supports evaluation of relative CSS quantities that rely on context. Furthermore
-    the `measure` method converts lengths to preferred units (by default `pt`).
+    This module supports conversion of quantities to numerical values.
+    =item CSS length quantities may rely on context. For example `ex` depends on the current font and font-size
+    =item Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
+    =item `font-weight` is converted to a numerical value in the range 100 .. 900
 
     Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
     =begin code
