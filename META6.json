@@ -33,6 +33,7 @@
     "css"
   ],
   "test-depends": [
+    "JSON::Fast"
   ],
   "version": "0.7.2"
 }

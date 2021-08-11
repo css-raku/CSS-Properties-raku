@@ -1,9 +1,11 @@
 {{$NEXT}}
+   - Factor out CSS::Font::Loader as a separate module. Deprecate
+     CSS::Font fontconfig-pattern() and load-font() methods.
 
 0.7.2  2021-08-09T13:18:13+12:00
-   - Rename CSS::Font select() to match() to match W3c terminology; more
-     fully implement and test font matching to match on font stetch, style
-     and weight.
+   - Rename CSS::Font select() to match() to align with W3c terminology;
+   - more fully implement and test font matching to match on font stetch,
+     style and weight.
    - convert font stretch to numeric in fontconfg-pattern() and pattern()
      methods. This makes it easier to implment the select() method.
 

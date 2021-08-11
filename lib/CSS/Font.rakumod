@@ -35,8 +35,7 @@ class CSS::Font {
     =end pod
 
     has FontWeight $.weight is rw = 400;
-    has Str @!family;
-    method family { @!family[0] }
+    has Str @.family;
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
@@ -49,10 +48,6 @@ class CSS::Font {
     }
 
     submethod TWEAK(Str :$font-style, Str :$font-props) {
-        with $font-style {
-            warn 'CSS::Properties::Font.new(:$font-style) is deprecated. Please use :$font-props';
-            self.font-props = $_;
-        }
         self.font-props = $_ with $font-props;
         self.setup;
     }
@@ -68,8 +63,8 @@ class CSS::Font {
         %Stretch{$!stretch};
     }
 
-    #| compute a fontconfig pattern for the font
-    method fontconfig-pattern {
+    #| Deprecated - see CSS::Font::Loader module
+    method fontconfig-pattern is DEPRECATED<CSS::Font::Loader.fontconfig-pattern> {
         my Str $pat = @!family.join: ',';
 
         $pat ~= ':slant=' ~ $!style
@@ -166,8 +161,8 @@ class CSS::Font {
         @p;
     }
 
-    #| Return a path to a matching system font
-    method find-font(Str $patt = $.fontconfig-pattern --> Str) {
+    #| Deprecated - see CSS::Font::Loader module
+    method find-font(Str $patt = $.fontconfig-pattern --> Str) is DEPRECATED<CSS::Font::Loader.fontconfig-pattern> {
         my $cmd =  run('fc-match',  '-f', '%{file}', $patt, :out, :err);
         given $cmd.err.slurp {
             note chomp($_) if $_;
@@ -176,7 +171,6 @@ class CSS::Font {
         $file
           || die "unable to resolve font-pattern: $patt"
     }
-    =para Actually calls `fc-match` on `$.font-config-patterm()`
 
     #| Select matching @font-face font
     method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> CSS::Properties) {
