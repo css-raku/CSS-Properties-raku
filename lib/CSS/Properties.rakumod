@@ -247,9 +247,9 @@ The `reference-width` attribute represents the width of a containing element; wh
 
         my @expr;
         for $expr.list {
-            when $_ ~~ Pair|Hash && .keys[0] ~~ /^'expr:'(.*)$/ {
+            when $_ ~~ Pair|Hash && (my $p0 := .pairs[0]).key.starts-with('expr:') {
                 # embedded property declaration
-                @props.push: ~$0 => .values[0]
+                @props.push: $p0.key.substr(5) => $p0.value
             }
             when $prop-name eq 'font' && .<op> eqv '/' {
                 # filter out '/' operator, as in 'font:10pt/12pt times-roman'
