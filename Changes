@@ -1,5 +1,8 @@
 {{$NEXT}}
-   - Factor out CSS::Font::Loader as a separate module. Deprecate
+   - match() now returns a list of candidate fonts to allow final filtering
+     by agent.
+   - Filter ',' from @font-face src property.
+   - Factor out CSS::Font::Loader as a separate module. Deprecating
      CSS::Font fontconfig-pattern() and load-font() methods.
 
 0.7.2  2021-08-09T13:18:13+12:00

@@ -4,8 +4,7 @@ use CSS::Properties;
 use CSS::Module::CSS3;
 
 class AtFontFace is CSS::Properties {
-      method new(:$module = CSS::Module::CSS3.module.sub-module<@font-face>,
-                 |c) {
+      method new(:$module = CSS::Module::CSS3.module.sub-module<@font-face>, |c) {
           nextwith(:$module, |c);
       }
 }

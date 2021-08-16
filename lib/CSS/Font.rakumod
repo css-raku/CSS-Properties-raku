@@ -130,35 +130,33 @@ class CSS::Font {
     multi sub match-style([], $) {[]}
     multi sub match-style(@patterns, Str:D $style) {
         my %s = @patterns.classify: { .key<style> }
-        my $m = do given $style {
-            when 'italic'  { %s{$_} || %s<oblique>  || %s<normal> }
-            when 'oblique' { %s{$_} || %s<italic>   || %s<normal> }
-            when 'normal'  { %s{$_} || %s<oblique>  || %s<italic> }
-            default { warn .raku; [] }
+        my Array $p = do given $style {
+            when 'italic'  { %s{$_} || %s<oblique>  || %s<normal> || []}
+            when 'oblique' { %s{$_} || %s<italic>   || %s<normal> || []}
+            when 'normal'  { %s{$_} || %s<oblique>  || %s<italic> || []}
+            default { warn "unknown font style: {.raku}"; [] }
         };
-        $m.list;
+        $p.List;
     }
 
     multi sub match-weight([], $) {[]}
-    multi sub match-weight(@patterns, Int:D $weight!) {
-        my @p = @patterns.grep({.key<weight> == $weight});
-        @p ||= do {
-            given $weight {
-                when * < 400 {
-                    @patterns.grep({.key<weight> < $weight}).sort.reverse.first;
-                }
-                when * > 500 {
-                    @patterns.grep({.key<weight> > $weight}).sort.first;
-                }
-                when 400 {
-                    @patterns.grep({.key<weight> == 500}) || match-weight(@patterns, 300);
-                }
-                when 500 {
-                    @patterns.grep({.key<weight> == 400}) || match-weight(@patterns, 300);
-                }
-            }
+    multi sub match-weight(@patterns, Int:D $w!) {
+         @patterns.grep({.key<weight> == $w}) || nearest-weight(@patterns, $w)
+    }
+
+    sub nearest-weight(@patterns, Int:D $_!) {
+        when * < 400 {
+            @patterns.grep({.key<weight> < $_}).sort.reverse;
         }
-        @p;
+        when * > 500 {
+            @patterns.grep({.key<weight> > $_}).sort;
+        }
+        when 400 {
+            @patterns.grep({.key<weight> == 500}) || match-weight(@patterns, 300);
+        }
+        when 500 {
+            @patterns.grep({.key<weight> == 400}) || match-weight(@patterns, 300);
+        }
     }
 
     #| Deprecated - see CSS::Font::Loader module
