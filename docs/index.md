@@ -7,7 +7,7 @@
 The CSS::Properties module is a set of related classes for parsing, manipulation and generation of CSS property sets, including inheritance, and defaults.
 
 ## Synopsis
-```raku
+```
 use CSS::Units :pt;
 use CSS::Properties;
 
