@@ -14,6 +14,9 @@ my enum Frequency is export(:Frequency) « :hz(1.0) :khz(1000.0) »;
 
 my enum Percentages is export(:Percentages) ('%' => 100);
 
+# Known functions: @font-face src: local() and :format()
+my enum Function is export(:Function) « :local :format »;
+
 #| utility definitions and operators for handing CSS Units
 role CSS::Units[\dimension, \units] {
 
@@ -106,7 +109,7 @@ role CSS::Units {
     use Color;
 
     sub dimension(\units) is export(:dimension) {
-        (Lengths, Resolutions, Percentages, Angles, Time, Frequency).first({.enums{units}:exists})
+        (Lengths, Resolutions, Percentages, Angles, Time, Frequency, Function).first({.enums{units}:exists})
     }
     method value(\v, \units) {
         v ~~ Color|Hash|List

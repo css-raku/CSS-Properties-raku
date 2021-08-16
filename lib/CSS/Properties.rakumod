@@ -97,10 +97,12 @@ class CSS::Properties:ver<0.7.2> {
     use CSS::Properties::Calculator;
     use CSS::Properties::Property;
     use CSS::Properties::Optimizer :&tweak-properties, :&make-declaration-list;
-    use CSS::Units :pt;
+    use CSS::Units :pt, :Function;
     use Method::Also;
     use NativeCall;
     my enum Colors « :rgb :rgba :hsl :hsla »;
+
+    subset KnownFunction of Str:D where 'local'|'format';
 
     subset Handling of Str where 'initial'|'inherit';
 
@@ -489,10 +491,23 @@ The `reference-width` attribute represents the width of a containing element; wh
         $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
     }
     multi sub from-ast(Pair $v) {
-        my \r = from-ast( $v.value );
-        r ~~ CSS::Units
+        if $v.key eq "func" {
+            my $name = $v.value<ident>;
+            my @args = $v.value<args>.map: { from-ast($_) };
+            if $name ~~ KnownFunction {
+                @args does CSS::Units[Function, $name]
+            }
+            else {
+                warn "Unknown function: $name\(\)";
+                $v;
+            }
+        }
+        else {
+            my \r = from-ast( $v.value );
+            r ~~ CSS::Units
             ?? r
             !! CSS::Units.value(r, $v.key);
+        }
     }
     multi sub from-ast(List $v) {
         $v.elems == 1
@@ -535,7 +550,7 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     multi sub to-ast($v, :$get = True) is default {
         my $key = $v.?type if $get;
-        my @ast;
+
         my $val = do given $v {
             when Color {
                 $key //= 'rgb';
@@ -545,6 +560,12 @@ The `reference-width` attribute represents the width of a containing element; wh
                 $ast.push( alpha($v.a) )
                     if $key ~~ 'rgba'|'hsla';
                 $ast;
+            }
+            when $key ~~ KnownFunction {
+                my $ident := $key;
+                $key := 'func';
+                my @args = .map: {to-ast($_)};
+                %( :$ident, :@args );
             }
             when List  {
                 .elems == 1

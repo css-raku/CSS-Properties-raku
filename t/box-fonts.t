@@ -48,7 +48,7 @@ subtest 'match basic' => {
         "font-family:'Serif'; src:url('/myfonts/serif-narrow.otf'); font-stretch:semi-condensed;",
         "font-family:'Serif'; src:url('/myfonts/serif-narrow-bold.otf'); font-stretch:semi-condensed; font-weight:500",
     ).map: -> $style {CSS::Properties.new: :$style, :$module};
-    my $selection = $font.match(@font-face);
+    my $selection = $font.match(@font-face).first;
     ok defined $selection;
     is $selection.Str, @font-face[3].Str;
 }
@@ -88,7 +88,7 @@ subtest 'match styles' => {
         ) {
             my $font-props = "{.key} 12pt DejaVu Sans";
             my CSS::Font $font .= new: :$font-props;
-            my CSS::Properties $match = $font.match(@font-face);
+            my CSS::Properties $match = $font.match(@font-face).first;
             ok $match.src.ends-with(.value);
         }
 }

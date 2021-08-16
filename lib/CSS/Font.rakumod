@@ -173,7 +173,7 @@ class CSS::Font {
     }
 
     #| Select matching @font-face font
-    method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> CSS::Properties) {
+    method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> Array) {
         my %patt = self.pattern;
         my @patterns = @font-face.grep({
             my $family := .font-family.lc;
@@ -188,11 +188,11 @@ class CSS::Font {
         @patterns .= &match-style(%patt<style>);
         @patterns .= &match-weight(%patt<weight>);
 
-        with @patterns.first { .value } else { CSS::Properties };
+        @patterns>>.value;
     }
     =begin pod
     This method matches a list of `@font-face` properties against the font
-    to select the best match, using the L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>.
+    to select matches, using the L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>.
     Example:
     =begin code :lang<raku>
     use CSS::Font;
@@ -207,7 +207,7 @@ class CSS::Font {
         }
     END
     my CSS::Stylesheet $css .= load: :$stylesheet;
-    say $font.match($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+    say $font.match($css.font-face).first; # font-family:'serif'; src:url('/myfonts/serif.otf');
     =end code
     =end pod
 
