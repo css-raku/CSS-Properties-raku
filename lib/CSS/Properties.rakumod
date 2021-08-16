@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.7.2> {
+class CSS::Properties:ver<0.7.3> {
 
     =begin pod
 

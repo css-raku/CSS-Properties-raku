@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.7.3  2021-08-17T10:54:17+12:00
    - match() now returns a list of candidate fonts to allow final filtering
      by agent.
    - Filter ',' from @font-face src property.
