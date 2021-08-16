@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/CSS/Units)
 
 

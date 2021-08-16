@@ -6,12 +6,13 @@ class CSS::Properties:ver<0.7.3> {
     =begin pod
 
     =head2 Synopsis
+
     =begin code :lang<raku>
     use CSS::Units :pt;
     use CSS::Properties;
 
     my $style = "color:red !important; padding: 1pt";
-    my CSS::Properties $css .= new( :$style );
+    my CSS::Properties $css .= new: :$style;
     say $css.important("color"); # True
     $css.border-color = 'red';
 
@@ -22,12 +23,11 @@ class CSS::Properties:ver<0.7.3> {
     $css.text-align = 'right';
 
     say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
-        
     =end code
 
     =head2 Description
 
-    This classes manages a list of properties. These are typically parsed
+    This class manages a list of properties. These are typically parsed
     from the body of a CSS rule-set or from an inline `style` tag.
 
     =head2 CSS Property Accessors

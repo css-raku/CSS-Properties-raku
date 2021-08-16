@@ -15,7 +15,7 @@ use CSS::Units :pt;
 use CSS::Properties;
 
 my $style = "color:red !important; padding: 1pt";
-my CSS::Properties $css .= new( :$style );
+my CSS::Properties $css .= new: :$style;
 say $css.important("color"); # True
 $css.border-color = 'red';
 
@@ -31,7 +31,7 @@ say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; tex
 Description
 -----------
 
-This classes manages a list of properties. These are typically parsed from the body of a CSS rule-set or from an inline `style` tag.
+This class manages a list of properties. These are typically parsed from the body of a CSS rule-set or from an inline `style` tag.
 
 CSS Property Accessors
 ----------------------
@@ -184,7 +184,7 @@ multi method important(
 ) returns Mu
 ```
 
-return true of the property has the !important attribute
+return True if the property has the !important attribute
 
 ### multi method important
 

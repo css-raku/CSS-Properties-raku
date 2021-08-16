@@ -41,7 +41,7 @@ Description
 method fontconfig-pattern() returns Mu
 ```
 
-compute a fontconfig pattern for the font
+Deprecated - see CSS::Font::Loader module
 
 ### method font-props
 
@@ -61,9 +61,7 @@ method find-font(
 ) returns Str
 ```
 
-Return a path to a matching system font
-
-Actually calls `fc-match` on `$.font-config-patterm()`
+Deprecated - see CSS::Font::Loader module
 
 ### method match
 
@@ -71,12 +69,12 @@ Actually calls `fc-match` on `$.font-config-patterm()`
 method match(
     @font-face,
     :$module = Code.new
-) returns CSS::Properties
+) returns Array
 ```
 
 Select matching @font-face font
 
-This method matches a list of `@font-face` properties against the font to select the best match, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
+This method matches a list of `@font-face` properties against the font to select matches, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
 
 ```raku
 use CSS::Font;
@@ -91,6 +89,6 @@ my $stylehseet = q:to<END>;
     }
 END
 my CSS::Stylesheet $css .= load: :$stylesheet;
-say $font.match($css.font-face); # font-family:'serif'; src:url('/myfonts/serif.otf');
+say $font.match($css.font-face).first; # font-family:'serif'; src:url('/myfonts/serif.otf');
 ```
 

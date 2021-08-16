@@ -7,7 +7,22 @@
 The CSS::Properties module is a set of related classes for parsing, manipulation and generation of CSS property sets, including inheritance, and defaults.
 
 ## Synopsis
-```
+```raku
+use CSS::Units :pt;
+use CSS::Properties;
+
+my $style = "color:red !important; padding: 1pt";
+my CSS::Properties $css .= new: :$style;
+say $css.important("color"); # True
+$css.border-color = 'red';
+
+$css.margin = [5pt, 2pt, 5pt, 2pt];
+$css.margin = 5pt;  # set margin on all 4 sides
+
+# set text alignment
+$css.text-align = 'right';
+
+say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
 
 Classess in this module
