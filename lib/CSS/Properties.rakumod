@@ -111,7 +111,6 @@ class CSS::Properties:ver<0.7.2> {
 
     # contextual variables
     has Any   %!values handles <keys Bool>;    # property values
-    has Any   %!default;
     has Array %!box;
     has Hash  %!struct;
     has Bool  %!important{Int};
@@ -378,26 +377,22 @@ The `reference-width` attribute represents the width of a containing element; wh
             );
     }
 
-    method !default($prop) {
-        %!default{$prop} //= self!coerce( .default-value )
-            with $.info($prop);
+    method !default($_) {
+        when /^'border-'[top|right|bottom|left]'-color'$/ {
+            self.?color;
+        }
+        when 'text-align' {
+            %!values<direction> && self.direction eq 'rtl' ?? 'right' !! 'left';
+        }
+        default {
+            %!values{$_} //= self!coerce( $.info($_).default-value )
+        }
     }
 
     method !item-value(Str $prop) is rw {
         Proxy.new(
             FETCH => -> $ {
-                with %!values{$prop} {
-                    $_
-                }
-                elsif $prop ~~ /^'border-'[top|right|bottom|left]'-color'$/ {
-                    self.?color;
-                }
-                elsif $prop eq 'text-align' {
-                    %!values<direction> && self.direction eq 'rtl' ?? 'right' !! 'left';
-                }
-                else {
-                    %!values{$prop} = self!default($prop)
-                }
+               %!values{$prop} // self!default($prop);
             },
             STORE => -> $, $v {
                 with self!coerce( $v, :$prop ) {
