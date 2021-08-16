@@ -65,7 +65,7 @@ method optimize( @ast, Bool :$keep-defaults ) {
     self.purge-defaults(%prop-ast)
         unless $keep-defaults;
     self.optimize-ast(%prop-ast);
-    tweak-properties(%prop-ast);
+    punctuate(%prop-ast);
     make-declaration-list(%prop-ast);
 }
 
@@ -74,14 +74,24 @@ method !container-properties {
     $!container-properties //= [ $!index.grep(*.children)».name ];
 }
 
-sub tweak-properties($_) is export(:tweak-properties) {
+our constant %Punctuation is export(:Punctuation) = %( :font</>, :src<,> );
+
+sub punctuate($_) is export(:punctuate) {
     with .<font> {
         given .<expr> -> @expr {
-            with @expr.first({.<expr:line-height>}, :k) {
+            if @expr.first({.<expr:line-height>}, :k) -> $_ {
                 # reinsert font '/' operator if needed...
                 # e.g.: font: italic bold 10pt/12pt times-roman;
                 splice @expr, $_, 0, %(:op('/'))
-                    unless $_ == 0 || @expr[$_-1]<op> ~~ '/';
+                    unless @expr[$_-1]<op> ~~ '/';
+            }
+        }
+    }
+    with .<src> {
+        given .<expr> -> @expr {
+            for 1 ..^ +@expr {
+                splice @expr, $_, 0, %(:op(','))
+                    unless @expr[$_-1]<op> ~~ ',';
             }
         }
     }

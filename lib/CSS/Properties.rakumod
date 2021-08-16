@@ -96,7 +96,7 @@ class CSS::Properties:ver<0.7.2> {
     use CSS::Module::Property;
     use CSS::Properties::Calculator;
     use CSS::Properties::Property;
-    use CSS::Properties::Optimizer :&tweak-properties, :&make-declaration-list;
+    use CSS::Properties::Optimizer :%Punctuation, :&punctuate, :&make-declaration-list;
     use CSS::Units :pt, :Function;
     use Method::Also;
     use NativeCall;
@@ -166,18 +166,21 @@ class CSS::Properties:ver<0.7.2> {
         $!index = %module-index{$!module} //= $!module.index
             // die "module {$!module.name} lacks an index";
         $!properties = %module-properties{$!module} //= [];
+        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
+
         my @style = .list with $declarations;
         @style.append: self!parse-style($_) with $style;
         @style.append: .list with $ast;
-        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
         my @decls = self!build-declarations(@style);
+
         with $inherit -> $_ is copy {
             $_ = CSS::Properties.COERCE($_)
                 unless .isa(CSS::Properties);
             $!calc.em = .em;
             self.inherit: $_;
-         }
+        }
+
         self!set-decls(@decls);
         self!copy($_) with $copy;
         self.set-properties(|%props);
@@ -251,8 +254,10 @@ The `reference-width` attribute represents the width of a containing element; wh
                 # embedded property declaration
                 @props.push: $p0.key.substr(5) => $p0.value
             }
-            when $prop-name eq 'font' && .<op> eqv '/' {
-                # filter out '/' operator, as in 'font:10pt/12pt times-roman'
+            when (%Punctuation{$prop-name}:exists) && .<op> eqv %Punctuation{$prop-name} {
+                # filter out some punctuation from the api:
+                # - '/' operator, as in 'font:10pt/12pt times-roman'
+                # - ',' between src arguments
             }
             default {
                 @expr.push: $_;
@@ -449,7 +454,7 @@ The `reference-width` attribute represents the width of a containing element; wh
             });
     }
 
-    #| return true of the property has the !important attribute
+    #| return True if the property has the !important attribute
     multi method important(Str $prop-name) is rw { self.important($.property-number($prop-name)) }
     multi method important(Int $prop-num) is rw {
         with self.info($prop-num) {
@@ -676,7 +681,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         self.optimizer.optimize-ast(%prop-ast)
             if $optimize;
 
-        tweak-properties(%prop-ast);
+        punctuate(%prop-ast);
         make-declaration-list(%prop-ast);
     }
     =para This is more-or-less the inverse of the L<CSS::Grammar::CSS3> C<<declaration-list>> rule,

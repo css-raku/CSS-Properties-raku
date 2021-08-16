@@ -23,7 +23,7 @@ $font-face .= new: :style(q:to<END>);
 
 is $font-face.src[0], 'Gentium'; 
 is $font-face.src[0].type, 'local'; 
-is $font-face.src[2], 'Gentium.woff';
-is $font-face.src[2].type, 'url';
+is $font-face.src[1], 'Gentium.woff';
+is $font-face.src[1].type, 'url';
 is $font-face.Str, "font-family:MyGentium; src:local(Gentium), url('Gentium.woff');";
 
