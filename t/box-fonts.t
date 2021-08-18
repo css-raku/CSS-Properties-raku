@@ -1,8 +1,9 @@
 use v6;
 use Test;
-plan 4;
+plan 5;
 
 use CSS::Properties;
+use JSON::Fast;
 use CSS::Font;
 use CSS::Units :px, :percent;
 sub keyw($v) { CSS::Units.value($v, 'keyw') }
@@ -34,7 +35,13 @@ subtest 'measure' => {
     is $font.measure(:font-size(keyw('smaller'))), 10/1.2, 'measure named font-size';
 }
 
-$font .= new: :font-props("500 condensed 12px/30px Georgia, serif, Times");
+subtest 'patterns' => {
+    plan 3;
+    is $font.fontconfig-pattern, 'times-roman:slant=italic:weight=bold:width=75', 'fontconfig-pattern';
+    is to-json($font.pattern, :!pretty, :sorted-keys), '{"family":["times-roman"],"stretch":75,"style":"italic","weight":700}';
+    $font .= new: :font-props("500 condensed 12px/30px Georgia, serif, Times");
+    is $font.fontconfig-pattern, 'Georgia,serif,Times:weight=medium:width=75', 'fontconfig-pattern';
+}
 
 subtest 'match basic' => {
     plan 2;
@@ -51,6 +58,7 @@ subtest 'match basic' => {
     my $selection = $font.match(@font-face).first;
     ok defined $selection;
     is $selection.Str, @font-face[3].Str;
+
 }
 
 subtest 'match styles' => {

@@ -1,4 +1,8 @@
 {{$NEXT}}
+   - Adjust at-font-face.t tests to CSS::Module 0.5.9+, which groups
+     @font-face src comma separated terms into expression nodes.
+   - Undo deprecation of fontconfig-pattern and find-font in last release.
+     Electing to subclass and leave this in place as light-weight alternative.
 
 0.7.3  2021-08-17T10:54:17+12:00
    - match() now returns a list of candidate fonts to allow final filtering
@@ -8,11 +12,11 @@
      CSS::Font fontconfig-pattern() and load-font() methods.
 
 0.7.2  2021-08-09T13:18:13+12:00
-   - Rename CSS::Font select() to match() to align with W3c terminology;
-   - more fully implement and test font matching to match on font stetch,
-     style and weight.
+   - Rename CSS::Font select() to match() to match W3c terminology; more
+     fully implement and test font matching to match on font stretch, style
+     and weight.
    - convert font stretch to numeric in fontconfg-pattern() and pattern()
-     methods. This makes it easier to implment the select() method.
+     methods. This makes it easier to implement the select() method.
 
 0.7.1  2021-08-07T09:21:25+12:00
     - Deprecate CSS::Properties::Units in favor of CSS::Units
