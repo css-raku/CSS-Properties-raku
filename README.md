@@ -25,7 +25,7 @@ $css.text-align = 'right';
 say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
 
-Classess in this module
+Classes in this module
 --------
   * [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) - property list manipulation class.
   * [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator) - property calculator and measurement tool.

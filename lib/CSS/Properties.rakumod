@@ -491,22 +491,28 @@ The `reference-width` attribute represents the width of a containing element; wh
         $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
     }
     multi sub from-ast(Pair $v) {
-        if $v.key eq "func" {
-            my $name = $v.value<ident>;
-            my @args = $v.value<args>.map: { from-ast($_) };
-            if $name ~~ KnownFunction {
-                @args does CSS::Units[Function, $name]
+        given $v.key {
+            when 'func' {
+                my $name = $v.value<ident>;
+                my @args = $v.value<args>.map: { from-ast($_) };
+                if $name ~~ KnownFunction {
+                    @args does CSS::Units[Function, $name]
+                }
+                else {
+                    warn "Unknown function: $name\(\)";
+                    $v;
+                }
             }
-            else {
-                warn "Unknown function: $name\(\)";
-                $v;
+            when 'expr' {
+                my @expr = $v.value.map: { from-ast($_) };
+                CSS::Units.value(@expr, $_);
             }
-        }
-        else {
-            my \r = from-ast( $v.value );
-            r ~~ CSS::Units
-            ?? r
-            !! CSS::Units.value(r, $v.key);
+            default {
+                my \r = from-ast( $v.value );
+                r ~~ CSS::Units
+                    ?? r
+                    !! CSS::Units.value(r, $_);
+            }
         }
     }
     multi sub from-ast(List $v) {
@@ -568,7 +574,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                 %( :$ident, :@args );
             }
             when List  {
-                .elems == 1
+                .elems == 1 && $key !~~ 'expr'
                     ?? to-ast( .[0] )
                     !! [ .map: { to-ast($_) } ];
             }
