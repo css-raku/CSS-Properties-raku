@@ -3,9 +3,10 @@ use Test;
 plan 5;
 
 use CSS::Properties;
-use JSON::Fast;
 use CSS::Font;
+use CSS::Font::Descriptor;
 use CSS::Units :px, :percent;
+use JSON::Fast;
 sub keyw($v) { CSS::Units.value($v, 'keyw') }
 my $font-props = 'italic bold condensed 10pt/12pt times-roman';
 my CSS::Font $font .= new: :$font-props;
@@ -46,15 +47,12 @@ subtest 'patterns' => {
 subtest 'match basic' => {
     plan 2;
     # Simulate @font-face selection
-    use CSS::Module;
-    use CSS::Module::CSS3;
-    my CSS::Module:D $module = CSS::Module::CSS3.module.sub-module<@font-face>;
-    my CSS::Properties @font-face = (
+    my CSS::Font::Descriptor @font-face = (
         "font-family:'Sans-serif'; src:url('/myfonts/serif.otf'); font-stretch:condensed",
         "font-family:'Serif'; src:url('/myfonts/serif.otf');",
         "font-family:'Serif'; src:url('/myfonts/serif-narrow.otf'); font-stretch:semi-condensed;",
         "font-family:'Serif'; src:url('/myfonts/serif-narrow-bold.otf'); font-stretch:semi-condensed; font-weight:500",
-    ).map: -> $style {CSS::Properties.new: :$style, :$module};
+    ).map: -> $style {CSS::Font::Descriptor.new: :$style};
     my $selection = $font.match(@font-face).first;
     ok defined $selection;
     is $selection.Str, @font-face[3].Str;
@@ -63,9 +61,6 @@ subtest 'match basic' => {
 
 subtest 'match styles' => {
     plan 6;
-    use CSS::Module;
-    use CSS::Module::CSS3;
-    my CSS::Module:D $module = CSS::Module::CSS3.module.sub-module<@font-face>;
     my @decls = q:to<END>.split(/^^'---'$$/);
         font-family: "DejaVu Sans";
         src: url("fonts/DejaVuSans.ttf");
@@ -84,7 +79,7 @@ subtest 'match styles' => {
         font-style: oblique;
         END
 
-        my CSS::Properties @font-face = @decls.map: -> $style {CSS::Properties.new: :$style, :$module};
+        my CSS::Font::Descriptor @font-face = @decls.map: -> $style {CSS::Font::Descriptor.new: :$style};
 
         for (
             "" => "Sans.ttf",
@@ -96,7 +91,7 @@ subtest 'match styles' => {
         ) {
             my $font-props = "{.key} 12pt DejaVu Sans";
             my CSS::Font $font .= new: :$font-props;
-            my CSS::Properties $match = $font.match(@font-face).first;
+            my CSS::Font::Descriptor $match = $font.match(@font-face).first;
             ok $match.src.ends-with(.value);
         }
 }

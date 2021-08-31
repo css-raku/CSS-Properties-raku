@@ -1,15 +1,9 @@
 use Test;
 plan 7;
-use CSS::Properties;
-use CSS::Module::CSS3;
 
-class AtFontFace is CSS::Properties {
-      method new(:$module = CSS::Module::CSS3.module.sub-module<@font-face>, |c) {
-          nextwith(:$module, |c);
-      }
-}
+use CSS::Font::Descriptor;
 
-my AtFontFace $font-face .= new: :style("font-family:'Sans-serif'; src:url('/myfonts/serif.otf'); font-stretch:condensed");
+my CSS::Font::Descriptor $font-face .= new: :style("font-family:'Sans-serif'; src:url('/myfonts/serif.otf'); font-stretch:condensed");
 
 is $font-face.src, '/myfonts/serif.otf';
 

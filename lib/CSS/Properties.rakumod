@@ -499,7 +499,6 @@ The `reference-width` attribute represents the width of a containing element; wh
                     @args does CSS::Units[Function, $name]
                 }
                 else {
-                    warn "Unknown function: $name\(\)";
                     $v;
                 }
             }

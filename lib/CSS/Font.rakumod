@@ -39,7 +39,7 @@ class CSS::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <em ex measure units viewport-width viewport-height Str> .= new();
+    has CSS::Properties $.css handles <em ex measure units viewport-width viewport-height module ast Str>;
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -47,7 +47,8 @@ class CSS::Font {
         );
     }
 
-    submethod TWEAK(Str :$font-style, Str :$font-props) {
+    submethod TWEAK(Str :$font-style, Str :$font-props, |c) {
+        $_ .= new(|c) without $!css;
         with $font-style {
             warn 'CSS::Properties::Font.new(:$font-style) is deprecated. Please use :$font-props';
             self.font-props = $_;
@@ -176,15 +177,15 @@ class CSS::Font {
     =para Actually calls `fc-match` on `$.font-config-patterm()`
 
     #| Select matching @font-face font
-    method match(@font-face, :$module = $.css.module.sub-module<@font-face> --> Array) {
+    method match(@font-face --> Array) {
         my %patt = self.pattern;
         my @patterns = @font-face.grep({
             my $family := .font-family.lc;
             @!family.first: {$family eq .lc}
         })
-        .map(-> $css {
-            my %matching-patt = CSS::Font.new(:$css, :$module).pattern;
-            %matching-patt => $css
+        .map(-> $font-desc {
+            my %matching-patt = $font-desc.pattern;
+            %matching-patt => $font-desc;
         });
 
         @patterns .= &match-stretch(%patt<stretch>);
