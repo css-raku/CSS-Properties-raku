@@ -149,17 +149,17 @@ class CSS::Font {
          @patterns.grep({.key<weight> == $w}) || nearest-weight(@patterns, $w)
     }
 
-    sub nearest-weight(@patterns, Int:D $_!) {
-        when * < 400 {
-            @patterns.grep({.key<weight> < $_}).sort.reverse;
+    sub nearest-weight(@patterns, Int:D $w!) {
+        when $w < 400 {
+            @patterns.grep({.key<weight> < $w}).sort.reverse;
         }
-        when * > 500 {
-            @patterns.grep({.key<weight> > $_}).sort;
+        when $w > 500 {
+            @patterns.grep({.key<weight> > $w}).sort;
         }
-        when 400 {
+        when $w == 400 {
             @patterns.grep({.key<weight> == 500}) || match-weight(@patterns, 300);
         }
-        when 500 {
+        when $w == 500 {
             @patterns.grep({.key<weight> == 400}) || match-weight(@patterns, 300);
         }
     }
