@@ -57,8 +57,12 @@ class CSS::Font {
         self.setup;
     }
 
-   method line-height { $!line-height //= $!css.measure(:line-height); }
-   method !fc-stretch {
+    multi method COERCE(Str:D $font-props) {
+        $?CLASS.new: :$font-props;
+    }
+
+    method line-height { $!line-height //= $!css.measure(:line-height); }
+    method !fc-stretch {
         my constant %Stretch = %(
             :normal(100),
             :semi-expanded(113), :expanded(125), :extra-expanded(150), :ultra-expanded(200),
@@ -121,9 +125,10 @@ class CSS::Font {
 	self;
     }
 
-    multi method pattern(CSS::Font:D:) {
+    multi method pattern(CSS::Font:D: @faces = []) {
+        my @family = (@faces.Slip, @!family.Slip);
         my $stretch = self!fc-stretch;
-        %( :@!family, :$!style, :$!weight, :$stretch );
+        %( :@family, :$!style, :$!weight, :$stretch );
     }
 
     multi sub match-stretch([], $) {[]}

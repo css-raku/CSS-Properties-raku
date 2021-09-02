@@ -10,12 +10,7 @@ class CSS::Font::Descriptor is CSS::Font {
     method css handles<src font-family> { callsame() }
     #| sets/gets the css font properties as a whole
     method font-props is rw {
-        Proxy.new(
-            FETCH => sub ($) { $.css },
-            STORE => sub ($, Str :$style) {
-                $.css .= clone: $style;
-                self.setup;
-            });
+        ...
     }
 
 }
