@@ -1,6 +1,7 @@
 {{$NEXT}}
    - Add CSS::Font::Descriptor; CSS::Font subclass for @font-face rules.
    - Fix CSS::Font nearest-weight matching in match() method
+   - Fixed missing commas in @font-face 'src' serialization
 
 0.7.4  2021-08-19T09:24:58+12:00
    - Adjust at-font-face.t tests to CSS::Module 0.5.9+, which groups

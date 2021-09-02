@@ -89,7 +89,7 @@ sub punctuate($_) is export(:punctuate) {
     }
     with .<src> {
         given .<expr> -> @expr {
-            for 1 ..^ +@expr {
+            for +@expr ^... 1 {
                 splice @expr, $_, 0, %(:op(','))
                     unless @expr[$_-1]<op> ~~ ',';
             }
@@ -159,6 +159,7 @@ method optimize-ast( %prop-ast ) {
                 with @asts[0]<prio>;
         }
     }
+
     for self!container-properties.list -> \container-prop {
         # top-down aggregation of container properties. e.g. border-width, border-style => border
 
