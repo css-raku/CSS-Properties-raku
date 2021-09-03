@@ -1,6 +1,6 @@
 use CSS::Font;
 
-#| A @font-face rule
+#| A @font-face font descriptor rule
 class CSS::Font::Descriptor is CSS::Font {
     use CSS::Module;
     use CSS::Module::CSS3;
@@ -15,3 +15,25 @@ class CSS::Font::Descriptor is CSS::Font {
     }
 
 }
+
+=begin pod
+
+=head2 Synopsis
+
+=begin code :lang<raku>
+CSS::Font::Descriptor;
+my CSS::Font::Descriptor $fd .= new: style => q:to<END;
+font-family: "DejaVu Sans";
+src: url("fonts/DejaVuSans.ttf");
+font-variant: small-caps;
+END
+=end code
+
+=head3 Description
+
+Objects of this class describe a single `@font-face` font descriptor.
+
+This class is based on L<CSS::Font> and has all its methods available with the
+exception of `font-props()`.
+
+=end pod

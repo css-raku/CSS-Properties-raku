@@ -25,13 +25,14 @@ $css.text-align = 'right';
 say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
 
-Classess in this module
+Classes in this module
 --------
   * [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) - property list manipulation class.
   * [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator) - property calculator and measurement tool.
   * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data.
   * [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) - CSS Box model implementation.
   * [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) - property font manipulation
+  * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor manipulation
   * [CSS::PageBox](https://css-raku.github.io/CSS-Properties-raku/CSS/PageBox) - CSS Box model for paged media
   * [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/CSS/Units) - units and postfix operators (e.g. `12pt`)
 

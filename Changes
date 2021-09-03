@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.7.5  2021-09-04T11:09:17+12:00
    - Add CSS::Font::Descriptor; CSS::Font subclass for @font-face rules.
    - Fix CSS::Font nearest-weight matching in match() method
    - Fix missing commas in @font-face 'src' serialization

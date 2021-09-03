@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.7.4> {
+class CSS::Properties:ver<0.7.5> {
 
     =begin pod
 
@@ -388,7 +388,7 @@ The `reference-width` attribute represents the width of a containing element; wh
             self.?color;
         }
         when 'text-align' {
-            %!values<direction> && self.direction eq 'rtl' ?? 'right' !! 'left';
+            %!values<direction> ~~ 'rtl' ?? 'right' !! 'left';
         }
         default {
             %!defaults{$_} //= self!coerce( $.info($_).default-value )

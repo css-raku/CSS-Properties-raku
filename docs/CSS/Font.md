@@ -38,10 +38,12 @@ Description
 ### method fontconfig-pattern
 
 ```raku
-method fontconfig-pattern() returns Mu
+method fontconfig-pattern(
+    @faces = Code.new
+) returns Mu
 ```
 
-Deprecated - see CSS::Font::Loader module
+compute a fontconfig pattern for the font
 
 ### method font-props
 
@@ -61,14 +63,15 @@ method find-font(
 ) returns Str
 ```
 
-Deprecated - see CSS::Font::Loader module
+Return a path to a matching system font
+
+Actually calls `fc-match` on `$.font-config-patterm()`
 
 ### method match
 
 ```raku
 method match(
-    @font-face,
-    :$module = Code.new
+    @font-face
 ) returns Array
 ```
 
