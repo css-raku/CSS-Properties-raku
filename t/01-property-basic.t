@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 15;
+plan 16;
 
 use CSS::Properties::Property;
 use CSS::Properties;
@@ -29,8 +29,11 @@ is-deeply $sample-prop.top.name, 'margin-top', '$prop.top.name';
 my $css = CSS::Properties.new: :margin(5pt), :width(4px);
 is $css.width, 4px, 'declared property';
 is $css.height, 'auto', 'defaulted property';
-is $css.write, 'margin:5pt; width:4px;', 'construction';
-$css = CSS::Properties.new: :style("margin:5pt; width:4px");
-is $css.write, 'margin:5pt; width:4px;', 'construction';
+is $css.write, 'margin:5pt; width:4px;', 'write';
+my $css2 = CSS::Properties.new: :style("margin:7pt; height:5px");
+is $css2.write, 'height:5px; margin:7pt;', 'write';
+
+$css2.copy($css);
+is $css2.write, 'height:5px; margin:5pt; width:4px;', 'copy/write';
 
 done-testing;

@@ -111,6 +111,7 @@ class CSS::Properties:ver<0.7.4> {
 
     # contextual variables
     has Any   %!values handles <keys Bool>;    # property values
+    has Any   %!defaults;
     has Array %!box;
     has Hash  %!struct;
     has Bool  %!important{Int};
@@ -182,7 +183,7 @@ class CSS::Properties:ver<0.7.4> {
         }
 
         self!set-decls(@decls);
-        self!copy($_) with $copy;
+        self.copy($_) with $copy;
         self.set-properties(|%props);
     }
 
@@ -390,7 +391,7 @@ The `reference-width` attribute represents the width of a containing element; wh
             %!values<direction> && self.direction eq 'rtl' ?? 'right' !! 'left';
         }
         default {
-            %!values{$_} //= self!coerce( $.info($_).default-value )
+            %!defaults{$_} //= self!coerce( $.info($_).default-value )
         }
     }
 
@@ -619,9 +620,11 @@ The `reference-width` attribute represents the width of a containing element; wh
     =item not all properties are inherited. e.g. color is, margin isn't
     =end pod
 
-    method !copy(CSS::Properties $css) {
-        %!values{$_} = $css."$_"()
-            for $css.properties;
+    method copy(CSS::Properties $css) {
+        for $css.properties {
+            %!values{$_} = $css."$_"()
+                if $.property-number($_).defined;
+        }
     }
 
     method !set-decls(@decls) {

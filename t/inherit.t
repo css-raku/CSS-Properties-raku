@@ -34,7 +34,7 @@ is $css.color, '#7F007F', "inherited !important property";
 nok $css.important("color"), '!important is not inherited';
 
 # inherit from css object
-is ~$css, 'color:purple; margin-bottom:initial; margin-left:initial; margin-right:initial;', 'inherit from object';
+is ~$css, 'color:purple; margin:initial;', 'inherit from object';
 
 # inherit from style string
 $css = CSS::Properties.new( :inherit(~$inherit));
