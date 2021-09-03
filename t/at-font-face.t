@@ -1,5 +1,5 @@
 use Test;
-plan 20;
+plan 24;
 
 use CSS::Font::Descriptor;
 
@@ -24,12 +24,22 @@ is $font-face.Str, "font-family:MyGentium; src:local(Gentium), url('Gentium.woff
 
 $font-face .= new: :style(q:to<END>);
     font-family: MyFont;
+    src: local(MyFont)
+    END
+
+is $font-face.src[0].type, 'expr';
+is $font-face.src[0][0].type, 'local';
+is $font-face.src[0][0], 'MyFont';
+
+$font-face .= new: :style(q:to<END>);
+    font-family: MyFont;
     src: local(MyFont),
          url(MyFont.woff) format('woff'),
          url(MyFont.otf) format('opentype');
     END
 
 is $font-face.src[0].type, 'expr';
+is $font-face.src[0][0].type, 'local';
 is $font-face.src[0][0], 'MyFont';
 
 is $font-face.src[1].type, 'expr';

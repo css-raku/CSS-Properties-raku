@@ -7,7 +7,13 @@ class CSS::Font::Descriptor is CSS::Font {
     method new(:$module = CSS::Module::CSS3.module.sub-module<@font-face>, |c) {
         nextwith(:$module, |c);
     }
-    method css handles<src font-family> { callsame() }
+    method css handles<font-family> { callsame() }
+
+    method src {
+        with $.css.src {
+            .[0].type eq 'expr' ?? $_ !! [$_,];
+        }
+    }
     #| sets/gets the css font properties as a whole
     method font-props is rw {
         ...
