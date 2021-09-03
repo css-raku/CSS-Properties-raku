@@ -120,7 +120,7 @@ method purge-defaults(%prop-ast) {
 }
 
 method optimize-ast( %prop-ast ) {
-    my Int @parent-props = %prop-ast.keys.map({$!css.info($_).edge}).grep(*).sort;
+    my Int @parent-props = %prop-ast.keys.map({$!css.info($_).edge || Empty}).sort;
 
     # consolidate box properties with common values
     # margin-right: 1pt; ... margin-bottom: 1pt -> margin: 1pt

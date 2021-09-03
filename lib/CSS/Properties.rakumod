@@ -515,7 +515,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         }
     }
     multi sub from-ast(List $v) {
-        $v.elems == 1
+        $v.elems == 1 && !$v[0]<expr>
             ?? from-ast( $v[0] )
             !! [ $v.map: { from-ast($_) } ];
     }
