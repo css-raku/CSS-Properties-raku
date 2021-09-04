@@ -29,7 +29,8 @@ Classes in this module
 --------
   * [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) - property list manipulation class.
   * [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator) - property calculator and measurement tool.
-  * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data.
+  * [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer) - property AST optimizer delegate
+  * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data delegate
   * [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) - CSS Box model implementation.
   * [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) - property font manipulation
   * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor manipulation
@@ -71,7 +72,7 @@ $css3 .= new: :$style, :$module;
 
 ### '@font-face' Properties
 
-`@font-face` is a sub-module of `CSS3`. To process a set of `@font-face` declarations, such as:
+The L<CSS::Font::Descriptor> module is a class for managing `@font-face` declarationa. The `css` method can be used to get the raw properties.
 
 ```
 @font-face {
@@ -82,11 +83,11 @@ $css3 .= new: :$style, :$module;
 
 ```
 use CSS::Properties;
-use CSS::Module::CSS3;
+use CSS::Font::Descriptor;
 
 my $style = "font-family: myFirstFont; src: url(sansation_light.woff)";
-my $module = CSS::Module::CSS3.module.sub-module<@font-face>;
-my CSS::Properties $font-face-css .= new( :$style, :$module);
+my CSS::Font::Descriptor $fd .= new: :$style;
+my CSS::Properties $font-face-css = $fd.css;
 ```
 
 ## Default values
@@ -183,21 +184,7 @@ because all four borders have common values
 
 - `:!color-names` - don't translate RGB values to color-names
 
-ASTs can also be directly optimized:
-```
-use CSS::Properties;
-use CSS::Module::CSS3;
-use CSS::Writer;
-
-my CSS::Properties $css .= new;
-my $module = CSS::Module::CSS3.module;
-my $actions = $module.actions.new;
-my CSS::Writer $writer .= new: :color-names, :terse;
-my $declarations = "border-bottom-color:red; border-bottom-style:solid; border-bottom-width:1px; border-left-color:red; border-left-style:solid; border-left-width:1px; border-right-color:red; border-right-style:solid; border-right-width:1px; border-top-color:red; border-top-style:solid; border-top-width:1px;";
-my $p = $module.grammar.parse($declarations, :$actions, :rule<declaration-list>);
-my %ast = $css.optimize($p.ast);
-say $writer.write(|%ast); # border:1px solid red;
-```
+See also [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer).
 
 ## Property Meta-data
 
