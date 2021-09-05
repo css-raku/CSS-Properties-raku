@@ -184,6 +184,8 @@ because all four borders have common values
 
 - `:!color-names` - don't translate RGB values to color-names
 
+See also [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer).
+
 ## Property Meta-data
 
 The `info` method gives property specific meta-data, on all (component or container properties). It returns an object of type CSS::Properties::Property:

@@ -1,5 +1,5 @@
 use Test;
-plan 24;
+plan 29;
 
 use CSS::Font::Descriptor;
 
@@ -55,4 +55,12 @@ is $font-face.src[2][1], 'opentype';
 is $font-face.src[2][1].type, 'format';
 
 is $font-face.Str, "font-family:MyFont; src:local(MyFont), url('MyFont.woff') format('woff'), url('MyFont.otf') format('opentype');";
+
+$font-face .= new: :font-family<Foo>, :src("local(bar)");
+is $font-face.font-family, "Foo";
+is $font-face.src[0].type, 'expr';
+is $font-face.src[0][0].type, 'local';
+is $font-face.src[0][0], 'bar';
+
+is $font-face.Str, "font-family:Foo; src:local(bar);";
 

@@ -21,12 +21,17 @@ class CSS::Font::Descriptor is CSS::Font {
 =head2 Synopsis
 
 =begin code :lang<raku>
-CSS::Font::Descriptor;
-my CSS::Font::Descriptor $fd .= new: style => q:to<END;
-font-family: "DejaVu Sans";
-src: url("fonts/DejaVuSans.ttf");
-font-variant: small-caps;
-END
+use CSS::Font::Descriptor;
+my CSS::Font::Descriptor $fd;
+$fd .= new: style => q:to<END;
+  font-family: "DejaVu Sans";
+  src: url("fonts/DejaVuSans.ttf");
+  font-variant: small-caps;
+  END
+# -- or --
+$fd .= new: :font-family("DejaVu Sans"),
+            :src('url("fonts/DejaVuSans.ttf")'),
+            :font-variant<small-caps>;
 =end code
 
 =head3 Description

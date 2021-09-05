@@ -20,12 +20,17 @@ Synopsis
 --------
 
 ```raku
-CSS::Font::Descriptor;
-my CSS::Font::Descriptor $fd .= new: style => q:to<END;
-font-family: "DejaVu Sans";
-src: url("fonts/DejaVuSans.ttf");
-font-variant: small-caps;
-END
+use CSS::Font::Descriptor;
+my CSS::Font::Descriptor $fd;
+$fd .= new: style => q:to<END;
+  font-family: "DejaVu Sans";
+  src: url("fonts/DejaVuSans.ttf");
+  font-variant: small-caps;
+  END
+# -- or --
+$fd .= new: :font-family("DejaVu Sans"),
+            :src('url("fonts/DejaVuSans.ttf")'),
+            :font-variant<small-caps>;
 ```
 
 ### Description
