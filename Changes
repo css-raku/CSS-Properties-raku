@@ -1,7 +1,11 @@
 {{$NEXT}}
+   - Add CSS::Font::Descriptor COERCE() method
+   - Modified Bool() method. Returns True if defined and has properties,
+     False otherwise.
+   - Remove stray JSON::Fast usage
 
 0.7.5  2021-09-04T11:09:17+12:00
-   - Add CSS::Font::Descriptor; CSS::Font subclass for @font-face rules.
+   - Add CSS::Font::Descriptor; A CSS::Font subclass for @font-face rules.
    - Fix CSS::Font nearest-weight matching in match() method
    - Fix missing commas in @font-face 'src' serialization
    - Fix default value handling

@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
 
 class CSS::Font
@@ -40,7 +40,7 @@ Description
 ```raku
 method fontconfig-pattern(
     @faces = Code.new
-) returns Mu
+) returns Str
 ```
 
 compute a fontconfig pattern for the font

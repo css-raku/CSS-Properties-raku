@@ -11,8 +11,7 @@ class CSS::Properties:ver<0.7.5> {
     use CSS::Units :pt;
     use CSS::Properties;
 
-    my $style = "color:red !important; padding: 1pt";
-    my CSS::Properties $css .= new: :$style;
+    my CSS::Properties() $css = "color:red !important; padding: 1pt";
     say $css.important("color"); # True
     $css.border-color = 'red';
 
@@ -110,7 +109,7 @@ class CSS::Properties:ver<0.7.5> {
     my %module-properties{CSS::Module};   # per-module property attributes
 
     # contextual variables
-    has Any   %!values handles <keys Bool>;    # property values
+    has Any   %!values handles <keys>;    # property values
     has Any   %!defaults;
     has Array %!box;
     has Hash  %!struct;
@@ -158,8 +157,9 @@ class CSS::Properties:ver<0.7.5> {
     =item `*%props` - CSS property settings
     =end pod
 
-   submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy, :$declarations,
-                     :module($), :warn($), :$units = 'pt', # stop these leaking through to %props
+     submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy,
+                     List :$declarations,
+                     Str :$units = 'pt',
                      Numeric :$em = 12pt.scale($units),
                      Numeric :$viewport-width, Numeric :$viewport-height,
                      Numeric :$reference-width = 0,
@@ -210,6 +210,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     =end pod
 
     multi method COERCE(Str:D $style) { self.new: :$style }
+    multi method COERCE(%opts) { self.new: |%opts; }
 
     my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
     my subset Keyword  of Pair where {.key ~~ 'keyw'}
@@ -645,7 +646,8 @@ The `reference-width` attribute represents the width of a containing element; wh
                 self."{p.key}"() = $_ with p.value;
             }
             else {
-                warn "unknown property/option: {p.key}";
+                warn "unknown property/option: {p.key}"
+                    unless self.can(p.key);
             }
         }
         self;
@@ -757,6 +759,8 @@ The `reference-width` attribute represents the width of a containing element; wh
             fail "unknown property: {name}";
         }
     }
+    multi method Bool(CSS::Properties:D:) { %!values.Bool }
+    multi method Bool(CSS::Properties:U:) { False }
     method FALLBACK(Str \name, |c) is rw {
         with $.property-number(name) {
             self!value($!index[$_], name, |c)

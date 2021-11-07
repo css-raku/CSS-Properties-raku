@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
  :: [Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor)
 
@@ -29,13 +29,13 @@ $fd .= new: style => q:to<END;
   END
 # -- or --
 $fd .= new: :font-family("DejaVu Sans"),
-            :src('url("fonts/DejaVuSans.ttf")'),
+            :src<url("fonts/DejaVuSans.ttf")>,
             :font-variant<small-caps>;
 ```
 
 ### Description
 
-Objects of this class describe a single `@font-face` font descriptor.
+Objects of this class describe a single `@font-face` font descriptor rule.
 
 This class is based on [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) and has all its methods available with the exception of `font-props()`.
 

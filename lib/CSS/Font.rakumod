@@ -39,7 +39,7 @@ class CSS::Font {
     has Str $.style = 'normal';
     has Numeric $.line-height;
     has Str $.stretch;
-    has CSS::Properties $.css handles <em ex measure units viewport-width viewport-height module ast Str>;
+    has CSS::Properties $.css handles <font-family em ex measure units viewport-width viewport-height module ast Str>;
     method css is rw {
         Proxy.new(
             FETCH => sub ($) { $!css },
@@ -58,7 +58,7 @@ class CSS::Font {
     }
 
     multi method COERCE(Str:D $font-props) {
-        $?CLASS.new: :$font-props;
+        self.new: :$font-props;
     }
 
     method line-height { $!line-height //= $!css.measure(:line-height); }
@@ -73,7 +73,7 @@ class CSS::Font {
     }
 
     #| compute a fontconfig pattern for the font
-    method fontconfig-pattern(@faces = []) {
+    method fontconfig-pattern(@faces = [] --> Str) {
         my Str $pat = (@faces.Slip, @!family.Slip).join: ',';
 
         $pat ~= ':slant=' ~ $!style
@@ -125,7 +125,7 @@ class CSS::Font {
 	self;
     }
 
-    multi method pattern(CSS::Font:D: @faces = []) {
+    multi method pattern(CSS::Font:D: @faces = [] --> Hash) {
         my @family = (@faces.Slip, @!family.Slip);
         my $stretch = self!fc-stretch;
         %( :@family, :$!style, :$!weight, :$stretch );

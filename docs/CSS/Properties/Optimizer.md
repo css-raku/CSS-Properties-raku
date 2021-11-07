@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
  :: [Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer)
 
@@ -11,7 +11,7 @@ Optimizer for CSS Property ASTs
 Description
 -----------
 
-This class is used to perform optimization on property lists, Cheifly combining combine component properties into container properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`). It also removes properties that have been set to the default value
+This class is used to perform optimization on property lists, Chiefly combining combine component properties into container properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`). It also removes properties that have been set to the default value
 
 ### Example
 

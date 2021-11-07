@@ -11,8 +11,7 @@ The CSS::Properties module is a set of related classes for parsing, manipulation
 use CSS::Units :pt;
 use CSS::Properties;
 
-my $style = "color:red !important; padding: 1pt";
-my CSS::Properties $css .= new: :$style;
+my CSS::Properties() $css = "color:red !important; padding: 1pt";
 say $css.important("color"); # True
 $css.border-color = 'red';
 

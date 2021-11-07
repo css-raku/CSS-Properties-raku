@@ -38,7 +38,7 @@ multi sub css-eqv(Any $a, Any $b) is default {
 proto sub optimizable(Str $cont-prop, :%props) { * }
 
 # cue-after requires a cue-before entry
-multi sub  optimizable('cue', :%props) { %props<cue-before>:exists }
+multi sub optimizable('cue', :%props) { %props<cue-before>:exists }
 
 # Avoid these font serialization optimizations, which won't parse correctly:
 #     font: bold;            // font-weight or font-style only
@@ -46,8 +46,8 @@ multi sub  optimizable('cue', :%props) { %props<cue-before>:exists }
 # Need a font-size or font-family to disambiguate, e.g.:
 #     font: bold medium Helvetica;
 #     font: medium Helvetica;
-multi sub optimizable('font', :%props (:$font-size, :$font-family, |c) ) {
-    $font-size.defined && $font-family.defined;
+multi sub optimizable('font', :%props) {
+   %props<font-size>.defined && %props<font-family>.defined
 }
 
 multi sub optimizable(Str $, :props(%)) {
@@ -168,7 +168,7 @@ method optimize-ast( %prop-ast ) {
         }
         next unless @children;
 
-        # agregrate related children to a container property, where possible.
+        # aggregate related children to a container property, where possible.
         # -- if child properties are 'initial', or 'inherit', they all
         #    need to be present and the same
         # -- otherwise they need to all need to have or lack
@@ -220,7 +220,7 @@ method optimize-ast( %prop-ast ) {
 
 =head2 Description
 
-This class is used to perform optimization on property lists, Cheifly combining
+This class is used to perform optimization on property lists, Chiefly combining
 combine component properties into container properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`). It also removes properties that have been set to the default value
 
 =head3 Example

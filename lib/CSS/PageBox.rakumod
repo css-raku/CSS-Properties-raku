@@ -56,7 +56,7 @@ class CSS::PageBox
                 @length = PageSizes.enums{.uc};
             }
             default {
-                warn "unhandled body 'size' {.perl}";
+                warn "unhandled body 'size' {.raku}";
             }
         }
 

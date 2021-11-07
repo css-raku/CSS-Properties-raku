@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
 
 class CSS::Properties
@@ -14,8 +14,7 @@ Synopsis
 use CSS::Units :pt;
 use CSS::Properties;
 
-my $style = "color:red !important; padding: 1pt";
-my CSS::Properties $css .= new: :$style;
+my CSS::Properties() $css = "color:red !important; padding: 1pt";
 say $css.important("color"); # True
 $css.border-color = 'red';
 

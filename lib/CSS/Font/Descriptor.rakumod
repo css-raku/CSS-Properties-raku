@@ -7,13 +7,16 @@ class CSS::Font::Descriptor is CSS::Font {
     method new(:$module = CSS::Module::CSS3.module.sub-module<@font-face>, |c) {
         nextwith(:$module, |c);
     }
-    method css handles<font-family src> { callsame() }
+    method css handles<src> { callsame() }
 
     #| sets/gets the css font properties as a whole
     method font-props is rw {
         ...
     }
 
+    multi method COERCE(Str:D $style) {
+        self.new: :$style;
+    }
 }
 
 =begin pod
@@ -30,13 +33,13 @@ $fd .= new: style => q:to<END;
   END
 # -- or --
 $fd .= new: :font-family("DejaVu Sans"),
-            :src('url("fonts/DejaVuSans.ttf")'),
+            :src<url("fonts/DejaVuSans.ttf")>,
             :font-variant<small-caps>;
 =end code
 
 =head3 Description
 
-Objects of this class describe a single `@font-face` font descriptor.
+Objects of this class describe a single `@font-face` font descriptor rule.
 
 This class is based on L<CSS::Font> and has all its methods available with the
 exception of `font-props()`.
