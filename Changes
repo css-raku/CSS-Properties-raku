@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.7.7  2021-11-09T06:56:03+13:00
+    - Fix :$declarations handling in TWEAK; Fixes CSS::TagSet::Pango
+
 0.7.6  2021-11-08T08:13:12+13:00
    - Add CSS::Font::Descriptor COERCE() method
    - Modified Bool() method. Returns True if defined and has properties,

@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.7.6> {
+class CSS::Properties:ver<0.7.7> {
 
     =begin pod
 
@@ -157,8 +157,8 @@ class CSS::Properties:ver<0.7.6> {
     =item `*%props` - CSS property settings
     =end pod
 
-     submethod TWEAK( Str :$style, List :$ast, :$inherit, CSS::Properties :$copy,
-                     List :$declarations,
+     submethod TWEAK( Str :$style, List() :$ast, :$inherit, CSS::Properties :$copy,
+                     List() :$declarations,
                      Str :$units = 'pt',
                      Numeric :$em = 12pt.scale($units),
                      Numeric :$viewport-width, Numeric :$viewport-height,
@@ -175,9 +175,7 @@ class CSS::Properties:ver<0.7.6> {
 
         my @decls = self!build-declarations(@style);
 
-        with $inherit -> $_ is copy {
-            $_ = CSS::Properties.COERCE($_)
-                unless .isa(CSS::Properties);
+        with $inherit -> CSS::Properties() $_ {
             $!calc.em = .em;
             self.inherit: $_;
         }
