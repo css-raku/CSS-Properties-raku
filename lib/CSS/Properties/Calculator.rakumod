@@ -83,8 +83,8 @@ class CSS::Properties::Calculator {
             when 'normal' { self!em }
             default { self.measure: $_, :ref($!em) }
         },
-        'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_) {
-            self.measure($_, :ref(0)); # percentage quantities are ignored
+        'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_, :$ref = 0) {
+            self.measure($_, :$ref); # percentage needs to be supplied
         },
         'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height'|'padding-top'|'padding-right'|'padding-bottom'|'padding-left'|'margin-top'|'margin-right'|'margin-bottom'|'margin-left' => method ($_) {
             self.measure($_, :ref($!reference-width));
@@ -118,26 +118,24 @@ class CSS::Properties::Calculator {
         when Bool { CSS::Units.value($!em, $!units) }
         default   { %Compute<font-size>(self, $_) }
     }
-    multi method measure(*%misc where .elems == 1) {
+    multi method measure(:$ref = 0, *%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
         given $value {
             my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
             with %Compute{$prop} {
-                .(self, $v);
+                .(self, $v, :$ref);
             }
             else {
-                $.measure($v);
+                $.measure($v, :$ref);
             }
         }
     }
 
     multi method measure(Numeric $v is copy,
                          Numeric :$ref = $!em,
-                         :$em, :$ex
                   ) {
         my Str $units = $v.?type // $!units;
-        warn 'deprecated measure: :$em' with $em;
-        warn 'deprecated measure: :$ex' with $ex;
+
         my Numeric $scale = do given $units {
             when 'none' { $v = Nil }
             when 'em'   { $!em }
