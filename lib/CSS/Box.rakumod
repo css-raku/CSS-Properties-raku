@@ -16,7 +16,7 @@ class CSS::Box {
 
     use CSS::Font;
     has CSS::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
-    has CSS::Properties $.css;
+    has CSS::Properties() $.css;
 
     has Hash @.save;
 

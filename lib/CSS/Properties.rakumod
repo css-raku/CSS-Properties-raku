@@ -619,11 +619,21 @@ The `reference-width` attribute represents the width of a containing element; wh
     =item not all properties are inherited. e.g. color is, margin isn't
     =end pod
 
-    method copy(CSS::Properties $css) {
-        for $css.properties {
-            %!values{$_} = $css."$_"()
+    multi method copy(CSS::Properties:U: CSS::Properties:D $orig,  :@properties = [$orig.properties], |c) {
+        my $em = $orig.em;
+        my $viewport-width  = $orig.viewport-width;
+        my $viewport-height = $orig.viewport-height;
+        my $reference-width = $orig.reference-width;
+        my $obj = self.new: :$em, :$viewport-width, :$viewport-height, :$reference-width, |c;
+        $obj.copy: $orig, :@properties;
+    }
+
+    multi method copy(CSS::Properties:D: CSS::Properties:D $orig, :@properties = [$orig.properties]) {
+        for @properties {
+            %!values{$_} = $orig."$_"()
                 if $.property-number($_).defined;
         }
+        self
     }
 
     method !set-decls(@decls) {
@@ -652,8 +662,8 @@ The `reference-width` attribute represents the width of a containing element; wh
     }
 
     #| create a deep copy of a CSS declarations object
-    method clone(*@decls, *%props) {
-        my $obj = self.new( :copy(self), :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
+    method clone(CSS::Properties:D $copy: *@decls, *%props) {
+        my $obj = self.new( :$copy, :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
         $obj!set-decls(@decls);
         $obj.set-properties(|%props);
         $obj;

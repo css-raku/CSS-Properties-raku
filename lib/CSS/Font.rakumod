@@ -103,10 +103,10 @@ class CSS::Font {
 
     method font-style(|c) is rw is DEPRECATED<font-props> { self.font-props(|c) }
 
-    method setup(CSS::Properties $css = $!css) {
+    method setup {
         @!family = [];
         my $cont = False;
-        with $css.font-family {
+        with $!css.font-family {
             for .list {
                 when ',' { $cont = False }
                 when $cont && .type eq 'keyw' {
@@ -119,9 +119,9 @@ class CSS::Font {
             }
         }
 
-        $!style = $css.font-style;
-        $!weight = $css.computed('font-weight');
-        $!stretch = $css.font-stretch;
+        $!style = $!css.font-style;
+        $!weight = $!css.computed('font-weight');
+        $!stretch = $!css.font-stretch;
 	self;
     }
 

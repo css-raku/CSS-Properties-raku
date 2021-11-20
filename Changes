@@ -1,4 +1,6 @@
 {{$NEXT}}
+    - Tweak measure() method
+    - Extend copy() method to work at the class level
 
 0.7.7  2021-11-09T06:56:03+13:00
     - Fix :$declarations handling in TWEAK; Fixes CSS::TagSet::Pango
