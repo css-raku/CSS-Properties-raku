@@ -347,7 +347,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                 %!struct{$prop} //= do {
                     my $n = 0;
                     my %bound;
-                    %bound{$_} := self."$_"()
+                    %bound{$_} := self!lval($_)
                         for $children.list;
                     %bound;
                 }
@@ -369,7 +369,7 @@ The `reference-width` attribute represents the width of a containing element; wh
 
                 for $children.list -> $prop {
                     with %vals{$prop}:delete {
-                        self."$prop"() = $_
+                        self!lval($prop) = $_
                             with self!coerce($_, :$prop);
                     }
                     else {
@@ -639,7 +639,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     method !set-decls(@decls) {
         for @decls -> \p {
             with $.property-number(p.key) {
-                self."{p.key}"() = $_ with p.value;
+                self!lval(p.key, $_) = p.value;
             }
             else {
                 warn "unknown {$!module.name} property: {p.key}";
@@ -651,7 +651,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     method set-properties(*%props) {
         for %props.pairs.sort -> \p {
             with $.property-number(p.key) {
-                self."{p.key}"() = $_ with p.value;
+                self!lval(p.key, $_) = p.value;
             }
             else {
                 warn "unknown property/option: {p.key}"
@@ -748,7 +748,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     method dispatch:<.?>(\name, |c) is raw {
         self.can(name)
             ?? self."{name}"(|c)
-            !! do with $.propertry-number(name) { self!value($!index[$_], name, |c) } else { Nil }
+            !! do with $.propertry-number(name) { self!lval(name, $_) } else { Nil }
     }
     method !value($_, \name, |c) is rw {
         .children
@@ -757,6 +757,10 @@ The `reference-width` attribute represents the width of a containing element; wh
                      ?? self!box-value(name, .edge-names)
                      !! self!item-value(name)
                     )
+    }
+    # build rw accessor for a named property
+    method !lval(\name, $_ =  $.property-number(name)) is rw {
+        self!value($!index[$_], name);
     }
     #| returns the value of the named property
     method property(Str \name) is rw {
@@ -771,7 +775,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     multi method Bool(CSS::Properties:U:) { False }
     method FALLBACK(Str \name, |c) is rw {
         with $.property-number(name) {
-            self!value($!index[$_], name, |c)
+            self!lval(name, $_)
         }
         else {
             die X::Method::NotFound.new( :method(name), :typename(self.^name) )

@@ -56,7 +56,7 @@ is $inherit.computed('font-size'), 40, 'computed font size measurement';
 is $css.measure(:font-size), 30, 'relative font size measurement';
 is $css.computed('font-size'), 30, 'relative font size measurement';
 
-subtest 'issue#11', {
+subtest 'issue#11 inheritence', {
     plan 2;
     my $style = "color:purple; font-style:italic;";
     my CSS::Properties $parent .= new: :$style;
