@@ -170,16 +170,18 @@ class CSS::Font {
     }
 
     #| Return a path to a matching system font
-    method find-font(Str $patt = $.fontconfig-pattern --> Str) {
-        my $cmd =  run('fc-match',  '-f', '%{file}', $patt, :out, :err);
-        given $cmd.err.slurp {
-            note chomp($_) if $_;
+    method find-font(Hash %patt = %.pattern --> Str) {
+        require FontConfig;
+        CATCH {
+            when X::CompUnit::UnsatisfiedDependency {
+                die 'The find-font() method requires the FontConfig Raku module';
+            }
         }
-        my $file = $cmd.out.slurp;
-        $file
-          || die "unable to resolve font-pattern: $patt"
+        my $patt = FontConfig.new: |%patt;
+        my $match = $patt.match;
+        $.patt.file || die "unable to resolve font-pattern: {$patt.Str}"
     }
-    =para Actually calls `fc-match` on `$.font-config-patterm()`
+    =para Requires installation of the Raku FontConfig module`
 
     #| Select matching @font-face font
     method match(@font-face --> Array) {
