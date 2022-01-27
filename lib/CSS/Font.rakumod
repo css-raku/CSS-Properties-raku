@@ -73,21 +73,23 @@ class CSS::Font {
     }
 
     #| compute a fontconfig pattern for the font
-    method fontconfig-pattern(@faces = [] --> Str) {
-        my Str $pat = (@faces.Slip, @!family.Slip).join: ',';
+    method fontconfig-pattern(@faces = [] --> Hash) {
+        my %patt;
+        %patt<family> = (@faces.Slip, @!family.Slip);
 
-        $pat ~= ':slant=' ~ $!style
+        %patt<slant> = $!style
             unless $!style eq 'normal';
 
-        $pat ~= ':weight='
-        #    000  100        200   300  400     500    600      700  800       900
-          ~ <thin extralight light book regular medium semibold bold extrabold black>[$!weight.substr(0,1)]
-            unless $!weight == 400;
+        unless $!weight == 400 {
+            my $w = <thin extralight light book regular medium semibold bold extrabold black>[$!weight.substr(0,1)];
+                #    000  100        200   300  400     500    600      700  800       900
+            %patt<weight> = $w;
+        }
 
         # [ultra|extra][condensed|expanded]
-        $pat ~= ':width=' ~ self!fc-stretch()
+        %patt<width> = self!fc-stretch()
             unless $!stretch eq 'normal';
-        $pat;
+        %patt;
     }
 
     #| sets/gets the css font properties as a whole
@@ -170,16 +172,16 @@ class CSS::Font {
     }
 
     #| Return a path to a matching system font
-    method find-font(Hash %patt = %.pattern --> Str) {
-        require FontConfig;
+    method find-font(%patt = %.fontconfig-pattern --> Str) {
+        require ::('FontConfig');
         CATCH {
             when X::CompUnit::UnsatisfiedDependency {
                 die 'The find-font() method requires the FontConfig Raku module';
             }
         }
-        my $patt = FontConfig.new: |%patt;
-        my $match = $patt.match;
-        $.patt.file || die "unable to resolve font-pattern: {$patt.Str}"
+        my $patt = ::('FontConfig').new: |%patt;
+        $patt.match.file
+            || die "unable to resolve font-pattern: {$patt.Str}"
     }
     =para Requires installation of the Raku FontConfig module`
 

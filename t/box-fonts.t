@@ -38,10 +38,10 @@ subtest 'measure' => {
 
 subtest 'patterns' => {
     plan 3;
-    is $font.fontconfig-pattern, 'times-roman:slant=italic:weight=bold:width=75', 'fontconfig-pattern';
+    is-deeply $font.fontconfig-pattern, {:family['times-roman'], :slan<italic>, :weight<bold>, :width(75)}, 'fontconfig-pattern';
     is to-json($font.pattern, :!pretty, :sorted-keys), '{"family":["times-roman"],"stretch":75,"style":"italic","weight":700}';
     $font .= new: :font-props("500 condensed 12px/30px Georgia, serif, Times");
-    is $font.fontconfig-pattern, 'Georgia,serif,Times:weight=medium:width=75', 'fontconfig-pattern';
+    is-deeply $font.fontconfig-pattern, {:family<Georgia serif Times>, :weight<medium>, :width(75)}, 'fontconfig-pattern';
 }
 
 subtest 'match basic' => {

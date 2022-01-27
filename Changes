@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Use Raku FontConfig package for font matching
 
 0.7.8  2021-11-21T05:44:57+13:00
     - Tweak measure() method
