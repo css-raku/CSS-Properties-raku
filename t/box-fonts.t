@@ -5,11 +5,16 @@ plan 5;
 use CSS::Properties;
 use CSS::Font;
 use CSS::Font::Descriptor;
+use CSS::Grammar::Test :&json-eqv;
 use CSS::Units :px, :percent;
 use JSON::Fast;
 sub keyw($v) { CSS::Units.value($v, 'keyw') }
 my $font-props = 'italic bold condensed 10pt/12pt times-roman';
 my CSS::Font $font .= new: :$font-props;
+
+sub is-json-eqv(\a, |c) is export(:is-json-equiv) {
+	cmp-ok(a, &json-eqv, |c);
+}
 
 subtest 'basic' => {
     plan 9;
@@ -38,10 +43,10 @@ subtest 'measure' => {
 
 subtest 'patterns' => {
     plan 3;
-    is-deeply $font.fontconfig-pattern, {:family['times-roman'], :slan<italic>, :weight<bold>, :width(75)}, 'fontconfig-pattern';
+    is-json-eqv $font.fontconfig-pattern, {:family('times-roman',), :slant<italic>, :weight<bold>, :width(75)}, 'fontconfig-pattern';
     is to-json($font.pattern, :!pretty, :sorted-keys), '{"family":["times-roman"],"stretch":75,"style":"italic","weight":700}';
     $font .= new: :font-props("500 condensed 12px/30px Georgia, serif, Times");
-    is-deeply $font.fontconfig-pattern, {:family<Georgia serif Times>, :weight<medium>, :width(75)}, 'fontconfig-pattern';
+    is-json-eqv $font.fontconfig-pattern, {:family('Georgia', 'serif', 'Times'), :weight<medium>, :width(75)}, 'fontconfig-pattern';
 }
 
 subtest 'match basic' => {
