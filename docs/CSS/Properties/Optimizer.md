@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
  :: [Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer)
 
@@ -27,7 +27,7 @@ my $module = CSS::Module::CSS3.module;
 my CSS::Properties $css .= new: :$module;
 my CSS::Properties::Optimizer $optimizer = $css.optimizer;
 my $actions = $module.actions.new;
-my CSS::Writer $writer .= new: :color-names, :terse;
+my CSS::Writer $writer .= new: :color-names, :!pretty;
 my $declarations = "border-bottom-color:red; border-bottom-style:solid; border-bottom-width:1px; border-left-color:red; border-left-style:solid; border-left-width:1px; border-right-color:red; border-right-style:solid; border-right-width:1px; border-top-color:red; border-top-style:solid; border-top-width:1px;";
 my $p = $module.grammar.parse($declarations, :$actions, :rule<declaration-list>);
 my %ast = $optimizer.optimize($p.ast);

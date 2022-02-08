@@ -1,7 +1,7 @@
 use v6;
 
 #| management class for a set of CSS Properties
-class CSS::Properties:ver<0.7.8> {
+class CSS::Properties:ver<0.8.0> {
 
     =begin pod
 
@@ -708,11 +708,11 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     #| write a set of declarations.
     method write(Bool :$optimize = True,
-                 Bool :$terse = True,
                  Bool :$color-names = True,
                  Bool :$keep-defaults = False,
+                 Bool :$pretty = False,
                  |c) is also<Str gist> {
-        my CSS::Writer $writer .= new( :$terse, :$color-names, |c);
+        my CSS::Writer $writer .= new( :$color-names, :$pretty, |c);
         $writer.write: self.ast(:$optimize, :$keep-defaults);
     }
     =para By default, it is formatted as a single-line,

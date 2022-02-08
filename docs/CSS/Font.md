@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
 
 class CSS::Font
@@ -40,7 +40,7 @@ Description
 ```raku
 method fontconfig-pattern(
     @faces = Code.new
-) returns Str
+) returns Hash
 ```
 
 compute a fontconfig pattern for the font
@@ -59,23 +59,13 @@ e.g. `$font.font-css = 'italic bold 10pt/12pt sans-serif';`
 
 ```raku
 method find-font(
-    Str $patt = Code.new
+    %patt = Code.new
 ) returns Str
 ```
 
 Return a path to a matching system font
 
-Actually calls `fc-match` on `$.font-config-patterm()`
-
-### method match
-
-```raku
-method match(
-    @font-face
-) returns Array
-```
-
-Select matching @font-face font
+Requires installation of the Raku FontConfig module`
 
 This method matches a list of `@font-face` properties against the font to select matches, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
 
@@ -94,4 +84,14 @@ END
 my CSS::Stylesheet $css .= load: :$stylesheet;
 say $font.match($css.font-face).first; # font-family:'serif'; src:url('/myfonts/serif.otf');
 ```
+
+### method select
+
+```raku
+method select(
+    |c
+) returns Mu
+```
+
+Select matching @font-face font
 

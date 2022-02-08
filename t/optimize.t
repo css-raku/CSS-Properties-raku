@@ -8,7 +8,7 @@ use CSS::Writer;
 
 my $css = CSS::Properties.new;
 my $module = CSS::Module::CSS3.module;
-my $writer = CSS::Writer.new: :color-names, :terse;
+my $writer = CSS::Writer.new: :color-names, :!pretty;
 constant Unchanged = Any;
 
 for (

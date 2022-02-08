@@ -1,5 +1,7 @@
 {{$NEXT}}
-    - Use Raku FontConfig package for font matching
+
+0.8.0  2022-02-08T13:51:46+13:00
+    - Optionally use Raku FontConfig package for font matching
     - Add new CSS::Font::Pattern class to encapsulate font matching
     - CSS::Font pattern() now returns pattern objects
     - Deprecate $.write(:terse) option in favor of :!pretty #17

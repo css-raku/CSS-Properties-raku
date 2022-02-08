@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
 
 class CSS::Properties
@@ -260,9 +260,9 @@ This is more-or-less the inverse of the [CSS::Grammar::CSS3](https://css-raku.gi
 ```raku
 method write(
     Bool :$optimize = Bool::True,
-    Bool :$terse = Bool::True,
     Bool :$color-names = Bool::True,
     Bool :$keep-defaults = Bool::False,
+    Bool :$pretty = Bool::False,
     |c
 ) returns Mu
 ```
