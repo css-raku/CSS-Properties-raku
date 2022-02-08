@@ -13,7 +13,7 @@ loudtest : all
 $(DocLinker) :
 	(cd .. && git clone $(DocRepo) $(DocProj))
 
-doc : $(DocLinker) docs/index.md docs/CSS/Properties.md docs/CSS/Properties/Calculator.md  docs/CSS/Properties/Optimizer.md docs/CSS/Font.md docs/CSS/Font/Descriptor.md docs/CSS/Properties/Property.md docs/CSS/Box.md docs/CSS/PageBox.md docs/CSS/Units.md docs/CSS/Font.md
+doc : $(DocLinker) docs/index.md docs/CSS/Properties.md docs/CSS/Properties/Calculator.md  docs/CSS/Properties/Optimizer.md docs/CSS/Font.md docs/CSS/Font/Descriptor.md docs/CSS/Font/Pattern.md docs/CSS/Properties/Property.md docs/CSS/Box.md docs/CSS/PageBox.md docs/CSS/Units.md docs/CSS/Font.md
 
 docs/index.md : README.md
 	cp $< $@

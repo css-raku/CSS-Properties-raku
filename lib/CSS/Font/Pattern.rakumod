@@ -1,6 +1,30 @@
 #| Implements CSS Font Patterns and Matching
 unit class CSS::Font::Pattern;
-=para See L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>
+=begin pod
+=head2 Synopsis
+=begin code :lang<raku>
+my CSS::Font $font .= new: :font-props("italic bold condensed 10pt/12pt times-roman);
+my CSS::Stylesheet:D $css .= parse('style.css'.IO.slurp);
+my CSS::Font::Descriptor @font-face = $css.font-face;
+my CSS::Font::Pattern $patt = $font.pattern;
+my  CSS::Font::Descriptor @matches = $patt.match(@font-face);
+say @matches.first.Str;
+=end code
+=head2 Description
+Implements CSS font matching for a font against CSS::Font::Descriptor
+`@font-face` rules.
+
+See L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>
+
+=head2 Methods
+
+=head3 match
+
+=begin code :lang<raku>
+method match(CSS::Font::Descriptor @font-face) returns Array[CSS::Font::Descriptor]
+=end code
+Reduces a list of font descriptors to matching fonts, ordered by preference.
+=end pod
 
 has Str:D @.family is required;
 has Str:D $.style is required;

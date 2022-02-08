@@ -32,7 +32,8 @@ Classes in this module
   * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data delegate
   * [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) - CSS Box model implementation.
   * [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) - property font manipulation
-  * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor manipulation
+  * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor objects
+  * [CSS::Font::Pattern](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Pattern) - `@font-face` font patterns and matching
   * [CSS::PageBox](https://css-raku.github.io/CSS-Properties-raku/CSS/PageBox) - CSS Box model for paged media
   * [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/CSS/Units) - units and postfix operators (e.g. `12pt`)
 

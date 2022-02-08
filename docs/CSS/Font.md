@@ -67,31 +67,37 @@ Return a path to a matching system font
 
 Requires installation of the Raku FontConfig module`
 
-This method matches a list of `@font-face` properties against the font to select matches, using the [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm). Example:
+### method pattern
+
+```raku
+method pattern(CSS::Font::Descriptor @font-face) returns CSS::Font::Pattern
+```
+
+This method returns a pattern based on the font and a list of `@font-face` font descriptor properties. Example:
 
 ```raku
 use CSS::Font;
+use CSS::Font::Descriptor;
+use CSS::Font::Pattern;
 use CSS::Stylesheet;
-my CSS::Font $font .= new: :font-style("italic bold 10pt/12pt Georgia,serif");
-my $stylehseet = q:to<END>;
+
+my CSS::Font $font .= new: :font-props("italic bold 10pt/12pt Georgia,serif");
+    my $stylesheet = q:to<END>;
     @font-face {
-      font-family:'Sans-serif'; src:url('/myfonts/sans-serif.otf');
+        font-family:'Sans-serif'; src:url('/myfonts/sans-serif.otf');
     }
     @font-face {
-      font-family:'Serif'; src:url('/myfonts/serif.otf');
+        font-family:'Serif'; src:url('/myfonts/serif.otf');
     }
-END
-my CSS::Stylesheet $css .= load: :$stylesheet;
-say $font.match($css.font-face).first; # font-family:'serif'; src:url('/myfonts/serif.otf');
+    @font-face {
+        font-family:'Serif'; src:url('/myfonts/serif-bold.otf'); font-weight:bold;
+    }
+    END
+my CSS::Stylesheet:D $css .= parse($stylesheet);
+my CSS::Font::Descriptor @font-face = $css.font-face;
+my CSS::Font::Pattern $pattern = $font.pattern;
+say $pattern.match(@font-face).first.Str; # font-family:'serif'; src:url('/myfonts/serif.otf');
 ```
 
-### method select
-
-```raku
-method select(
-    |c
-) returns Mu
-```
-
-Select matching @font-face font
+See also the [CSS::Font::Resources](https://css-raku.github.io/CSS-Font-Resources-raku/CSS/Font/Resources) module, which is able to handle fetching of local and remote objects.
 
