@@ -44,7 +44,7 @@ subtest 'measure' => {
 subtest 'patterns' => {
     plan 3;
     is-json-eqv $font.fontconfig-pattern, {:family('times-roman',), :slant<italic>, :weight<bold>, :width(75)}, 'fontconfig-pattern';
-    is to-json($font.pattern, :!pretty, :sorted-keys), '{"family":["times-roman"],"stretch":75,"style":"italic","weight":700}';
+    is to-json($font.pattern.Hash, :!pretty, :sorted-keys), '{"family":["times-roman"],"stretch":75,"style":"italic","weight":700}';
     $font .= new: :font-props("500 condensed 12px/30px Georgia, serif, Times");
     is-json-eqv $font.fontconfig-pattern, {:family('Georgia', 'serif', 'Times'), :weight<medium>, :width(75)}, 'fontconfig-pattern';
 }
@@ -61,7 +61,6 @@ subtest 'match basic' => {
     my $selection = $font.match(@font-face).first;
     ok defined $selection;
     is $selection.Str, @font-face[3].Str;
-
 }
 
 subtest 'match styles' => {

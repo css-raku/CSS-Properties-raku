@@ -1,9 +1,11 @@
 use Test;
-plan 29;
+plan 30;
 
 use CSS::Font::Descriptor;
 
 my CSS::Font::Descriptor $font-face .= new: :style("font-family:'Sans-serif'; src:url('/myfonts/serif.otf'); font-stretch:condensed");
+
+is $font-face.module.name, '@fontface';
 
 is $font-face.src, '/myfonts/serif.otf';
 

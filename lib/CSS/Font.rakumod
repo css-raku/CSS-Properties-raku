@@ -1,6 +1,7 @@
 use v6;
 #| Abstract CSS font object
 class CSS::Font {
+    use CSS::Font::Pattern;
     use CSS::Properties;
     use CSS::Properties::Calculator :FontWeight;
     use CSS::Units :pt;
@@ -127,48 +128,15 @@ class CSS::Font {
 	self;
     }
 
-    multi method pattern(CSS::Font:D: @faces = [] --> Hash) {
-        my @family = (@faces.Slip, @!family.Slip);
+    has CSS::Font::Pattern $!pattern;
+    multi method pattern handles<match> {
         my $stretch = self!fc-stretch;
-        %( :@family, :$!style, :$!weight, :$stretch );
+        $!pattern //= Pattern.new: :@!family, :$!style, :$!weight, :$stretch;
     }
 
-    multi sub match-stretch([], $) {[]}
-    multi sub match-stretch(@patterns, Int:D $stretch!) {
-        @patterns.grep({.key<stretch> == $stretch})
-        || [ @patterns.sort({abs(.key<stretch> - $stretch)}) ];
-    }
-
-    multi sub match-style([], $) {[]}
-    multi sub match-style(@patterns, Str:D $style) {
-        my %s = @patterns.classify: { .key<style> }
-        my Array $p = do given $style {
-            when 'italic'  { %s{$_} || %s<oblique>  || %s<normal> || []}
-            when 'oblique' { %s{$_} || %s<italic>   || %s<normal> || []}
-            when 'normal'  { %s{$_} || %s<oblique>  || %s<italic> || []}
-            default { warn "unknown font style: {.raku}"; [] }
-        };
-        $p.List;
-    }
-
-    multi sub match-weight([], $) {[]}
-    multi sub match-weight(@patterns, Int:D $w!) {
-         @patterns.grep({.key<weight> == $w}) || nearest-weight(@patterns, $w)
-    }
-
-    sub nearest-weight(@patterns, Int:D $w!) {
-        when $w < 400 {
-            @patterns.grep({.key<weight> < $w}).sort.reverse;
-        }
-        when $w > 500 {
-            @patterns.grep({.key<weight> > $w}).sort;
-        }
-        when $w == 400 {
-            @patterns.grep({.key<weight> == 500}) || match-weight(@patterns, 300);
-        }
-        when $w == 500 {
-            @patterns.grep({.key<weight> == 400}) || match-weight(@patterns, 300);
-        }
+    multi method pattern(Str:D @faces --> Pattern) {
+        my @family = (@faces.Slip, @!family.Slip);
+        self.pattern.clone: :@family;
     }
 
     #| Return a path to a matching system font
@@ -186,23 +154,7 @@ class CSS::Font {
     =para Requires installation of the Raku FontConfig module`
 
     #| Select matching @font-face font
-    method match(@font-face --> Array) {
-        my %patt = self.pattern;
-        my @patterns = @font-face.grep({
-            my $family := .font-family.lc;
-            @!family.first: {$family eq .lc}
-        })
-        .map(-> $font-desc {
-            my %matching-patt = $font-desc.pattern;
-            %matching-patt => $font-desc;
-        });
 
-        @patterns .= &match-stretch(%patt<stretch>);
-        @patterns .= &match-style(%patt<style>);
-        @patterns .= &match-weight(%patt<weight>);
-
-        @patterns>>.value;
-    }
     =begin pod
     This method matches a list of `@font-face` properties against the font
     to select matches, using the L<Font Matching Algorithm|https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm>.
