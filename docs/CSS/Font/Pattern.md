@@ -20,8 +20,10 @@ my  CSS::Font::Descriptor @matches = $patt.match(@font-face);
 say @matches.first.Str;
 ```
 
-Description Implements CSS font matching for a font against CSS::Font::Descriptor `@font-face` rules.
------------------------------------------------------------------------------------------------------
+Description
+-----------
+
+Implements CSS font matching for a font against CSS::Font::Descriptor `@font-face` rules.
 
 See [Font Matching Algorithm](https://www.w3.org/TR/2018/REC-css-fonts-3-20180920/#font-matching-algorithm)
 

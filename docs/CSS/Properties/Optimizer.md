@@ -11,11 +11,15 @@ Optimizer for CSS Property ASTs
 Description
 -----------
 
-This class is used to perform optimization on property lists, Chiefly combining combine component properties into container properties (`border-style`, `border-width`, ... => `border`), or combine edges (`margin-top`, `margin-left`, ... => `margin`). It also removes properties that have been set to the default value
+This class is used to perform optimization on an intermediate property list AST, prior to serialization to reduce the overall size and number of properties.
+
+This involves combining component properties into container properties (`border-style`, `border-width`, ... => `border`), or combining edges (`margin-top`, `margin-left`, ... => `margin`). Properties that have been set to the default value are also removed.
 
 ### Example
 
-Objects of this class can be used stand-alone to optimize AST trees. The easiest way of creating an object is to create a [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) object, then dereference the optimizer:
+The optimizer is commonly used internally by CSS::Properties to optimize properties, but it can alsp be used stand-alone to optimize AST trees from parsed property lists, as in this example.
+
+The easiest way of creating an object is to create a [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) object, then dereference the optimizer:
 
 ```raku
 use CSS::Properties;
