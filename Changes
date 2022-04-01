@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Upload to zef ecosystem
 
 0.8.0  2022-02-08T13:51:46+13:00
     - Optionally use Raku FontConfig package for font matching
