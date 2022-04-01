@@ -11,6 +11,7 @@ my  CSS::Font::Descriptor @matches = $patt.match(@font-face);
 say @matches.first.Str;
 =end code
 =head2 Description
+
 Implements CSS font matching for a font against CSS::Font::Descriptor
 `@font-face` rules.
 

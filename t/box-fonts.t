@@ -13,7 +13,7 @@ my $font-props = 'italic bold condensed 10pt/12pt times-roman';
 my CSS::Font $font .= new: :$font-props;
 
 sub is-json-eqv(\a, |c) is export(:is-json-equiv) {
-	cmp-ok(a, &json-eqv, |c);
+    cmp-ok(a, &json-eqv, |c);
 }
 
 subtest 'basic' => {
@@ -28,6 +28,7 @@ subtest 'basic' => {
     is $font.units, 'pt', 'measuring unit';
     is $font.Str, "font:{$font-props};", '$font.Str';
 }
+
 subtest 'measure' => {
     plan 9;
     is $font.measure(:font-size), 10;
