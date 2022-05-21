@@ -121,7 +121,7 @@ class CSS::Properties:ver<0.8.1> {
     has Array $!properties;
     has CArray $!index;
     has CSS::Properties::Optimizer $!optimizer;
-    method optimizer(CSS::Properties:D $css:) handles<optimize> {
+    method optimizer(::?CLASS:D $css:) handles<optimize> {
         $!optimizer //= CSS::Properties::Optimizer.new: :$css, :$!index;
     }
     has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
@@ -157,7 +157,7 @@ class CSS::Properties:ver<0.8.1> {
     =item `*%props` - CSS property settings
     =end pod
 
-     submethod TWEAK( Str :$style, List() :$ast, :$inherit, CSS::Properties :$copy,
+     submethod TWEAK( Str :$style, List() :$ast, :$inherit, ::?CLASS :$copy,
                      List() :$declarations,
                      Str :$units = 'pt',
                      Numeric :$em = 12pt.scale($units),
@@ -213,6 +213,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
     my subset Keyword  of Pair where {.key ~~ 'keyw'}
 
+    # make or reuse a cached property definition 
     sub make-property(CSS::Module $module, UInt:D $prop-num) {
         my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
 
@@ -309,6 +310,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         @decls;
     }
 
+    # Accessor for a four sided value: top, left, bottoom, right
     method !box-value(Str $prop, CArray $edges) is rw {
 	Proxy.new(
 	    FETCH => -> $ {
@@ -341,6 +343,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         );
     }
 
+    # accessor for a structured property. e.g. font -> font-name, style...
     method !struct-value(Str $prop, CArray $children) is rw {
 	Proxy.new(
 	    FETCH => -> $ {
@@ -382,22 +385,27 @@ The `reference-width` attribute represents the width of a containing element; wh
             );
     }
 
-    method !default($_) {
+    # get the default for this property.
+    method !default-value($_) {
         when /^'border-'[top|right|bottom|left]'-color'$/ {
+            # border colors default to the 'color' property
             self.?color;
         }
         when 'text-align' {
+            # text alignment depends on current direction
             %!values<direction> ~~ 'rtl' ?? 'right' !! 'left';
         }
         default {
+            # consult property metadata for other defaults
             %!defaults{$_} //= self!coerce( $.info($_).default-value )
         }
     }
 
+    # accessor for a simple value
     method !item-value(Str $prop) is rw {
         Proxy.new(
             FETCH => -> $ {
-               %!values{$prop} // self!default($prop);
+               %!values{$prop} // self!default-value($prop);
             },
             STORE => -> $, $v {
                 with self!coerce( $v, :$prop ) {
@@ -619,7 +627,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     =item not all properties are inherited. e.g. color is, margin isn't
     =end pod
 
-    multi method copy(CSS::Properties:U: CSS::Properties:D $orig,  :@properties = [$orig.properties], |c) {
+    multi method copy(::?CLASS:U: ::?CLASS:D $orig,  :@properties = [$orig.properties], |c) {
         my $em = $orig.em;
         my $viewport-width  = $orig.viewport-width;
         my $viewport-height = $orig.viewport-height;
@@ -628,7 +636,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         $obj.copy: $orig, :@properties;
     }
 
-    multi method copy(CSS::Properties:D: CSS::Properties:D $orig, :@properties = [$orig.properties]) {
+    multi method copy(::?CLASS:D: ::?CLASS:D $orig, :@properties = [$orig.properties]) {
         for @properties {
             %!values{$_} = $orig."$_"()
                 if $.property-number($_).defined;
@@ -662,7 +670,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     }
 
     #| create a deep copy of a CSS declarations object
-    method clone(CSS::Properties:D $copy: *@decls, *%props) {
+    method clone(::?CLASS:D $copy: *@decls, *%props) {
         my $obj = self.new( :$copy, :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
         $obj!set-decls(@decls);
         $obj.set-properties(|%props);
@@ -771,8 +779,8 @@ The `reference-width` attribute represents the width of a containing element; wh
             fail "unknown property: {name}";
         }
     }
-    multi method Bool(CSS::Properties:D:) { %!values.Bool }
-    multi method Bool(CSS::Properties:U:) { False }
+    multi method Bool(::?CLASS:D:) { %!values.Bool }
+    multi method Bool(::?CLASS:U:) { False }
     method FALLBACK(Str \name, |c) is rw {
         with $.property-number(name) {
             self!lval(name, $_)
