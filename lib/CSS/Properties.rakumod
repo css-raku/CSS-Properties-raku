@@ -165,7 +165,7 @@ class CSS::Properties:ver<0.8.1> {
                      Numeric :$viewport-width, Numeric :$viewport-height,
                      Numeric :$reference-width = 0,
                      *%props, ) {
-        $!index = %module-index{$!module} //= $!module.index
+        $!index = $lock.protect({%module-index{$!module} //= $!module.index})
             // die "module {$!module.name} lacks an index";
         $!properties = %module-properties{$!module} //= [];
         $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
