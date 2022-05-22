@@ -549,7 +549,7 @@ The `reference-width` attribute represents the width of a containing element; wh
     has %!ast-cache{Str}; # cache, for performance
     method !coerce($val, Str :$prop) {
         my \expr = do with $prop && coerce-str($val) {
-            (%!ast-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))
+            $lock.protect: {(%!ast-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))}
         }
         else {
             $val;
