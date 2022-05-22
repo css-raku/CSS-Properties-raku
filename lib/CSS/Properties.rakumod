@@ -125,6 +125,7 @@ class CSS::Properties:ver<0.8.1> {
         $!optimizer //= CSS::Properties::Optimizer.new: :$css, :$!index;
     }
     has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
+    my Lock:D $lock .= new;
 
     =begin pod
     =head2 Other Methods
@@ -215,19 +216,21 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     # make or reuse a cached property definition 
     sub make-property(CSS::Module $module, UInt:D $prop-num) {
-        my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
+        $lock.protect: {
+            my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
 
-        %module-properties{$module}[$prop-num] //= do {
-            my %edges;
-            with $meta.edges {
-                # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
-                my $n = 0;
-                for <top left bottom right> -> $side {
-                    my $edge := .[$n++];
-                    %edges{$side} = make-property($module, $edge);
+            %module-properties{$module}[$prop-num] //= do {
+                my %edges;
+                with $meta.edges {
+                    # e.g. margin, comprised of margin-top, margin-right, margin-bottom, margin-left
+                    my $n = 0;
+                    for <top left bottom right> -> $side {
+                        my $edge := .[$n++];
+                        %edges{$side} = make-property($module, $edge);
+                    }
                 }
+                CSS::Properties::PropertyInfo.new( :$prop-num, :$module, :$meta, :%edges );
             }
-            CSS::Properties::PropertyInfo.new( :$prop-num, :$module, :$meta, :%edges );
         }
     }
 
@@ -492,11 +495,13 @@ The `reference-width` attribute represents the width of a containing element; wh
         $color does CSS::Units[Colors, $type];
     }
     multi sub from-ast(Keyword $v) {
-        state $cache //= %(
-            'transparent' => (Color
-                              but CSS::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
-        );
-        $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
+        $lock.protect: {
+            state $cache //= %(
+                'transparent' => (
+                    Color but CSS::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
+            );
+            $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
+        }
     }
     multi sub from-ast(Pair $v) {
         given $v.key {
