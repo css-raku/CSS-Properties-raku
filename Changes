@@ -1,4 +1,7 @@
 {{$NEXT}}
+    - Rename class CSS::Properties::Property to
+      CSS::Properties::PropertyInfo
+    - Make independent property sets thread-safe. Add tests t/threads.t
 
 0.8.1  2022-04-01T15:22:26+13:00
     - Upload to zef ecosystem

@@ -1,5 +1,5 @@
 use Test;
-plan 3;
+plan 4;
 use CSS::Properties;
 use CSS::Units :pt;
 
@@ -45,5 +45,27 @@ blat 'info', {
 todo "may fail on older Rakudo versions"
   if $*RAKU.compiler.version < v2022.03;
 nok $err, 'no property name errors';
+
+
+use CSS::Module;
+use CSS::Module::CSS1;
+use CSS::Module::CSS21;
+use CSS::Module::CSS3;
+my CSS::Module:D @modules = (CSS::Module::CSS1, CSS::Module::CSS21, CSS::Module::CSS3).map: *.module;
+my CSS::Properties:D @css = @modules.map: -> $module {CSS::Properties.new: :$module};
+blat 'mixed modules',  {
+    for @css -> $css, {
+        $css.color = <red green blue>.pick;
+        for $css.module.prop-names.values.pick(5) {
+            my $info = $css.info($_);
+            my $num = $info.prop-num;
+            unless $num == $_ {
+                unless $err⚛++ > 5  {
+                    diag "property number mismatch: $num <-> $_";
+                }
+            }
+        }
+    }
+}
 
 done-testing;
