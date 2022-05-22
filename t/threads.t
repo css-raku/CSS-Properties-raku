@@ -42,4 +42,8 @@ blat 'info', {
     }
 }
 
+todo "may fail on older Rakudo versions"
+  if $*RAKU.compiler.version < v2022.03;
 nok $err, 'no property name errors';
+
+done-testing;
