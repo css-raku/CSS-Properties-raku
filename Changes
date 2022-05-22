@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.8.2  2022-05-22T20:08:37+12:00
     - Rename class CSS::Properties::Property to
       CSS::Properties::PropertyInfo
     - Make independent property sets thread-safe. Add tests t/threads.t
