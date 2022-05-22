@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
 
 class CSS::Properties
@@ -160,7 +160,7 @@ say $css.measure: :width(75%); # 60
 ```raku
 multi method info(
     Str:D $prop-name
-) returns CSS::Properties::Property
+) returns CSS::Properties::PropertyInfo
 ```
 
 return module meta-data for a property

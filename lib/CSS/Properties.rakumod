@@ -94,7 +94,7 @@ class CSS::Properties:ver<0.8.1> {
     use Color::Conversion;
     use CSS::Module::Property;
     use CSS::Properties::Calculator;
-    use CSS::Properties::Property;
+    use CSS::Properties::PropertyInfo;
     use CSS::Properties::Optimizer :%Punctuation, :&punctuate, :&make-declaration-list;
     use CSS::Units :pt, :Function;
     use Method::Also;
@@ -227,17 +227,17 @@ The `reference-width` attribute represents the width of a containing element; wh
                     %edges{$side} = make-property($module, $edge);
                 }
             }
-            CSS::Properties::Property.new( :$prop-num, :$module, :$meta, :%edges );
+            CSS::Properties::PropertyInfo.new( :$prop-num, :$module, :$meta, :%edges );
         }
     }
 
     #| return module meta-data for a property
-    multi method info(Str:D $prop-name --> CSS::Properties::Property) {
+    multi method info(Str:D $prop-name --> CSS::Properties::PropertyInfo) {
         my $prop-num := self.property-number($prop-name)
             // die "unknown property: $prop-name";
         self.info($prop-num);
     }
-    multi method info(Int:D $prop-num --> CSS::Properties::Property) {
+    multi method info(Int:D $prop-num --> CSS::Properties::PropertyInfo) {
         with $!properties[$prop-num] {
             $_;
         }

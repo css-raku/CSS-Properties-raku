@@ -26,6 +26,7 @@
     "CSS::Properties::Font": "lib/CSS/Properties/Font.rakumod",
     "CSS::Properties::Optimizer": "lib/CSS/Properties/Optimizer.rakumod",
     "CSS::Properties::Property": "lib/CSS/Properties/Property.rakumod",
+    "CSS::Properties::PropertyInfo": "lib/CSS/Properties/PropertyInfo.rakumod",
     "CSS::Units": "lib/CSS/Units.rakumod"
   },
   "resources": [

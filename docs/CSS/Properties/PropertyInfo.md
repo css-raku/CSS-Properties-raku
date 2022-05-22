@@ -1,10 +1,10 @@
 [[Raku CSS Project]](https://css-raku.github.io)
  / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties)
- :: [Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property)
+ :: [PropertyInfo](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/PropertyInfo)
 
-class CSS::Properties::Property
--------------------------------
+class CSS::Properties::PropertyInfo
+-----------------------------------
 
 Meta-data for a given property
 
@@ -13,10 +13,10 @@ Synopsis
 
 ```raku
 use CSS::Properties::Property;
-my CSS::Properties::Property %edges = <top right bottom left>.map: {
-    $_ => CSS::Properties::Property.new: :name('margin-' ~ $_);
+my CSS::Properties::PropertyInfo %edges = <top right bottom left>.map: {
+    $_ => CSS::Properties::PropertyInfo.new: :name('margin-' ~ $_);
 }
-my CSS::Properties::Property $margin-info .= new: :name<margin>, :%edges;
+my CSS::Properties::PropertyInfo $margin-info .= new: :name<margin>, :%edges;
 is-deeply $margin-info.name, 'margin', '$prop.name';
 say $margin-info.box;      # True
 say $margin-info.inherit;  # False
@@ -38,8 +38,8 @@ Methods
  method new(
     Str :$prop-name,   # property name e.g. 'margin-top'
     CSS::Module :$module = CSS::Module::CSS3.new(), 
-    CSS::Properties::Property :%edges{ :$top, :$left, :$bottom, :$right},
- ) returns CSS::Properties::Property;
+    CSS::Properties::PropertyInfo :%edges{ :$top, :$left, :$bottom, :$right},
+ ) returns CSS::Properties::PropertyInfo;
 ```
 
 Returns a new object containing inforation on the given property

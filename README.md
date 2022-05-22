@@ -29,7 +29,7 @@ Classes in this module
   * [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties) - property list manipulation class.
   * [CSS::Properties::Calculator](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Calculator) - property calculator and measurement tool.
   * [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Optimizer) - property AST optimizer delegate
-  * [CSS::Properties::Property](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/Property) - property meta-data delegate
+  * [CSS::Properties::PropertyInfo](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties/PropertyInfo) - property meta-data delegate
   * [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) - CSS Box model implementation.
   * [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) - property font manipulation
   * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor objects
@@ -188,7 +188,7 @@ See also [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-
 
 ## Property Meta-data
 
-The `info` method gives property specific meta-data, on all (component or container properties). It returns an object of type CSS::Properties::Property:
+The `info` method gives property specific meta-data, on all (component or container properties). It returns an object of type CSS::Properties::PropertyInfo:
 
 ```
 use CSS::Properties;

@@ -2,11 +2,11 @@ use v6;
 use Test;
 plan 16;
 
-use CSS::Properties::Property;
+use CSS::Properties::PropertyInfo;
 use CSS::Properties;
 use CSS::Units :pt, :px;
 
-my $sample-prop = CSS::Properties::Property.new( :name<background-image> );
+my CSS::Properties::PropertyInfo $sample-prop .= new( :name<background-image> );
 
 is-deeply $sample-prop.name, 'background-image', '$prop.name';
 is-deeply $sample-prop.box, False, '$prop.box';
@@ -14,11 +14,11 @@ is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, "none", '$prop.default';
 
-my CSS::Properties::Property %edges = <top right bottom left>.map: {
-    $_ => CSS::Properties::Property.new: :name('margin-' ~ $_);
+my CSS::Properties::PropertyInfo %edges = <top right bottom left>.map: {
+    $_ => CSS::Properties::PropertyInfo.new: :name('margin-' ~ $_);
 }
-dies-ok {CSS::Properties::Property.new( :name<margin> )}, 'missing edges detected';
-$sample-prop = CSS::Properties::Property.new( :name<margin>, :%edges );
+dies-ok {CSS::Properties::PropertyInfo.new( :name<margin> )}, 'missing edges detected';
+$sample-prop = CSS::Properties::PropertyInfo.new( :name<margin>, :%edges );
 
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
