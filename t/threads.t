@@ -16,6 +16,11 @@ sub blat($test, &r, :$n = MAX_THREADS) {
     @res;
 }
 
+if $*DISTRO.is-win {
+    skip-rest "threads unreliable on Windows";
+    exit 0;
+}
+
 blat 'basic', {
     my CSS::Properties() $css = "color:red !important; padding: 1pt";
     $css.border-color = 'red';
