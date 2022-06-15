@@ -167,7 +167,7 @@ class CSS::Properties:ver<0.8.2> {
                      *%props, ) {
         $!index = $lock.protect({%module-index{$!module} //= $!module.index})
             // die "module {$!module.name} lacks an index";
-        $!properties = %module-properties{$!module} //= [];
+        $!properties = $lock.protect: { %module-properties{$!module} //= []; }
         $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
         my @style = .list with $declarations;
