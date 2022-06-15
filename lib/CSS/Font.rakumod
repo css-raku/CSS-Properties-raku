@@ -23,7 +23,7 @@ class CSS::Font {
     say $font.fontconfig-pattern;
     # times-roman:slant=italic:weight=bold
 
-    # requires fontconfig to be installed
+    # requires FontConfig module to be installed
     say $font.find-font;
     # /usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf
     =end code

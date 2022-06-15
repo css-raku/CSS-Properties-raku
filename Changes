@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.8.3  2022-06-16T09:53:11+12:00
+    - Fix test in t/01-property-basic.t, failing with CSS::Module v0.5.11+
+    - Fix another thread-safety issue
+
 0.8.2  2022-05-22T20:08:37+12:00
     - Rename class CSS::Properties::Property to
       CSS::Properties::PropertyInfo

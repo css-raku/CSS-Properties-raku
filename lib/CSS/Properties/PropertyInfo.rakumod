@@ -94,17 +94,18 @@ class CSS::Properties::PropertyInfo {
 
     method default-value {
         # kludgy default handling
-        my $val := $.default;
-        with $.default-type {
-            when "keyw" {
-                [ $val eq 'transparent' ?? :rgba[ :num(0) xx 4] !! ($_ => $val) ];
+        given $.default -> $val {
+            with $.default-type {
+                when "keyw" {
+                    [ $val eq 'transparent' ?? :rgba[ :num(0) xx 4] !! ($_ => $val) ];
+                }
+                when "num"|"px"      { [$_ => $val.Int] } 
+                when $val eq '0% 0%' { [:percent(0) xx 2] }
+                default { warn "ignoring default value: $_:$val" }
             }
-            when "num"|"px"      { [$_ => $val.Int] } 
-            when $val eq '0% 0%' { [:percent(0) xx 2] }
-            default { warn "ignoring default value: $_:$val" }
-        }
-        else {
-            Nil
+            else {
+                Nil
+            }
         }
     }
 

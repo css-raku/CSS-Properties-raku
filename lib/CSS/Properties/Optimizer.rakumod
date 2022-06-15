@@ -29,7 +29,7 @@ multi sub css-eqv(@a, @b) {
 }
 multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
 multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
-multi sub css-eqv(Any $a, Any $b) is default {
+multi sub css-eqv(Any $a, Any $b) {
     !$a.defined && !$b.defined
 }
 
