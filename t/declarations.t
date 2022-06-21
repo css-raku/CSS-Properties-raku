@@ -1,13 +1,13 @@
 use v6;
 use Test;
-plan 47;
+plan 49;
 
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
 use CSS::Units :pt, :px;
 use Color;
 
-my $css = CSS::Properties.new( :!warn, :border-top-color<red> );
+my CSS::Properties $css .= new( :!warn, :border-top-color<red> );
 is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
@@ -80,17 +80,25 @@ is %border-top<border-top-style>, 'none', 'reset border top color';
 
 lives-ok { $css.info("background"); }, "info on a container property";
 
-$css = CSS::Properties.new: :style("border-top-color:red");
+my CSS::Properties $valign-middle .= new(:vertical-align<middle>);
+$css .= new: :style("border-top-color:red; vertical-align:inherit;");
 my $original-css = $css;
-$css = $css.clone;
-is ~$css, "border-top:red;", 'cloned css';
+$css .= clone;
+is ~$css, "border-top:red; vertical-align:inherit;", 'cloned css';
 $css.border-color = 'blue';
-is ~$css, "border:blue;", 'cloned css';
-is ~$original-css, "border-top:red;", 'original css';
+is ~$css, "border:blue; vertical-align:inherit;", 'cloned css';
+$css.inherit: $valign-middle;
+is ~$css, "border:blue; vertical-align:middle;", 'cloned+inherited css';
 
+$css = $original-css.clone;
+$css.inherit: $valign-middle;
+$css .= clone;
+is ~$css, "border-top:red; vertical-align:middle;", 'inherited+cloned css';
+
+is ~$original-css, "border-top:red; vertical-align:inherit;", 'original css';
 # special handling of text-align. Default depends on direction
 
-$css = CSS::Properties.new: :color<green>;
+$css .= new: :color<green>;
 is $css.text-align, 'left', 'default text-align';
 $css.direction = 'rtl';
 is $css.text-align, 'right', 'default text-align (direction rtl)';
