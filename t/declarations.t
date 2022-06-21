@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 49;
+plan 44;
 
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
@@ -80,22 +80,6 @@ is %border-top<border-top-style>, 'none', 'reset border top color';
 
 lives-ok { $css.info("background"); }, "info on a container property";
 
-my CSS::Properties $valign-middle .= new(:vertical-align<middle>);
-$css .= new: :style("border-top-color:red; vertical-align:inherit;");
-my $original-css = $css;
-$css .= clone;
-is ~$css, "border-top:red; vertical-align:inherit;", 'cloned css';
-$css.border-color = 'blue';
-is ~$css, "border:blue; vertical-align:inherit;", 'cloned css';
-$css.inherit: $valign-middle;
-is ~$css, "border:blue; vertical-align:middle;", 'cloned+inherited css';
-
-$css = $original-css.clone;
-$css.inherit: $valign-middle;
-$css .= clone;
-is ~$css, "border-top:red; vertical-align:middle;", 'inherited+cloned css';
-
-is ~$original-css, "border-top:red; vertical-align:inherit;", 'original css';
 # special handling of text-align. Default depends on direction
 
 $css .= new: :color<green>;
