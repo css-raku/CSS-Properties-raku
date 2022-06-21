@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.8.4  2022-06-21T13:05:44+12:00
     - Fix cloning of a property-set that has explicit inherited
       properties #19
 
