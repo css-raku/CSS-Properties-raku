@@ -5,14 +5,33 @@ class CSS::Box {
     use CSS::Properties;
     use CSS::Units :pt, :ops;
     my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
-    has Numeric $.top;
-    has Numeric $.right;
-    has Numeric $.bottom;
-    has Numeric $.left = 0;
-
-    has Array $!padding;
-    has Array $!border;
-    has Array $!margin;
+    class Rect is rw is repr('CStruct') {
+        has num64 $.top;
+        has num64 $.right;
+        has num64 $.bottom;
+        has num64 $.left = 0e0;
+        submethod TWEAK is hidden-from-backtrace  {
+            die "top($!top) < bottom($!bottom)"
+                unless $!top >= $!bottom;
+            die "right($!right) < left($!left)"
+                unless $!right >= $!left;
+        }
+        method width {$!right - $!left}
+        method height {$!top - $!bottom}
+        method enclose(Array $_) {
+            $!top    += .[Top];
+            $!right  += .[Right];
+            $!bottom -= .[Bottom];
+            $!left   -= .[Left];
+            self;
+        }
+        method clone(::?CLASS:D:) { self.new: :$!top, :$!left, :$!bottom, :$!right; }
+        method Array { [$!top, $!right, $!bottom, $!left] }
+    }
+    has Rect $!content;
+    has Rect $!padding;
+    has Rect $!border;
+    has Rect $!margin;
 
     use CSS::Font;
     has CSS::Font $.font is rw handles <font-size measure units em ex viewport-width viewport-height>;
@@ -23,105 +42,99 @@ class CSS::Box {
     my subset BoundingBox of Str where 'content'|'border'|'margin'|'padding';
 
     submethod TWEAK(
-        Numeric :$width = 595pt,
-        Numeric :$height = 842pt,
-        Numeric :$!top = $height,
-        Numeric :$!bottom = $!top - $height,
-        Numeric :$!right = $!left + $width,
-        Str :$style = '',
+        Numeric:D :$width is copy = 595pt,
+        Numeric:D :$height is copy = 842pt,
+        Num() :$left = 0e0,
+        Num() :$top is copy,
+        Num() :$bottom is copy,
+        Num() :$right is copy,
+        Str:D :$style = '',
         :font($),
         |c
     ) {
         $!css //= CSS::Properties.new(:$style, |c);
         $!font //= CSS::Font.new: :$!css;
+        $width = self.measure: $width;
+        $height = self.measure: $height;
+        $top //= $height;
+        $bottom //= $top - $height;
+        $right //= $left + $width;
+        $!content .= new: :$top, :$left, :$bottom, :$right;
         self!resize;
     }
 
     method !resize {
-        die "left > right" if $!left > $!right;
-        die "bottom > top" if $!bottom > $!top;
+        die "left > right" if $.left > $.right;
+        die "bottom > top" if $.bottom > $.top;
         $!padding = Nil;
         $!border = Nil;
         $!margin = Nil;
     }
 
-    multi method top is rw {
-        Proxy.new(
-            FETCH => sub ($) { $!top },
-            STORE => sub ($, $!top) { self!resize },
-            );
-    }
-
+    multi method top is rw { $!content.top }
     multi method top(BoundingBox $box) is rw {
-        self."$box"()[Top];
+        self."$box"().top
     }
 
-    multi method right is rw { $!right }
-    multi method right(BoundingBox $box) is rw {
-        self."$box"()[Right];
+    multi method right is rw { $!content.right }
+    multi method right(BoundingBox $box = $!content) is rw {
+        self."$box"().right;
     }
 
-    multi method bottom is rw { $!bottom }
+    multi method bottom is rw { $!content.bottom }
     multi method bottom(BoundingBox $box) is rw {
-        self."$box"()[Bottom]
+        self."$box"().bottom;
     }
 
-    multi method left is rw { $!left }
+    multi method left is rw { $!content.left }
     multi method left(BoundingBox $box) is rw {
-        self."$box"()[Left]
+        self."$box"().left;
     }
 
-    multi method width { $!right - $!left }
+    multi method width { $!content.width }
     multi method width(BoundingBox $box) {
-        my \box = self."$box"();
-        box[Right] - box[Left]
+        self."$box"().width;
     }
 
-    multi method height { $!top - $!bottom }
+    multi method height { $!content.height }
     multi method height(BoundingBox $box) {
-        my \box = self."$box"();
-        box[Top] - box[Bottom]
+        self."$box"().height
     }
 
     method measurements(List $qtys, Numeric:D :$ref = 0) {
         [ $qtys.map: { self.measure($_, :$ref) } ]
     }
 
-    method padding returns Array {
+    method padding returns Rect {
         my $ref := $!css.reference-width;
-        $!padding //= self!enclose: $.Array, self.measurements($!css.padding, :$ref);
+        $!padding //= self!enclose: $.content, self.measurements($!css.padding, :$ref);
     }
-    method border returns Array {
+    method border returns Rect {
         $!border //= self!enclose: $.padding, self.measurements($!css.border-width, :ref(0));
     }
-    method margin returns Array {
+    method margin returns Rect {
         my $ref := $!css.reference-width;
         $!margin //= self!enclose: $.border, self.measurements($!css.margin, :$ref);
     }
 
-    method content returns Array is rw { self.Array }
+    method content returns Rect is rw { $!content }
 
-    method !enclose(List $inner, List $outer) {
-        [
-         $inner[Top]    + $outer[Top],
-         $inner[Right]  + $outer[Right],
-         $inner[Bottom] - $outer[Bottom],
-         $inner[Left]   - $outer[Left],
-        ]
+    method !enclose(Rect $inner, List $outer --> Rect) {
+        $inner.clone.enclose: $outer;
     }
 
     method Array is rw {
         Proxy.new(
             FETCH => sub ($) {
-                [$!top, $!right, $!bottom, $!left]
+                $!content.Array;
             },
             STORE => sub ($,@v) {
-                my $width  = $!right - $!left;
-                my $height = $!top - $!bottom;
-                $!top    = $_ with @v[Top];
-                $!right  = $_ with @v[Right];
-                $!bottom = @v[Bottom] // $!top - $height;
-                $!left   = @v[Left] // $!right - $width;
+                my $width  = $.right - $.left;
+                my $height = $.top - $.bottom;
+                $.top    = .Num with @v[Top];
+                $.right  = .Num with @v[Right];
+                $.bottom = (@v[Bottom] // $.top - $height).Num;
+                $.left   = (@v[Left] // $.right - $width).Num;
                 self!resize;
             });
     }
@@ -131,7 +144,7 @@ class CSS::Box {
     }
 
     method translate( \x, \y) {
-        self.Array = [ $!top + y, $!right + x ];
+        self.Array = [ $.top + y, $.right + x ];
     }
 
     method save {
@@ -149,21 +162,22 @@ class CSS::Box {
         }
     }
 
+    has %!meths;
     method can(Str \name) {
-       callsame() || do {
+       callsame() || %!meths{name} //= do {
            given name {
                when /^ (padding|border|margin)'-'(top|right|bottom|left) $/ {
                    # absolute positions
                    my Str $box = ~$0;
-                   my UInt \edge = %( :top(Top), :right(Right), :bottom(Bottom), :left(Left) ){$1};
-                   ( method { self."$box"()[edge] }, );
+                   my Str $edge = ~$1;
+                   ( method { self."$box"()."$edge"() }, );
                }
                when /^ (padding|border|margin)'-'(width|height) $/ {
                    # cumulative widths and heights
                    my Str $box = ~$0;
                    my &meth :=  $1 eq 'width'
-                         ??  method { .[Right] - .[Left] with self."$box"() }
-                         !!  method { .[Top] - .[Bottom] with self."$box"() };
+                         ??  method { .width with self."$box"() }
+                         !!  method { .height with self."$box"() };
                    ( &meth, );
                }
                default { () }
@@ -293,22 +307,16 @@ are rw accessors, e.g.:
 
 Outer boxes will grow and shrink, retaining their original width and height.
 
-=head3 padding, margin, border
+=head3 content, padding, margin, border
 
-These method return all four corners (measured) of the given box, e.g.:
+These methods return a CSS::Properties::Box::Rect objects of the given enclosing box, e.g.:
 
-    my Numeric ($top, $right, $bottom, $left) = $box.padding
-
-
-=head3 content
-
-This returns all four corners (measured) of the content box, e.g.:
-
-    my Numeric ($top, $right, $bottom, $left) = $box.content;
+    my CSS::Properties::Box::Rect $padding = $box.padding;
+    my Numeric $top = $padding.left;
 
 These values are rw. The box can be both moved and resized, by adjusting this array.
 
-    $box.content = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
+    $box.content.Array = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
 
 Outer boxes, will grow or shrink to retain their original widths.
 

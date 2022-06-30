@@ -1,5 +1,5 @@
 [[Raku CSS Project]](https://css-raku.github.io)
- / [[CSS-Properties Module]](https://css-raku.github.io/CSS-Properties-raku)
+ / [[CSS-Properties]](https://css-raku.github.io/CSS-Properties-raku)
  / [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font)
 
 class CSS::Font
@@ -25,7 +25,7 @@ say $font.measure(:font-size); # 10
 say $font.fontconfig-pattern;
 # times-roman:slant=italic:weight=bold
 
-# requires fontconfig to be installed
+# requires FontConfig module to be installed
 say $font.find-font;
 # /usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf
 ```

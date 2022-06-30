@@ -432,8 +432,8 @@ The `reference-width` attribute represents the width of a containing element; wh
             });
     }
 
-    #| return property value handling: 'initial', or 'inherit';
     method !handling() { %!handling }
+    #| return property value handling: 'initial', or 'inherit';
     multi method handling(Str:D $prop --> Handling) is rw {
         self.handling(self.property-number($prop));
     }
@@ -620,7 +620,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
-                    %!values{name} = $css.computed(name);
+                    %!values{name} //= $css.computed(name);
                 }
             }
         }
@@ -649,7 +649,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         }
         for $orig!handling.pairs {
             %!handling{.key} = .value
-                if %!values{.key}:!exists && $.property-name(.key).defined;
+                if $.property-name(.key).defined;
         }
         self
     }
