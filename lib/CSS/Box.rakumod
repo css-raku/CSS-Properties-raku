@@ -6,10 +6,10 @@ class CSS::Box {
     use CSS::Units :pt, :ops;
     my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
     class Rect is rw is repr('CStruct') {
-        has num64 $.top;
-        has num64 $.right;
-        has num64 $.bottom;
-        has num64 $.left = 0e0;
+        has num32 $.top;
+        has num32 $.right;
+        has num32 $.bottom;
+        has num32 $.left = 0e0;
         submethod TWEAK is hidden-from-backtrace  {
             die "top($!top) < bottom($!bottom)"
                 unless $!top >= $!bottom;
@@ -18,12 +18,13 @@ class CSS::Box {
         }
         method width {$!right - $!left}
         method height {$!top - $!bottom}
-        method enclose(Array $_) {
-            $!top    += .[Top];
-            $!right  += .[Right];
-            $!bottom -= .[Bottom];
-            $!left   -= .[Left];
-            self;
+        method enclose(::?CLASS:D: $top, $right, $bottom, $left) {
+            my $obj = self.clone;
+            $obj.top    += $top;
+            $obj.right  += $right;
+            $obj.bottom -= $bottom;
+            $obj.left   -= $left;
+            $obj;
         }
         method clone(::?CLASS:D:) { self.new: :$!top, :$!left, :$!bottom, :$!right; }
         method Array { [$!top, $!right, $!bottom, $!left] }
@@ -107,21 +108,17 @@ class CSS::Box {
 
     method padding returns Rect {
         my $ref := $!css.reference-width;
-        $!padding //= self!enclose: $.content, self.measurements($!css.padding, :$ref);
+        $!padding //= $.content.enclose: |self.measurements($!css.padding, :$ref);
     }
     method border returns Rect {
-        $!border //= self!enclose: $.padding, self.measurements($!css.border-width, :ref(0));
+        $!border //= $.padding.enclose: |self.measurements($!css.border-width, :ref(0));
     }
     method margin returns Rect {
         my $ref := $!css.reference-width;
-        $!margin //= self!enclose: $.border, self.measurements($!css.margin, :$ref);
+        $!margin //= $.border.enclose: |self.measurements($!css.margin, :$ref);
     }
 
     method content returns Rect is rw { $!content }
-
-    method !enclose(Rect $inner, List $outer --> Rect) {
-        $inner.clone.enclose: $outer;
-    }
 
     method Array is rw {
         Proxy.new(
@@ -129,8 +126,8 @@ class CSS::Box {
                 $!content.Array;
             },
             STORE => sub ($,@v) {
-                my $width  = $.right - $.left;
-                my $height = $.top - $.bottom;
+                my $width  = $.width;
+                my $height = $.height;
                 $.top    = .Num with @v[Top];
                 $.right  = .Num with @v[Right];
                 $.bottom = (@v[Bottom] // $.top - $height).Num;
