@@ -165,9 +165,11 @@ class CSS::Properties:ver<0.8.5> {
                      Numeric :$viewport-width, Numeric :$viewport-height,
                      Numeric :$reference-width = 0,
                      *%props, ) {
-        $!index = $lock.protect({%module-index{$!module} //= $!module.index})
-            // die "module {$!module.name} lacks an index";
-        $!properties = $lock.protect: { %module-properties{$!module} //= []; }
+        $lock.protect: {
+            $!index = %module-index{$!module} //= $!module.index
+                // die "module {$!module.name} lacks an index";
+            %module-properties{$!module} //= [];
+        }
         $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
 
         my @style = .list with $declarations;
@@ -679,13 +681,21 @@ The `reference-width` attribute represents the width of a containing element; wh
         self;
     }
 
-    #| create a deep copy of a CSS declarations object
-    method clone(::?CLASS:D $copy: *@decls, *%props) {
-        my $obj = self.new( :$copy, :$!module, :$.em, :$.viewport-width, :$.viewport-height, :$.reference-width );
+    method clone(::?CLASS:D $copy: *@decls,
+                 :$module=$!module, :$em=$.em, :$viewport-width=$.viewport-width,
+                 :$viewport-height=$.viewport-height, :$reference-width=$.reference-width,
+                 :$units=$.units,
+                 *%props
+                --> ::?CLASS:D) {
+        my $obj = self.new( :$copy, :$module, :$em, :$viewport-width, :$viewport-height, :$reference-width, :$units );
         $obj!set-decls(@decls);
         $obj.set-properties(|%props);
         $obj;
     }
+    =head2 method clone
+    =for code :lang<raku>
+    method clone(@decls, *%opts) returns CSS::Properties
+    =para Creates a deep copy of a CSS declarations object
 
     #| return an AST for the declarations.
     method ast(Bool :$optimize = True, Bool :$keep-defaults) {
@@ -727,8 +737,8 @@ The `reference-width` attribute represents the width of a containing element; wh
     #| write a set of declarations.
     method write(Bool :$optimize = True,
                  Bool :$color-names = True,
-                 Bool :$keep-defaults = False,
                  Bool :$pretty = False,
+                 Bool :$keep-defaults = False,
                  |c) is also<Str gist> {
         my CSS::Writer $writer .= new( :$color-names, :$pretty, |c);
         $writer.write: self.ast(:$optimize, :$keep-defaults);

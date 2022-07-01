@@ -231,16 +231,14 @@ method set-properties(
 
 set a list of properties as hash pairs
 
-### method clone
+method clone
+------------
 
 ```raku
-method clone(
-    *@decls,
-    *%props
-) returns Mu
+    method clone(@decls, *%opts) returns CSS::Properties
 ```
 
-create a deep copy of a CSS declarations object
+Creates a deep copy of a CSS declarations object
 
 ### method ast
 
@@ -261,8 +259,8 @@ This is more-or-less the inverse of the [CSS::Grammar::CSS3](https://css-raku.gi
 method write(
     Bool :$optimize = Bool::True,
     Bool :$color-names = Bool::True,
-    Bool :$keep-defaults = Bool::False,
     Bool :$pretty = Bool::False,
+    Bool :$keep-defaults = Bool::False,
     |c
 ) returns Mu
 ```
