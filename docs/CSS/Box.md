@@ -23,25 +23,28 @@ my $style = q:to"END";
     font:    italic bold 10pt/12pt times-roman;
     END
 
-my CSS::Properties $css .= new: :$style;
-my $top    = 80pt;
-my $right  = 50pt;
-my $bottom = 10pt;
-my $left   = 10pt;
+my CSS::Properties $css .= new: :$style, :units<pt>;
+my $top    = 80;
+my $right  = 50;
+my $bottom = 10;
+my $left   = 10;
 
 my CSS::Box $box .= new: :$top, :$left, :$bottom, :$right, :$css;
-say $box.padding.Array;     # dimensions of padding box;
+say $box.units;             # pt
+say $box.padding.Array;     # dimensions of padding box (px)
 say $box.margin.Array;      # dimensions of margin box;
 say $box.border-right;      # vertical position of right border
 say $box.border-width;      # border-right - border-left
 say $box.width("border");   # border-width
 say $box.height("content"); # height of content box
 
-say $box.font.family;        # 'times-roman'
+say $box.font.style.fmt;    # "italic"
+say $box.font.family.fmt;   # "times-roman"
 # calculate some relative font lengths
-say $box.font-length(1.5em);    # 15
-say $box.font-length(200%);     # 20
-say $box.font-length('larger'); # 12
+say $box.measure: :font-size;           # 10pt
+say $box.measure: :font-size(1.5em);    # 15pt
+say $box.measure: :font-size(200%);     # 20pt
+say $box.measure: :font-size<larger>;   # 12pt
 ```
 
 Box Model

@@ -14,14 +14,13 @@ class CSS::Font {
     my CSS::Font $font .= new: :$font-props;
     say $font.em;                  # 10
     say $font.ex;                  # 7.5
-    say $font.style;               # italic
-    say $font.weight;              # 700
-    say $font.family;              # times-roman
-    say $font.line-height;         # 12
-    say $font.units;               # pt
-    say $font.measure(:font-size); # 10
-    say $font.fontconfig-pattern;
-    # times-roman:slant=italic:weight=bold
+    say $font.style.fmt;           # italic
+    say $font.weight.fmt;          # 700
+    say $font.family.fmt;          # times-roman
+    say $font.line-height;         # 12pt
+    say $font.measure(:font-size); # 10pt
+    say $font.fontconfig-pattern.raku;
+    # {:family($("times-roman",)), :slant("italic"), :weight("bold")}
 
     # requires FontConfig module to be installed
     say $font.find-font;
