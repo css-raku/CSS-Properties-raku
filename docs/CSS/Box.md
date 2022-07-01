@@ -29,9 +29,9 @@ my $right  = 50pt;
 my $bottom = 10pt;
 my $left   = 10pt;
 
-my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
-say $box.padding;           # dimensions of padding box;
-say $box.margin;            # dimensions of margin box;
+my CSS::Box $box .= new: :$top, :$left, :$bottom, :$right, :$css;
+say $box.padding.Array;     # dimensions of padding box;
+say $box.margin.Array;      # dimensions of margin box;
 say $box.border-right;      # vertical position of right border
 say $box.border-width;      # border-right - border-left
 say $box.width("border");   # border-width
@@ -112,21 +112,16 @@ These methods return measured positions of each of the four corners of the inner
 
 Outer boxes will grow and shrink, retaining their original width and height.
 
-### padding, margin, border
+### content, padding, margin, border
 
-These method return all four corners (measured) of the given box, e.g.:
+These methods return a CSS::Properties::Box::Rect objects of the given enclosing box, e.g.:
 
-    my Numeric ($top, $right, $bottom, $left) = $box.padding
-
-### content
-
-This returns all four corners (measured) of the content box, e.g.:
-
-    my Numeric ($top, $right, $bottom, $left) = $box.content;
+    my CSS::Properties::Box::Rect $padding = $box.padding;
+    my Numeric $top = $padding.left;
 
 These values are rw. The box can be both moved and resized, by adjusting this array.
 
-    $box.content = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
+    $box.content.Array = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
 
 Outer boxes, will grow or shrink to retain their original widths.
 

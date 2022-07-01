@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.8.5  2022-07-01T09:35:55+12:00
+    - Add CSS::Box::Rect data structure. Use it to represent content,
+      padding, border and margin boxes
+
 0.8.4  2022-06-21T13:05:44+12:00
     - Fix cloning of a property-set that has explicit inherited
       properties #19

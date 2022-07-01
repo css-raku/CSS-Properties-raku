@@ -215,9 +215,9 @@ my $right  = 50pt;
 my $bottom = 10pt;
 my $left   = 10pt;
 
-my CSS::Box $box .= new( :$top, :$left, :$bottom, :$right, :$css );
-say $box.padding;           # dimensions of padding box;
-say $box.margin;            # dimensions of margin box;
+my CSS::Box $box .= new: :$top, :$left, :$bottom, :$right, :$css;
+say $box.padding.Array;     # dimensions of padding box;
+say $box.margin.Array;      # dimensions of margin box;
 say $box.border-right;      # vertical position of right border
 say $box.border-width;      # border-right - border-left
 say $box.width("border");   # border-width
