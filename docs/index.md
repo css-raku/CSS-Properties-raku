@@ -35,7 +35,7 @@ Classes in this module
   * [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) - `@font-face` font descriptor objects
   * [CSS::Font::Pattern](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Pattern) - `@font-face` font patterns and matching
   * [CSS::PageBox](https://css-raku.github.io/CSS-Properties-raku/CSS/PageBox) - CSS Box model for paged media
-  * [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/CSS/Units) - units and postfix operators (e.g. `12pt`)
+  * [CSS::Units](https://css-raku.github.io/CSS-Properties-raku/CSS/Units) - units and post-fix operators (e.g. `12pt`)
 
 See Also
 --------
@@ -72,7 +72,7 @@ $css3 .= new: :$style, :$module;
 
 ### '@font-face' Properties
 
-The L<CSS::Font::Descriptor> module is a class for managing `@font-face` declarationa. The `css` method can be used to get the raw properties.
+The [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) module is a class for managing `@font-face` declarations. The `css` method can be used to get the raw properties.
 
 ```
 @font-face {
