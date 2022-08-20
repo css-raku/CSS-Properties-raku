@@ -579,7 +579,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                     ?? [ <num percent percent> Z=> $v.hsl ]
                     !! [ <num num num> Z=> $v.rgb ];
                 $ast.push( alpha($v.a) )
-                    if $key ~~ 'rgba'|'hsla';
+                    unless $v.a == 255;
                 $ast;
             }
             when $key ~~ KnownFunction {
@@ -656,9 +656,31 @@ The `reference-width` attribute represents the width of a containing element; wh
         self
     }
 
+    method !coerce-decl(&coercer, Pair \p --> Bool) {
+        try {
+            p.value = coercer from-ast(p.value);
+            p.value.so; # trigger any failures
+        }
+        with $! {
+            my $message = "usage: " ~ $_
+                with self.info(p.key).synopsis;
+            $message //= $!.message;
+            warn "dropping property {p.key}: {$message}";
+            False;
+        }
+        else {
+            True;
+        }
+    }
+
     method !set-decls(@decls) {
+        my %coerce := $!module.coerce;
+        my CSS::Writer $writer .= new;
         for @decls -> \p {
             with $.property-number(p.key) {
+                with %coerce{p.key} {
+                    next unless self!coerce-decl($_, p);
+                }
                 self!lval(p.key, $_) = p.value;
             }
             else {
