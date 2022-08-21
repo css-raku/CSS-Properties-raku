@@ -662,10 +662,12 @@ The `reference-width` attribute represents the width of a containing element; wh
             p.value.so; # trigger any failures
         }
         with $! {
-            my $message = "usage: " ~ $_
-                with self.info(p.key).synopsis;
-            $message //= $!.message;
-            warn "dropping property {p.key}: {$message}";
+            if $!warn {
+                my $message = "usage: " ~ $_
+                    with self.info(p.key).synopsis;
+                $message //= $!.message;
+                warn "dropping property {p.key}: {$message}"
+            }
             False;
         }
         else {

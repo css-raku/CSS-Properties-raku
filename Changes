@@ -1,4 +1,6 @@
 {{$NEXT}}
+    - Fix parsing to call &coerce sub #20
+    - Initial CSS::Module::SVG integration (experimental)
 
 0.8.5  2022-07-01T09:35:55+12:00
     - Add CSS::Box::Rect data structure. Use it to represent content,

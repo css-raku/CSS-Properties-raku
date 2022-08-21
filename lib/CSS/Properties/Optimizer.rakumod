@@ -50,7 +50,14 @@ multi sub optimizable('font', :%props) {
    %props<font-size>.defined && %props<font-family>.defined
 }
 
-multi sub optimizable(Str $, :props(%)) {
+# marker is an SVG property
+multi sub optimizable('marker', :%props) {
+    %props<marker-start>.defined
+    && (!%props<marker-mid>.defined || !%props<marker-end>.defined)
+}
+
+multi sub optimizable(Str $_, :props(%)) {
+    warn $_ if .contains('marker');
     True;
 }
 

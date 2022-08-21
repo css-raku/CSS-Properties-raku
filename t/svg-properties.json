@@ -1,0 +1,51 @@
+{ "prop" : "alignment-baseline", "decl" : "after-edge"}
+{ "prop" : "baseline-shift", "decl" : "super"}
+{ "prop" : "baseline-shift", "decl" : "1.5em", "type" : "Rat"}
+{ "prop" : "baseline-shift", "decl" : "4%", "type" : "Int"}
+{ "prop" : "color", "decl" : "red"}
+{ "prop" : "color", "decl" : "rgb(10%,20,30)", "out" : "rgb(26, 20, 30)", "type" : "Color" }
+{ "prop" : "color-interpolation", "decl" : "sRGB", "out" : "srgb"}
+{ "prop" : "color-interpolation", "decl" : "Srgb", "out" : "srgb"}
+{ "prop" : "color-rendering", "decl" : "optimizeSpeed", "out" : "optimizespeed"}
+{ "prop" : "direction", "decl" : "ltr", "out" : ""}
+{ "prop" : "direction", "decl" : "rtl"}
+{ "prop" : "display", "decl" : "table-cell"}
+{ "prop" : "dominant-baseline", "decl" : "hanging"}
+{ "prop" : "fill", "decl" : "rgb(10,20,10%)", "out" : "rgb(10, 20, 26)"}
+{ "prop" : "fill-opacity", "decl" : "0.75"}
+{ "prop" : "fill-opacity", "decl" : "75%"}
+{ "prop" : "fill-rule", "decl" : "evenOdD", "out" : "evenodd"}
+{ "prop" : "font-variant", "decl" : "small-Caps", "out" : "small-caps"}
+{ "prop" : "glyph-orientation-vertical", "decl" : "45deg"}
+{ "prop" : "glyph-orientation-vertical", "decl" : "7"}
+{ "prop" : "image-rendering", "decl" : "optimizeQuality", "out" : "optimizequality"}
+{ "prop" : "line-height", "decl" : "90%"}
+{ "prop" : "line-height", "decl" : "normal", "out" : ""}
+{ "prop" : "line-height", "decl" : "42"}
+{ "prop" : "marker-start", "decl" : "none", "out-prop" : "marker"}
+{ "prop" : "marker-start", "decl" : "url('http://www.example.com/pinkish.gif')", "out-prop" : "marker" }
+{ "prop" : "marker-mid", "decl" : "none"}
+{ "prop" : "marker-end", "decl" : "none"}
+{ "prop" : "marker", "decl" : "none url('http://www.example.com/pinkish.gif')"}
+{ "prop" : "opacity", "decl" : "0.75"}
+{ "prop" : "opacity", "decl" : "75%"}
+{ "prop" : "overflow", "decl" : "hidden"}
+{ "prop" : "paint-order", "decl" : "fill stroke"}
+{ "prop" : "shape-rendering", "decl" : "crispEdges", "out" : "crispedges" }
+{ "prop" : "stop-opacity", "decl" : "0.75"}
+{ "prop" : "stop-opacity", "decl" : "75%"}
+{ "prop" : "stroke", "decl" : "none"}
+{ "prop" : "stroke-dasharray", "decl" : "20, 10"}
+{ "prop" : "stroke-dasharray", "decl" : "em, 2em"}
+{ "prop" : "stroke-dashoffset", "decl" : "3em"}
+{ "prop" : "stroke-linecap", "decl" : "round"}
+{ "prop" : "stroke-linejoin", "decl" : "bevel"}
+{ "prop" : "stroke-opacity", "decl" : "0.75"}
+{ "prop" : "stroke-opacity", "decl" : "75%"}
+{ "prop" : "stroke-width", "decl" : "0.1em"}
+{ "prop" : "text-anchor", "decl" : "start"}
+{ "prop" : "text-decoration", "decl" : "underline blink"}
+{ "prop" : "text-rendering", "decl" : "geometricPrecision", "out" : "geometricprecision"}
+{ "prop" : "visibility", "decl" : "hidden"}
+{ "prop" : "white-space", "decl" : "pre"}
+{ "prop" : "writing-mode", "decl" : "rl-tb"}

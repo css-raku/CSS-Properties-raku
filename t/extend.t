@@ -67,7 +67,7 @@ subtest 'parse' => {
 
 subtest 'invalid' => {
     my $style = "-my-align:42; -my-span:xxx; color:red;";
-    $css .= new: :$module, :$style;
+    $css .= new: :$module, :$style, :!warn;
     is $css.Str, 'color:red;', 'serialization';
     is $css."-my-span"(), 42;
     isa-ok $css."-my-span"(), Int;
