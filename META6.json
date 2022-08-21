@@ -1,4 +1,5 @@
 {
+  "api": "0.9",
   "auth": "zef:dwarring",
   "authors": [
     "David Warring"
@@ -37,5 +38,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.8.5"
+  "version": "0.9.0"
 }
