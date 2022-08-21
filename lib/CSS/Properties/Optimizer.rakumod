@@ -81,7 +81,7 @@ method !container-properties {
     $!container-properties //= [ $!index.grep(*.children)».name ];
 }
 
-our constant %Punctuation is export(:Punctuation) = %( :font</>, :src<,> );
+our constant %Punctuation is export(:Punctuation) = %( :font</>, :src<,>, :stroke-dasharray<,> );
 
 sub punctuate($_) is export(:punctuate) {
     with .<font> {
@@ -94,7 +94,7 @@ sub punctuate($_) is export(:punctuate) {
             }
         }
     }
-    with .<src> {
+    with .<src>//.<stroke-dasharray> {
         given .<expr> -> @expr {
             for +@expr ^... 1 {
                 splice @expr, $_, 0, %(:op(','))
