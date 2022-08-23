@@ -71,7 +71,7 @@ $module = CSS::Module::CSS3.module;
 $css3 .= new: :$style, :$module;
 
 $module = CSS::Module::SVG.module;
-$style ~= "paint-order:marker;";  # add a SVG specific property
+$style ~= "paint-order:markers;";  # add a SVG specific property
 my CSS::Properties $css-svg .= new: :$style, :$module;
 ```
 
