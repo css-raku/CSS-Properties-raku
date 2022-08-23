@@ -315,7 +315,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         @decls;
     }
 
-    # Accessor for a four sided value: top, left, bottoom, right
+    # Accessor for a four sided value: top, left, bottom, right
     method !box-value(Str $prop, CArray $edges) is rw {
 	Proxy.new(
 	    FETCH => -> $ {
@@ -532,12 +532,12 @@ The `reference-width` attribute represents the width of a containing element; wh
     }
     multi sub from-ast(List $v) {
         $v.elems == 1 && !$v[0]<expr>
-            ?? from-ast( $v[0] )
+            ?? from-ast $v[0]
             !! [ $v.map: { from-ast($_) } ];
     }
     # { :int(42) } => :int(42)
     multi sub from-ast(Hash $v where .keys == 1) {
-        from-ast( $v.pairs[0] );
+        from-ast $v.pairs[0];
     }
     multi sub from-ast($v) {
         $v
