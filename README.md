@@ -53,8 +53,9 @@ use CSS::Module;
 use CSS::Module::CSS1;
 use CSS::Module::CSS21;
 use CSS::Module::CSS3;
+use CSS::Module::SVG;
 
-my $style = 'color: red; azimuth: left';
+my $style = 'color:red; azimuth:left;';
 
 my CSS::Module $module = CSS::Module::CSS1.module;
 my CSS::Properties $css1 .= new: :$style, :$module;
@@ -68,7 +69,14 @@ my CSS::Properties $css3 .= new: :$style; # CSS3 is the default
 # -- or --
 $module = CSS::Module::CSS3.module;
 $css3 .= new: :$style, :$module;
+
+$module = CSS::Module::SVG.module;
+$style ~= "paint-order:marker;";  # add a SVG specific property
+my CSS::Properties $css-svg .= new: :$style, :$module;
 ```
+
+`CSS::Module::SVG` is an extension to `CSS::Module::CSS3` that includes
+additional SVG specific properties.
 
 ### '@font-face' Properties
 
@@ -99,6 +107,7 @@ Most properties have a default value. If a property is reset to its default valu
     $css.background-image = 'url(camellia.png)';
     say ~$css; # "background-image: url(camellia.png);"
     $css.background-image = $css.info("background-image").default;
+    say $css.background-image; # none
     say ~$css; # ""
 
 ## Deleting properties
@@ -192,8 +201,9 @@ The `info` method gives property specific meta-data, on all (component or contai
 
 ```
 use CSS::Properties;
+use CSS::Properties::PropertyInfo;
 my CSS::Properties $css .= new;
-my $margin-info = $css.info("margin");
+my CSS::Properties::PropertyInfo $margin-info = $css.info("margin");
 say $margin-info.synopsis; # <margin-width>{1,4}
 say $margin-info.edges;    # [margin-top margin-right margin-bottom margin-left]
 say $margin-info.inherit;  # True (property is inherited)
@@ -223,7 +233,7 @@ margin-bottom: auto keyw
 margin-right: 5 mm
 ```
 
-## Length Units
+## Lengths and Units
 
 CSS::Units is a convenience module that provides some simple post-fix length unit definitions.
 
@@ -235,10 +245,58 @@ All infix operators convert to the left-hand operand's units.
 
 ```
 use CSS::Units :ops, :pt, :px, :in, :mm;
-my $css = (require CSS::Properties).new: :margin[5pt, 10px, .1in, 2mm];
+my CSS::Properties $css .= new: :margin[5pt, 10px, .1in, 2mm];
 
 # display margins in millimeters
 say "%.2f mm".sprintf(.scale("mm")) for $css.margin.list;
+```
+
+The `measure` method can be used to perform contextual measurement
+of lengths, which are converted to the default units.
+
+The current font-size is used for `em`, `ex` and percentage calculations.
+
+There are also `viewport-width` and `viewport-height` attributes
+that need to be set to enable `vw` and `vh` units.
+
+```
+use CSS::Units :ops, :pt, :px, :in, :mm, :em, :vw, :vh, :percent;
+use CSS::Properties;
+my CSS::Properties $css .= new: :viewport-width(200);
+
+say $css.units;         # pt
+say $css.measure: 10px; # 7.5pt
+say $css.measure: 1in;  # 72pt
+
+say $css.font-size;     # 12pt
+say $css.measure: 2em;  # 24pt
+say $css.measure: 50%;  # 6pt
+say $css.measure: .1vw; # 20pt
+```
+
+The `measure` method can also be used on properties. In the case
+of box measurements (borders, margins and padding) a `reference-width` also needs to be set for percentage calculations.
+
+```
+use CSS::Units :px, :percent;
+use CSS::Properties;
+my CSS::Properties $css .= new: :margin[10%, 10px], :reference-width(120);
+
+say $css.measure: :margin-top;       # 12pt
+say $css.measure: :margin-left;      # 7.5pt
+say $css.measure: :margin-left(20%); # 24pt
+say $css.measure: :font-size;        # 12pt
+say $css.measure: :font-size(50%);   # 6pt
+```
+
+The `units` attribute defaults to `pt` can be changed to any absolute length units:
+```
+use CSS::Units :px, :mm;
+use CSS::Properties;
+my CSS::Properties $css .= new: :margin[10mm, 10px], :units<mm>;
+say $css.units;                      # mm
+say $css.measure: :margin-top;       # 10mm
+say $css.measure: :margin-left;      # 2.646mm
 ```
 
 ## Appendix : CSS3 Properties
