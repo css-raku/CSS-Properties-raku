@@ -22,11 +22,11 @@
 { "prop" : "line-height", "decl" : "90%"}
 { "prop" : "line-height", "decl" : "normal", "out" : ""}
 { "prop" : "line-height", "decl" : "42"}
-{ "prop" : "marker-start", "decl" : "none", "out-prop" : "marker"}
+{ "prop" : "marker-start", "decl" : "none", "out" : ""}
 { "prop" : "marker-start", "decl" : "url('http://www.example.com/pinkish.gif')", "out-prop" : "marker" }
-{ "prop" : "marker-mid", "decl" : "none"}
-{ "prop" : "marker-end", "decl" : "none"}
-{ "prop" : "marker", "decl" : "none url('http://www.example.com/pinkish.gif')"}
+{ "prop" : "marker-mid", "decl" : "none", "out" : ""}
+{ "prop" : "marker-end", "decl" : "none", "out" : ""}
+{ "prop" : "marker", "decl" : "url('http://www.example.com/greenish.gif') url('http://www.example.com/pinkish.gif')"}
 { "prop" : "opacity", "decl" : "0.75"}
 { "prop" : "opacity", "decl" : "75%"}
 { "prop" : "overflow", "decl" : "hidden"}
@@ -43,7 +43,7 @@
 { "prop" : "stroke-opacity", "decl" : "0.75"}
 { "prop" : "stroke-opacity", "decl" : "75%"}
 { "prop" : "stroke-width", "decl" : "0.1em"}
-{ "prop" : "text-anchor", "decl" : "start"}
+{ "prop" : "text-anchor", "decl" : "middle"}
 { "prop" : "text-decoration", "decl" : "underline blink"}
 { "prop" : "text-rendering", "decl" : "geometricPrecision", "out" : "geometricprecision"}
 { "prop" : "visibility", "decl" : "hidden"}
