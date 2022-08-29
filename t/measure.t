@@ -1,9 +1,11 @@
 use v6;
 use Test;
-plan 20;
+plan 27;
 
-use CSS::Units :pt, :px, :pc, :in, :vw, :vh, :em, :ex;
+use CSS::Units :pt, :px, :pc, :in, :vw, :vh, :em, :ex, :percent;
 use CSS::Properties;
+use CSS::Module;
+use CSS::Module::SVG;
 
 my CSS::Properties $css .= new: :viewport-width(200pt), :viewport-height(100pt);
 is '%0.2f'.sprintf($css.measure($css.viewport-width)), '200.00', '$css.measure($.viewport-width)';
@@ -31,5 +33,16 @@ is $css.units, 'pc', 'changed units';
 is '%0.2f'.sprintf($css.measure(1pc)), '1.00', '$css.measure(in)';
 is '%0.2f'.sprintf($css.measure(1in)), '6.00', '$css.measure(in)';
 is '%0.2f'.sprintf($css.measure(12pt)), '1.00', '$css.measure(in)';
+
+# SVG specifics
+my CSS::Module:D $module = CSS::Module::SVG.module;
+$css .= new: :$module, :user-width(1.5), :viewport-width(200pt), :viewport-height(100pt);
+is '%0.2f'.sprintf($css.measure: :stroke-width(2pt)), '2.00';
+is '%0.2f'.sprintf($css.measure: :stroke-width(10%)), '20.00';
+is '%0.2f'.sprintf($css.measure: :stroke-width(10)), '15.00';
+is '%0.2f'.sprintf($css.measure: :opacity(.5)), '0.50';
+is '%0.2f'.sprintf($css.measure: :opacity(70%)), '0.70';
+is '%0.2f'.sprintf($css.measure: :opacity(1.1)), '1.00';
+is '%0.2f'.sprintf($css.measure: :opacity(-1.1)), '0.00';
 
 done-testing;

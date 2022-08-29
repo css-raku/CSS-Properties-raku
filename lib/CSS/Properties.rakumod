@@ -164,13 +164,14 @@ class CSS::Properties:ver<0.9.2>:api<0.9> {
                      Numeric :$em = 12pt.scale($units),
                      Numeric :$viewport-width, Numeric :$viewport-height,
                      Numeric :$reference-width = 0,
+                     Numeric :$user-width = 1.0,
                      *%props, ) {
         $lock.protect: {
             $!index = %module-index{$!module} //= $!module.index
                 // die "module {$!module.name} lacks an index";
             %module-properties{$!module} //= [];
         }
-        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width;
+        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width;
 
         my @style = .list with $declarations;
         @style.append: self!parse-style($_) with $style;

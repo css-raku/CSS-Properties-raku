@@ -39,6 +39,7 @@ class CSS::Properties::Calculator {
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
     has Numeric $.reference-width;
+    has Numeric $.user-width = 1.0;
     method reference-width is rw {
         Proxy.new(
             FETCH => { $!reference-width // 0 },
@@ -70,13 +71,13 @@ class CSS::Properties::Calculator {
             self!weigh($_);
         },
         letter-spacing => method ($_) {
-            when .?type ~~ 'num'  { self!em: $_ * $!em; }
+            when .?type ~~ 'num'|Any:U  { self!em: $_ * $!em; }
             when 'normal' { self!em: 0.0 }
             default { %Compute<font-size>(self, $_) }
         },
         line-height => method ($_) {
-            when .type eq 'num' { self!em: $!em * $_  }
-            when 'normal'       { self!em: $!em * 1.2 }
+            when 'normal'        { self!em: $!em * 1.2 }
+            when .?type ~~ 'num'|Any:U {self!em: $!em * $_  }
             default { %Compute<font-size>(self, $_) }
         },
         word-spacing => method ($_) {
@@ -89,6 +90,15 @@ class CSS::Properties::Calculator {
         'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height'|'padding-top'|'padding-right'|'padding-bottom'|'padding-left'|'margin-top'|'margin-right'|'margin-bottom'|'margin-left' => method ($_) {
             self.measure($_, :ref($!reference-width));
         },
+        # SVG
+        'stroke-width'|'stroke-dasharray' =>  method ($_) {
+            when .?type ~~ 'num'|Any:U  { self!em($_ * $!user-width); }
+            default { self.measure($_, :ref($!viewport-width)); }
+        },
+        'fill-opacity'|'opacity'|'stop-opacity'|'stroke-opacity' => method (Numeric:D $v is copy) {
+            $v /= 100 if $v.?type ~~ 'percent';
+            max(0.0, min($v, 1.0));
+        }
     );
 
     #| converts a weight name to a three digit number:

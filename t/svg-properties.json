@@ -43,6 +43,8 @@
 { "prop" : "stroke-opacity", "decl" : "0.75"}
 { "prop" : "stroke-opacity", "decl" : "75%"}
 { "prop" : "stroke-width", "decl" : "0.1em"}
+{ "prop" : "stroke-width", "decl" : "2.5"}
+{ "prop" : "stroke-miterlimit",  "decl" : "5"}
 { "prop" : "text-anchor", "decl" : "middle"}
 { "prop" : "text-decoration", "decl" : "underline blink"}
 { "prop" : "text-rendering", "decl" : "geometricPrecision", "out" : "geometricprecision"}
