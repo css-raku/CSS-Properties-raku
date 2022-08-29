@@ -274,7 +274,7 @@ say $css.measure: 50%;  # 6pt
 say $css.measure: .1vw; # 20pt
 ```
 
-The `measure` method can also be used on properties. In the case
+The `measure` method can also be used on specific properties. In the case
 of box measurements (borders, margins and padding) a `reference-width` also needs to be set for percentage calculations.
 
 ```
