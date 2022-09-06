@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 18;
+plan 19;
 require CSS::Module::CSS3;
 use CSS::Properties;
 
@@ -20,6 +20,7 @@ my %extensions = %(
         :default(42),
         :coerce(-> Int() $num {$my-span-calls++; :$num }),
     ),
+    '-my-any' => %(),
 );
 
 my $module = CSS::Module::CSS3.module: :%extensions;
@@ -72,6 +73,19 @@ subtest 'invalid' => {
     is $css."-my-span"(), 42;
     isa-ok $css."-my-span"(), Int;
     is $css."-my-align"(), 'middle';
+}
+
+subtest 'any' => {
+    my $style = "-my-any:blah;";
+    $css .= new: :$module, :$style;
+    is $css."-my-any"(), 'blah';
+    is $css.Str, '-my-any:blah;';
+    $css."-my-any"() = 42;
+    is $css.Str, '-my-any:42;';
+    $css."-my-any"() = '42   xx "zzz"';
+    is $css.Str, "-my-any:42 xx 'zzz';";
+    $css."-my-any"() = Nil;
+    is $css.Str, '';
 }
 
 done-testing;

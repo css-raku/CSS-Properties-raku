@@ -165,6 +165,7 @@ class CSS::Properties:ver<0.9.3>:api<0.9> {
                      Numeric :$viewport-width, Numeric :$viewport-height,
                      Numeric :$reference-width = 0,
                      Numeric :$user-width = 1.0,
+                     :module($), :warn($), :warnings($),
                      *%props, ) {
         $lock.protect: {
             $!index = %module-index{$!module} //= $!module.index
@@ -178,7 +179,6 @@ class CSS::Properties:ver<0.9.3>:api<0.9> {
         @style.append: .list with $ast;
 
         my @decls = self!build-declarations(@style);
-
         with $inherit -> CSS::Properties() $_ {
             $!calc.em = .em;
             self.inherit: $_;
@@ -298,16 +298,21 @@ The `reference-width` attribute represents the width of a containing element; wh
                         if decl<prio> ~~ 'important';
 
                     for self!get-container-prop(decl<ident>, expr).list {
-                        my $prop := .key;
-                        my $expr := .value;
-                        my $keyw := $expr[0]<keyw>;
-                        if $keyw ~~ Handling {
-                            self.handling($prop) = $keyw;
+                        if self.property-number(.key).defined {
+                            my $prop := .key;
+                            my $expr := .value;
+                            my $keyw := $expr[0]<keyw>;
+                            if $keyw ~~ Handling {
+                                self.handling($prop) = $keyw;
+                            }
+                            else {
+                                @decls.push: $prop => $expr;
+                                self.important($prop) = $_
+                                    with $important;
+                            }
                         }
                         else {
-                            @decls.push: $prop => $expr;
-                            self.important($prop) = $_
-                                with $important;
+                            note "dropping unknown {$!module.name} property {.key}"
                         }
                     }
                 }
@@ -393,7 +398,7 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     # get the default for this property.
     method !default-value($_) {
-        when /^'border-'[top|right|bottom|left]'-color'$/ {
+        when .starts-with('border-') && .ends-with('-color') {
             # border colors default to the 'color' property
             self.?color;
         }
@@ -667,7 +672,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                 my $message = "usage: " ~ $_
                     with self.info(p.key).synopsis;
                 $message //= $!.message;
-                warn "dropping property {p.key}: {$message}"
+                note "dropping {$!module.name} property {p.key}: {$message}"
             }
             False;
         }
@@ -687,7 +692,7 @@ The `reference-width` attribute represents the width of a containing element; wh
                 self!lval(p.key, $_) = p.value;
             }
             else {
-                warn "unknown {$!module.name} property: {p.key}";
+                note "dropping unknown {$!module.name} property: {p.key}";
             }
         }
         self;

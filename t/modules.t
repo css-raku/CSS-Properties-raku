@@ -8,11 +8,12 @@ use CSS::Module::CSS1;
 use CSS::Module::CSS21;
 use CSS::Module::CSS3;
 
-my $style = 'color: red; azimuth: left';
+my $style = 'color: red;';
 my CSS::Module $module = CSS::Module::CSS1.module;
 my $css1 = quietly { CSS::Properties.new( :$style, :$module) };
 dies-ok { $css1.info("azimuth") }, "azimuth is unknown in CSS1";
 
+$style ~= ' azimuth: left';
 $module = CSS::Module::CSS21.module;
 my $css21 = CSS::Properties.new( :$style, :$module);
 lives-ok { $css21.info("azimuth") }, "azimuth is known in CSS21";
