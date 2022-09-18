@@ -4,6 +4,7 @@ use v6;
 class CSS::Box {
     use CSS::Properties;
     use CSS::Units :pt, :ops;
+    use Method::Also;
     my Int enum Edges is export(:Edges) <Top Right Bottom Left>;
     class Rect is rw is repr('CStruct') {
         has num32 $.top;
@@ -27,7 +28,7 @@ class CSS::Box {
             $obj;
         }
         method clone(::?CLASS:D:) { self.new: :$!top, :$!left, :$!bottom, :$!right; }
-        method Array { [$!top, $!right, $!bottom, $!left] }
+        method List is also<list> handles <Array> { ($!top, $!right, $!bottom, $!left) }
     }
     has Rect $!content;
     has Rect $!padding;
