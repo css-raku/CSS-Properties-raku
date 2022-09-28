@@ -249,8 +249,8 @@ The `reference-width` attribute represents the width of a containing element; wh
 
     method !get-container-prop(Str $prop-name, List $expr) {
         my @props;
-
         my @expr;
+
         for $expr.list {
             when $_ ~~ Pair|Hash && (my $p0 := .pairs[0]).key.starts-with('expr:') {
                 # embedded property declaration
@@ -491,8 +491,11 @@ The `reference-width` attribute represents the width of a containing element; wh
         my @channels = $v.value.map: {from-ast($_)};
         my Color $color;
         my $type = $v.key;
-        @channels.tail *= 256
-            if $type ~~ 'rgba'|'hsla';
+        if $type ~~ 'rgba'|'hsla' {
+            @channels.tail /= 100
+                if @channels.tail.type ~~ 'percent';
+            @channels.tail *= 256;
+        }
 
         $color .= new: |($type => @channels);
 
@@ -825,7 +828,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         }
     }
     multi method Bool(::?CLASS:D:) { %!values.Bool }
-    multi method Bool(::?CLASS:U:) { False }
+    multi method Bool(::?CLASS:U:) { Bool }
     method FALLBACK(Str \name, |c) is rw {
         with $.property-number(name) {
             self!lval(name, $_)
