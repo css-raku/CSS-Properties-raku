@@ -170,7 +170,7 @@ class CSS::Properties:ver<0.9.4>:api<0.9> {
         $lock.protect: {
             $!index = %module-index{$!module} //= $!module.index
                 // die "module {$!module.name} lacks an index";
-            %module-properties{$!module} //= [];
+            $!properties //= (%module-properties{$!module} //= []);
         }
         $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width;
 
@@ -244,12 +244,7 @@ The `reference-width` attribute represents the width of a containing element; wh
         self.info($prop-num);
     }
     multi method info(Int:D $prop-num --> CSS::Properties::PropertyInfo) {
-        with $!properties[$prop-num] {
-            $_;
-        }
-        else {
-            make-property($!module, $prop-num);
-        }
+        $!properties[$prop-num] // make-property($!module, $prop-num);
     }
 
     method !get-container-prop(Str $prop-name, List $expr) {
