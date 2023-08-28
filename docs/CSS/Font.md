@@ -58,7 +58,9 @@ e.g. `$font.font-css = 'italic bold 10pt/12pt sans-serif';`
 
 ```raku
 method find-font(
-    %patt = Code.new
+    %patt = Code.new,
+    Int :$all is copy where { ... },
+    Int :$best is copy where { ... }
 ) returns Str
 ```
 
