@@ -252,17 +252,16 @@ The `reference-width` attribute represents the width of a containing element; wh
         my @expr;
 
         for $expr.list {
-            when $_ ~~ Pair|Hash && (my $p0 := .pairs[0]).key.starts-with('expr:') {
+            if $_ ~~ Associative && (my $p0 := .pairs[0]).key.starts-with('expr:') {
                 # embedded property declaration
                 @props.push: $p0.key.substr(5) => $p0.value
             }
-            when (%Punctuation{$prop-name}:exists) && .<op> eqv %Punctuation{$prop-name} {
-                # filter out some punctuation from the api:
-                # - '/' operator, as in 'font:10pt/12pt times-roman'
-                # - ',' between src arguments
-            }
-            default {
-                @expr.push: $_;
+            else {
+                @expr.push: $_
+                             # filter out some punctuation from the api:
+                             # - '/' operator, as in 'font:10pt/12pt times-roman'
+                             # - ',' between src arguments
+                   unless (%Punctuation{$prop-name}:exists) && .<op> eqv %Punctuation{$prop-name};
             }
         }
 
@@ -626,7 +625,10 @@ The `reference-width` attribute represents the width of a containing element; wh
                     $inherit = True without %!values{name};
                 }
                 if $inherit {
-                    %!values{name} //= $css.computed(name);
+                    my $val := $css.computed(name);
+                    $!calc.em = $val
+                        if name eq 'font-size' && !%!values{name}.defined;
+                    %!values{name} //= $val;
                 }
             }
         }
