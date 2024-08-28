@@ -1,6 +1,9 @@
 {{$NEXT}}
+
+0.9.6  2024-08-29T06:32:07+12:00
     - Add FontConf 0.1.4+ :best($n) and :all options to
       find-font() method
+    - Fix inheritance of font-size via inherit() method
 
 0.9.5  2022-09-30T05:13:03+13:00
     - fix parsing of rgb/hsl alpha channel as a percentage

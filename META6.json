@@ -32,11 +32,11 @@
   },
   "resources": [
   ],
-  "source-url": "git://github.com/css-raku/CSS-Properties-raku.git",
+  "source-url": "https://github.com/css-raku/CSS-Properties-raku.git",
   "tags": [
     "css"
   ],
   "test-depends": [
   ],
-  "version": "0.9.5"
+  "version": "0.9.6"
 }
