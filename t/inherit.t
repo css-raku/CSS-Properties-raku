@@ -41,9 +41,11 @@ $css = CSS::Properties.new( :inherit(~$inherit));
 is ~$css, 'color:blue;', 'inherit from string';
 
 subtest 'font-size inheritance', {
-    $inherit = CSS::Properties.new: :style("font-size: 12pt;");
-    $css = CSS::Properties.new: :style("color:red"), :$inherit;
-    is ~$css, 'color:red; font-size:12pt;', 'inherit absolute font-size';
+    $inherit = CSS::Properties.new: :style("font-size: 15pt;");
+    $css = CSS::Properties.new: :style("color:red");
+    $css.inherit: $inherit;
+    is ~$css, 'color:red; font-size:15pt;', 'inherit absolute font-size';
+    is $css.measure(:font-size), 15;
 
     $inherit = CSS::Properties.new: :style("font-size: larger;");
     $css = CSS::Properties.new: :style("color:red; font-size:inherit;"), :$inherit;
