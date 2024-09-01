@@ -650,8 +650,10 @@ The `reference-width` attribute represents the width of a containing element; wh
         $obj.copy: $orig, :@properties;
     }
 
-    multi method copy(::?CLASS:D: ::?CLASS:D $orig, :@properties = [$orig.properties]) {
+    multi method copy(::?CLASS:D: ::?CLASS:D $orig, :@properties = $orig.properties) {
         for @properties {
+            $!calc.em = $orig.computed($_)
+               if $_ eq 'font-size';
             %!values{$_} = $orig."$_"()
                 if $.property-number($_).defined;
         }
