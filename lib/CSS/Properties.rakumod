@@ -172,7 +172,7 @@ class CSS::Properties:ver<0.9.6>:api<0.9> {
                 // die "module {$!module.name} lacks an index";
             $!properties //= (%module-properties{$!module} //= []);
         }
-        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width;
+        $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width, :$em;
 
         my @style = .list with $declarations;
         @style.append: self!parse-style($_) with $style;
