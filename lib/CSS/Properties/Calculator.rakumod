@@ -136,7 +136,11 @@ class CSS::Properties::Calculator {
                 .(self, $v, :$ref);
             }
             else {
-                $.measure($v, :$ref);
+                given $.measure($v, :$ref) {
+                    .isa(List)
+                        ??  [ $v.map: {$.measure($_, :$ref)} ]
+                        !!  $v;
+                }
             }
         }
     }
