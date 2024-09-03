@@ -1,5 +1,8 @@
 {{$NEXT}}
-    - Fix cloning of 'em' #23
+
+0.9.7  2024-09-04T10:56:52+12:00
+    - Fix setting of 'em' in cloning and copying #23
+    - Recursively handle lists in measure() method
 
 0.9.6  2024-08-29T06:32:07+12:00
     - Add FontConf 0.1.4+ :best($n) and :all options to
