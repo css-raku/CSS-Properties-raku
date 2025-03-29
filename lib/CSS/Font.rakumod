@@ -155,7 +155,9 @@ class CSS::Font {
                  }
              }
         }
+
         my $patt = $FontConfig.new: :$all, :$best, |%patt;
+
         if $all || $best {
             $patt.match-series(:$all, :$best).map: *.file;
         }
