@@ -1,7 +1,8 @@
 use v6;
 use Test;
-plan 19;
-require CSS::Module::CSS3;
+plan 20;
+use CSS::Module::CSS3;
+use CSS::Module;
 use CSS::Properties;
 
 my $my-align-calls;
@@ -21,6 +22,7 @@ my %extensions = %(
         :coerce(-> Int() $num {$my-span-calls++; :$num }),
     ),
     '-my-any' => %(),
+    '-my-mixed-CASE' => %(),
 );
 
 my $module = CSS::Module::CSS3.module: :%extensions;
@@ -52,6 +54,10 @@ $css .= new: :style($css.Str), :$module;
 is $css.Str, '-my-span:5;', 'reserialization';
 is $css."-my-span"(), 5;
 is $css."-my-align"(), 'middle';
+
+todo "Requires CSS::Module v0.6.8+"
+    unless CSS::Module.^ver >= v0.6.8;
+lives-ok { $css."-my-mixed-case"() }, 'case insensitivity';
 
 subtest 'parse' => {
     $my-span-calls = 0;
