@@ -138,13 +138,16 @@ Options:
 ### measure
 
 ```raku
-# Converts a value to a numeric quantity;
+# Converts values to a normalized numeric quantities;
 my Numeric $font-size = $css.measure: :font-size; # get current font size
 $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
 $font-size = $css.measure: :font-size(120%);      # compute a larger font
 my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+my $height = $css.measure: :height<10px>;         # get height in base units
 $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
 ```
+
+All length values are converted to the current base units (default `pt`).
 
 This function is implemented for `font-size`, `font-weight`, `letter-spacing`, `line-height`, and `word-spacing`.
 
@@ -235,7 +238,7 @@ method clone
 ------------
 
 ```raku
-    method clone(@decls, *%opts) returns CSS::Properties
+method clone(@decls, *%opts) returns CSS::Properties
 ```
 
 Creates a deep copy of a CSS declarations object
@@ -306,6 +309,16 @@ method delete(
 ```
 
 delete property values from the list of populated properties
+
+### Pairs, List, Array, Hash, Slip
+
+Pairs, Lists and Hashes are all supported as pairs of leaf properties and measured values.
+
+```raku
+use CSS::Properties;
+my CSS::Properties() $css = "color:red; padding: 1pt";
+dd $css.Pairs;
+```
 
 ### method property
 

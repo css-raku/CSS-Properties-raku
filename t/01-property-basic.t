@@ -1,10 +1,11 @@
 use v6;
 use Test;
-plan 16;
+plan 18;
 
 use CSS::Properties::PropertyInfo;
 use CSS::Properties;
 use CSS::Units :pt, :px;
+use CSS::Grammar::Test :&json-eqv;
 
 my CSS::Properties::PropertyInfo $sample-prop .= new( :name<background-image> );
 
@@ -35,5 +36,23 @@ is $css2.write, 'height:5px; margin:7pt;', 'write';
 
 $css2.copy($css);
 is $css2.write, 'height:5px; margin:5pt; width:4px;', 'copy/write';
+
+cmp-ok $css2.List, &json-eqv, (
+    :height(15/4),
+    :margin-bottom(5.0),
+    :margin-left(5.0),
+    :margin-right(5.0),
+    :margin-top(5.0),
+    :width(3.0)
+);
+
+cmp-ok $css2.Hash, &json-eqv, {
+    :height(15/4),
+    :margin-bottom(5.0),
+    :margin-left(5.0),
+    :margin-right(5.0),
+    :margin-top(5.0),
+    :width(3.0)
+};
 
 done-testing;

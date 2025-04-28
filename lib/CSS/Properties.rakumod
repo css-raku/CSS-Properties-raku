@@ -190,13 +190,16 @@ Options:
 =begin pod
 =head3 measure
 =begin code :lang<raku>
-# Converts a value to a numeric quantity;
+# Converts values to a normalized numeric quantities;
 my Numeric $font-size = $css.measure: :font-size; # get current font size
 $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
 $font-size = $css.measure: :font-size(120%);      # compute a larger font
 my $weight = $css.measure: :font-weight;          # get current font weight 100..900
+my $height = $css.measure: :height<10px>;         # get height in base units
 $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
 =end code
+
+All length values are converted to the current base units (default C<pt>).
 
 This function is implemented for `font-size`, `font-weight`, `letter-spacing`, `line-height`, and `word-spacing`.
 
@@ -802,6 +805,20 @@ method delete(*@props) {
     }
     self;
 }
+
+method Pairs is also<Seq> handles<List Array Hash> {
+    %!values.pairs.sort.map: { .key => $!calc.measure: |$_ }
+}
+=head3 Pairs, List, Array, Hash, Slip
+
+=para Pairs, Lists and Hashes are all supported as pairs of
+leaf properties and measured values.
+
+=begin code :lang<raku>
+use CSS::Properties;
+my CSS::Properties() $css = "color:red; padding: 1pt";
+dd $css.Pairs;
+=end code
 
 method dispatch:<.?>(\name, |c) is raw {
     self.can(name)

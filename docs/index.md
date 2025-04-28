@@ -12,16 +12,21 @@ use CSS::Units :pt;
 use CSS::Properties;
 
 my CSS::Properties() $css = "color:red !important; padding: 1pt";
-say $css.important("color"); # True
-$css.border-color = 'red';
 
+say $css.color.hex; # (FF 00 00)
+say $css.important("color"); # True
+
+$css.border-color = 'blue';
+
+# set all four margins individually (top, left, bottom, right)
 $css.margin = [5pt, 2pt, 5pt, 2pt];
-$css.margin = 5pt;  # set margin on all 4 sides
+# set a common margin on all four sides
+$css.margin = 5pt;
 
 # set text alignment
 $css.text-align = 'right';
 
-say ~$css; # border-color:red; color:red!important; margin:5pt; padding:1pt; text-align:right;
+say ~$css; # border-color:blue; color:red!important; margin:5pt; padding:1pt; text-align:right;
 ```
 
 Classes in this module

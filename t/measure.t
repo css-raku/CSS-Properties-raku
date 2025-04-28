@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 28;
+plan 30;
 
 use CSS::Units :pt, :px, :pc, :in, :vw, :vh, :em, :ex, :percent;
 use CSS::Properties;
@@ -29,6 +29,10 @@ is '%0.2f'.sprintf($css.measure: :font-size<smaller>), '10.00', '$css.measure("s
 
 $css .= new: :style("border-spacing: 3pt .75em");
 is $css.measure(:border-spacing), [3.0, 9.0];
+
+$css .= new: :style("height:5px");
+is $css.measure(:height), 15/4;
+is $css.measure(:height($css.height)), 15/4;
 
 # change base units
 $css .= new: :units<pc>;
