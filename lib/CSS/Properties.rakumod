@@ -318,77 +318,79 @@ method !build-declarations(@style) {
 
 # Accessor for a four sided value: top, left, bottom, right
 method !box-value(Str $prop, CArray $edges) is rw {
-    Proxy.new(
-        FETCH => -> $ {
-            %!box{$prop} //= do {
-                my $n = 0;
-                my @bound;
-                @bound[$n++] := self!item-value($_)
-                    for $edges.list;
-                @bound;
-            }
-        },
-        STORE => -> $, $v {
-            with $v {
-                # expand and assign values to child properties
-                my @v = .isa(List) ?? .list !! $_;
-                @v[1] //= @v[0];
-                @v[2] //= @v[0];
-                @v[3] //= @v[1];
+    sub FETCH($) {
+        %!box{$prop} //= do {
+            my $n = 0;
+            my @bound;
+            @bound[$n++] := self!item-value($_)
+                for $edges.list;
+            @bound;
+        }
+    }
+    sub STORE($, $v) {
+        with $v {
+            # expand and assign values to child properties
+            my @v = .isa(List) ?? .list !! $_;
+            @v[1] //= @v[0];
+            @v[2] //= @v[0];
+            @v[3] //= @v[1];
 
-                my $n = 0;
-                for $edges.list -> $prop {
-                    %!values{$prop} = $_
-                        with self!coerce( @v[$n++], :$prop )
-                }
-            }
-            else {
-                self.delete($prop);
+            my $n = 0;
+            for $edges.list -> $prop {
+                %!values{$prop} = $_
+                    with self!coerce( @v[$n++], :$prop )
             }
         }
-    );
+        else {
+            self.delete($prop);
+        }
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 # accessor for a structured property. e.g. font -> font-name, style...
 method !struct-value(Str $prop, CArray $children) is rw {
-    Proxy.new(
-        FETCH => -> $ {
-            %!struct{$prop} //= do {
-                my $n = 0;
-                my %bound;
-                %bound{$_} := self!lval($_)
-                    for $children.list;
-                %bound;
-            }
-        },
-        STORE => -> $, $rval {
-            my %vals;
-            with $rval {
-                when Associative { %vals = .Hash; }
-                default {
-                    with self.parse-property($prop, $_, :$!warn) -> $expr {
-                        %vals{.key} = .value
-                            for self!get-container-prop($prop, $expr);
-                    }
+
+    sub FETCH($) {
+        %!struct{$prop} //= do {
+            my $n = 0;
+            my %bound;
+            %bound{$_} := self!lval($_)
+                for $children.list;
+            %bound;
+        }
+    }
+
+    sub STORE($, $rval) {
+        my %vals;
+        with $rval {
+            when Associative { %vals = .Hash; }
+            default {
+                with self.parse-property($prop, $_, :$!warn) -> $expr {
+                    %vals{.key} = .value
+                        for self!get-container-prop($prop, $expr);
                 }
+            }
+        }
+        else {
+            self.delete($prop);
+        }
+
+        for $children.list -> $prop {
+            with %vals{$prop}:delete {
+                self!lval($prop) = $_
+                    with self!coerce($_, :$prop);
             }
             else {
                 self.delete($prop);
             }
-
-            for $children.list -> $prop {
-                with %vals{$prop}:delete {
-                    self!lval($prop) = $_
-                        with self!coerce($_, :$prop);
-                }
-                else {
-                    self.delete($prop);
-                }
-            }
-            note "unknown child properties of $prop: {%vals.keys.sort}"
-                if %vals
         }
-        );
+        note "unknown child properties of $prop: {%vals.keys.sort}"
+            if %vals
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 # get the default for this property.
@@ -409,30 +411,29 @@ method !default-value($_) {
 
 # accessor for a simple value
 method !item-value(Str $prop) is rw {
-    Proxy.new(
-        FETCH => -> $ {
-           %!values{$prop} // self!default-value($prop);
-        },
-        STORE => -> $, $v {
-            with self!coerce( $v, :$prop ) {
-                $!calc.em = self.measure(:font-size($_))
-                    if $prop eq 'font-size';
-                %!values{$prop} = $_;
-            }
-            else {
-                self.delete($prop);
-            }
+    sub FETCH($) {
+        %!values{$prop} // self!default-value($prop);
+    }
+    sub STORE($, $v) {
+        with self!coerce( $v, :$prop ) {
+            $!calc.em = self.measure(:font-size($_))
+                            if $prop eq 'font-size';
+            %!values{$prop} = $_;
         }
-    );
+        else {
+            self.delete($prop);
+        }
+    }
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method !child-handling(CArray $children) is rw {
-    Proxy.new(
-        FETCH => -> $ { [&&] $children.map: { %!handling{$_} } },
-        STORE => -> $, Str $h {
-            %!handling{$_} = $h
-                for $children.list;
-        });
+    sub FETCH($) { [&&] $children.map: { %!handling{$_} } }
+    sub STORE($, Str $h) {
+        %!handling{$_} = $h
+            for $children.list;
+    }
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method !handling() { %!handling }
@@ -461,12 +462,13 @@ multi method inherited returns Seq {
 }
 
 method !child-importance(CArray $children) is rw {
-    Proxy.new(
-        FETCH => -> $ { [&&] $children.map: { %!important{$_} } },
-        STORE => -> $, Bool $v {
-            %!important{$_} = $v
-                for $children.list;
-        });
+    sub FETCH($) { [&&] $children.map: { %!important{$_} } }
+    sub STORE($, Bool $v) {
+        %!important{$_} = $v
+            for $children.list;
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 #| return True if the property has the !important attribute
@@ -610,7 +612,7 @@ multi sub to-ast($v, :$get = True) is default {
 }
 
 #| CSS conformant inheritance from the given parent declaration list.
-multi method inherit(CSS::Properties:D() $css) {
+method inherit(CSS::Properties:D() $css) {
     for $css.properties -> \name {
         # skip unknown extension properties
         next if name.starts-with('-') && !self.prop-num(name).defined;
