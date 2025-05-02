@@ -1,5 +1,5 @@
 #| management class for a set of CSS Properties
-unit class CSS::Properties:ver<0.10.0>:api<0.9>;
+unit class CSS::Properties:ver<0.10.1>:api<0.9>;
 
 =begin pod
 
