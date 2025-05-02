@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 21;
+plan 23;
 use CSS::Properties;
 
 my $inherit = CSS::Properties.new: :style("margin-top:5pt; margin-right: 10pt; margin-left: 15pt; margin-bottom: 20pt; color:rgb(0,0,255)!important");
@@ -101,6 +101,24 @@ subtest 'issue#11 inheritence', {
 
     is $parent, $style;
     is $child, $style;
+}
+
+subtest 'early inheritence', {
+    my CSS::Properties() $inherit = 'font-size:20pt';
+    my CSS::Properties $css .= new: :style('border: .5em solid gray; font-size:.5em; margin:.5em'), :$inherit;
+    is $css.measure(:font-size), 10;
+    is $css.measure(:border-top-width), 5;
+    is $css.measure(:margin-top), 5;
+}
+
+subtest 'late inheritance', {
+    my CSS::Properties() $inherit = 'font-size:20pt';
+    my CSS::Properties $css .= new: :style('border: .5em solid gray; font-size:.5em; margin:.5em');
+    $css.inherit($inherit);
+    is $css.em, 10;
+    is $css.measure(:font-size), 10;
+    is $css.measure(:border-top-width), 5;
+    is $css.measure(:margin-top), 5;
 }
 
 done-testing;

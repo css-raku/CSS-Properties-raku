@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Fix inheritance relative font-size calculations
 
 0.10.0  2025-04-29T08:40:14+12:00
     - Handle Pairs, List, Hash methods

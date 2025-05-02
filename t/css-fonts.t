@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 3;
+plan 4;
 use CSS::Properties;
 
 my $style = 'font:italic bold 10pt/12pt times-roman;';
@@ -39,6 +39,12 @@ subtest 'serialization' => {
 subtest 'issue#23', {
     my CSS::Properties $css .= new: :style("font-size:.85em");
     is $css.clone.measure(:font-size), $css.measure(:font-size);
+}
+
+subtest 'change em', {
+    my CSS::Properties $css .= new: :style("font-size:.75em");
+    is $css.em, 9;
+    is $css.measure(:font-size), 9;
 }
 
 done-testing;

@@ -128,6 +128,7 @@ class CSS::Properties::Calculator {
         when Bool { CSS::Units.value($!em, $!units) }
         default   { %Compute<font-size>(self, $_) }
     }
+
     multi method measure(:$ref = 0, *%misc where .elems == 1) {
         my ($prop, $value) = %misc.kv;
         given $value {

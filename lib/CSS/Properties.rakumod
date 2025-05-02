@@ -178,7 +178,6 @@ Options:
 
     my @decls = self!build-declarations(@style);
     with $inherit -> CSS::Properties() $_ {
-        $!calc.em = .em;
         self.inherit: $_;
     }
 
@@ -613,6 +612,12 @@ multi sub to-ast($v, :$get = True) is default {
 
 #| CSS conformant inheritance from the given parent declaration list.
 method inherit(CSS::Properties:D() $css) {
+
+    $!calc.em = $css.measure: :font-size;
+    # font-size may be relative to parent, e.g. '.5em' or '85%'
+    $!calc.em = self.measure: :font-size($_)
+        with %!values<font-size>;
+
     for $css.properties -> \name {
         # skip unknown extension properties
         next if name.starts-with('-') && !self.prop-num(name).defined;
@@ -628,10 +633,7 @@ method inherit(CSS::Properties:D() $css) {
                 $inherit = True without %!values{name};
             }
             if $inherit {
-                my $val := $css.computed(name);
-                $!calc.em = $val
-                    if name eq 'font-size' && !%!values{name}.defined;
-                %!values{name} //= $val;
+                %!values{name} = $css.computed(name);
             }
         }
     }
