@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.10.3  2025-10-31T09:08:12+13:00
+    - Remove deprecated CSS::Properties::Font
+
 0.10.2  2025-10-31T07:36:18+13:00
     - Add CSS::Properties::Util module. This initially contains
       from-ast() and to-ast(), factored out from CSS::Properties
