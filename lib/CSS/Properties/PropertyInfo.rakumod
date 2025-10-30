@@ -1,10 +1,11 @@
 use v6;
 
-use CSS::Module;
-use CSS::Module::Property;
-
 #| Meta-data for a given property
 class CSS::Properties::PropertyInfo {
+
+    use CSS::Module;
+    use CSS::Module::Property;
+    use CSS::Properties::Util :&from-ast;
 
     =begin pod
 
@@ -69,10 +70,18 @@ class CSS::Properties::PropertyInfo {
     }
     has Edges $!edges handles<top left bottom right>;
     has CSS::Module::Property $!meta handles<name prop-num inherit initial important synopsis default default-type edge edges edge-names children child-names>;
+    has $.default-value is built;
     method box { $!meta.edges.so }
 
     multi method build(UInt:D :$prop-num!, CSS::Module :$module!, :%edges) {
         $!meta = $module.index[ $prop-num ];
+        with $module.property-metadata{$!meta.name}<default> {
+            with .[1] {
+                $!default-value = ($_ ~~ [{:keyw<transparent>}]
+                    ?? [:rgba[:num(0) xx 4]]
+                    !! $_);
+            }
+        }
         if $!meta.edges {
             die "missing required :%edges on property {$!meta.name}"
                 if %edges{"top"|"left"|"bottom"|"right"} ~~ Any:U;
@@ -91,22 +100,4 @@ class CSS::Properties::PropertyInfo {
     method TWEAK(|c) {
         self.build(|c);
     }
-
-    method default-value {
-        # kludgy default handling
-        given $.default -> $val {
-            with $.default-type {
-                when "keyw" {
-                    [ $val eq 'transparent' ?? :rgba[ :num(0) xx 4] !! ($_ => $val) ];
-                }
-                when "num"|"px"      { [$_ => $val.Int] } 
-                when $val eq '0% 0%' { [:percent(0) xx 2] }
-                default { warn "ignoring default value: $_:$val" }
-            }
-            else {
-                Nil
-            }
-        }
-    }
-
 }

@@ -4,8 +4,9 @@
 { "prop" : "baseline-shift", "decl" : "4%", "type" : "Int"}
 { "prop" : "color", "decl" : "red"}
 { "prop" : "color", "decl" : "rgb(10%,20,30)", "out" : "rgb(26, 20, 30)", "type" : "Color" }
-{ "prop" : "color-interpolation", "decl" : "sRGB", "out" : "srgb"}
-{ "prop" : "color-interpolation", "decl" : "Srgb", "out" : "srgb"}
+{ "prop" : "color-interpolation", "decl" : "sRGB", "out" : ""}
+{ "prop" : "color-interpolation", "decl" : "Srgb", "out" : ""}
+{ "prop" : "color-interpolation", "decl" : "lInearRgB", "out" : "linearrgb"}
 { "prop" : "color-rendering", "decl" : "optimizeSpeed", "out" : "optimizespeed"}
 { "prop" : "direction", "decl" : "ltr", "out" : ""}
 { "prop" : "direction", "decl" : "rtl"}
@@ -34,7 +35,8 @@
 { "prop" : "shape-rendering", "decl" : "crispEdges", "out" : "crispedges" }
 { "prop" : "stop-opacity", "decl" : "0.75"}
 { "prop" : "stop-opacity", "decl" : "75%"}
-{ "prop" : "stroke", "decl" : "none"}
+{ "prop" : "stroke", "decl" : "none", "out" : ""}
+{ "prop" : "stroke", "decl" : "black", "out" : "black"}
 { "prop" : "stroke-dasharray", "decl" : "20, 10"}
 { "prop" : "stroke-dasharray", "decl" : "em, 2em"}
 { "prop" : "stroke-dashoffset", "decl" : "3em"}

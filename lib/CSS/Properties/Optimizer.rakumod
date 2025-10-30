@@ -15,7 +15,7 @@ multi sub css-eqv(%a, %b) {
     if %a.elems != %b.elems { return False }
     for %a.kv -> $k, $v {
         return False
-            unless %b{$k}:exists && css-eqv($v, %b{$k});
+            unless %b{$k}:exists && $v.&css-eqv(%b{$k});
     }
     True;
 }
@@ -23,15 +23,14 @@ multi sub css-eqv(@a, @b) {
     if +@a != +@b { return False }
     for @a.kv -> $k, $v {
         return False
-            unless css-eqv($v, @b[$k]);
+            unless $v.&css-eqv(@b[$k]);
     }
     True;
 }
 multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
 multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
-multi sub css-eqv(Any $a, Any $b) {
-    !$a.defined && !$b.defined
-}
+multi sub css-eqv(Any:U $a, Any:U $b) { True }
+multi sub css-eqv($, $) { False }
 
 # determine if it is advantageous to combine component properties
 # into container properties, e.g. font-family font-style ... into font
@@ -72,8 +71,8 @@ method optimize( @ast, Bool :$keep-defaults ) {
     self.purge-defaults(%prop-ast)
         unless $keep-defaults;
     self.optimize-ast(%prop-ast);
-    punctuate(%prop-ast);
-    make-declaration-list(%prop-ast);
+    %prop-ast.&punctuate;
+    %prop-ast.&make-declaration-list;
 }
 
 has Array $!container-properties;
@@ -121,7 +120,7 @@ method purge-defaults(%prop-ast) {
 
         with %prop-ast{prop}<expr> -> \val {
             %prop-ast{prop}:delete
-                if (val ~~ List ?? css-eqv(val, info.default-value) !! css-eqv(val[0], info.default-value[0]));
+                if (val ~~ List ?? val.&css-eqv(info.default-value) !! val[0].&css-eqv(info.default-value[0]));
         }
    }
 }
@@ -156,7 +155,7 @@ method optimize-ast( %prop-ast ) {
             my constant DefaultIdx = [Mu, Mu, 0, 0, 1];
             @asts.pop
                 while +@asts > 1
-                && css-eqv( @asts.tail, @asts[ DefaultIdx[+@asts] ] );
+                && @asts.tail.&css-eqv: @asts[ DefaultIdx[+@asts] ];
 
             my @expr = @asts.map(*<expr>.Slip);
 
@@ -207,7 +206,7 @@ method optimize-ast( %prop-ast ) {
                 }
                 when 'important'|'normal' {
                     my %props = %(@children.Set);
-                    if optimizable(container-prop, :%props) {
+                    if container-prop.&optimizable(:%props) {
                         my %ast = :expr[ @children.map: {
                             my \sub-prop = %prop-ast{$_}:delete;
                             'expr:'~$_ => sub-prop<expr>;

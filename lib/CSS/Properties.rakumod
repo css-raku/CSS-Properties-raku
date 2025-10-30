@@ -88,18 +88,14 @@ say ~$css; # font:italic bold 14pt/16pt Helvetica;
 use CSS::Module:ver(v0.4.6+);
 use CSS::Module::CSS3;
 use CSS::Writer:ver(v0.2.4+);
-use Color;
-use Color::Conversion;
 use CSS::Module::Property;
+use CSS::Properties::Util :&from-ast, :&to-ast;
 use CSS::Properties::Calculator;
 use CSS::Properties::PropertyInfo;
 use CSS::Properties::Optimizer :%Punctuation, :&punctuate, :&make-declaration-list;
-use CSS::Units :pt, :Function;
+use CSS::Units :pt;
 use Method::Also;
 use NativeCall;
-my enum Colors « :rgb :rgba :hsl :hsla »;
-
-subset KnownFunction of Str:D where 'local'|'format';
 
 subset Handling of Str where 'initial'|'inherit';
 
@@ -213,9 +209,6 @@ say $css.measure: :width(75%); # 60
 
 multi method COERCE(Str:D $style) { self.new: :$style }
 multi method COERCE(%opts) { self.new: |%opts; }
-
-my subset ColorAST of Pair where {.key ~~ 'rgb'|'rgba'|'hsl'|'hsla'}
-my subset Keyword  of Pair where {.key ~~ 'keyw'}
 
 # make or reuse a cached property definition 
 sub make-property(CSS::Module $module, UInt:D $prop-num) {
@@ -487,67 +480,6 @@ multi method important {
     %!important.pairs.map: { $.property-name(.key) => .value }
 }
 
-proto sub from-ast($) is export(:from-ast) {*}
-multi sub from-ast(ColorAST $v) {
-    my @channels = $v.value.map: {from-ast($_)};
-    my Color $color;
-    my $type = $v.key;
-    if $type ~~ 'rgba'|'hsla' {
-        @channels.tail /= 100
-            if @channels.tail.type ~~ 'percent';
-        @channels.tail *= 256;
-    }
-
-    $color .= new: |($type => @channels);
-
-    $color does CSS::Units[Colors, $type];
-}
-multi sub from-ast(Keyword $v) {
-    $lock.protect: {
-        state $cache //= %(
-            'transparent' => (
-                Color but CSS::Units[Colors, 'rgba']).new( :r(0), :g(0), :b(0), :a(0));
-        );
-        $cache{$v.value} //= CSS::Units.value($v.value, $v.key);
-    }
-}
-multi sub from-ast(Pair $v) {
-    given $v.key {
-        when 'func' {
-            my $name = $v.value<ident>;
-            my @args = $v.value<args>.map: { from-ast($_) };
-            if $name ~~ KnownFunction {
-                @args does CSS::Units[Function, $name]
-            }
-            else {
-                $v;
-            }
-        }
-        when 'expr' {
-            my @expr = $v.value.map: { from-ast($_) };
-            CSS::Units.value(@expr, $_);
-        }
-        default {
-            my \r = from-ast( $v.value );
-            r ~~ CSS::Units
-                ?? r
-                !! CSS::Units.value(r, $_);
-        }
-    }
-}
-multi sub from-ast(List $v) {
-    $v.elems == 1 && !$v[0]<expr>
-        ?? from-ast $v[0]
-        !! [ $v.map: { from-ast($_) } ];
-}
-# { :int(42) } => :int(42)
-multi sub from-ast(Hash $v where .keys == 1) {
-    from-ast $v.pairs[0];
-}
-multi sub from-ast($v) {
-    $v
-}
-
 multi sub coerce-str(List $_) {
     .map({ coerce-str($_) // return }).join: ' ';
 }
@@ -563,51 +495,6 @@ method !coerce($val, Str :$prop) {
         $val;
     }
     from-ast(expr);
-}
-
-#| convert 0 .. 255  =>  0.0 .. 1.0. round to 2 decimal places
-sub alpha($a) {
-    :num(($a * 100/256).round / 100);
-}
-
-proto sub to-ast(|) is export(:to-ast) {*}
-
-multi sub to-ast(Pair $v) { $v }
-
-multi sub to-ast($v, :$get = True) is default {
-    my $key = $v.?type if $get;
-
-    my $val = do given $v {
-        when Color {
-            $key //= 'rgb';
-            my $ast := $key ~~ 'hsl'|'hsla'
-                ?? [ <num percent percent> Z=> $v.hsl ]
-                !! [ <num num num> Z=> $v.rgb ];
-            $ast.push( alpha($v.a) )
-                unless $v.a == 255;
-            $ast;
-        }
-        when $key ~~ KnownFunction {
-            my $ident := $key;
-            $key := 'func';
-            my @args = .map: {to-ast($_)};
-            %( :$ident, :@args );
-        }
-        when List  {
-            .elems == 1 && $key !~~ 'expr'
-                ?? to-ast( .[0] )
-                !! [ .map: { to-ast($_) } ];
-        }
-        default {
-            $key
-                ?? to-ast($_, :!get)
-                !! $_;
-        }
-    }
-
-    $key
-        ?? ($key => $val)
-        !! $val;
 }
 
 #| CSS conformant inheritance from the given parent declaration list.
@@ -744,8 +631,9 @@ method ast(Bool :$optimize = True, Bool :$keep-defaults) {
     }
     # 'initial', 'inherit'
     for %!handling.pairs {
-        %prop-ast{$.property-name(.key)}<expr> = [ :keyw(.value) ]
-            if .value;
+        if .value -> Handling $keyw {
+            %prop-ast{$.property-name(.key)}<expr> = [ :$keyw ]
+        }
     }
 
     # expressions
@@ -764,8 +652,8 @@ method ast(Bool :$optimize = True, Bool :$keep-defaults) {
     self.optimizer.optimize-ast(%prop-ast)
         if $optimize;
 
-    punctuate(%prop-ast);
-    make-declaration-list(%prop-ast);
+    %prop-ast.&punctuate;
+    %prop-ast.&make-declaration-list;
 }
 =para This is more-or-less the inverse of the L<CSS::Grammar::CSS3> C<<declaration-list>> rule,
 but with optimization. Suitable for reserialization with CSS::Writer

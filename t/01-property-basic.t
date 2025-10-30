@@ -36,7 +36,6 @@ is $css2.write, 'height:5px; margin:7pt;', 'write';
 
 $css2.copy($css);
 is $css2.write, 'height:5px; margin:5pt; width:4px;', 'copy/write';
-
 cmp-ok $css2.List, &json-eqv, (
     :height(15/4),
     :margin-bottom(5.0),

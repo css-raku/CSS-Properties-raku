@@ -130,7 +130,7 @@ class CSS::Properties::Calculator {
     }
 
     multi method measure(:$ref = 0, *%misc where .elems == 1) {
-        my ($prop, $value) = %misc.kv;
+        my :($prop, $value) := %misc.kv;
         given $value {
             my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
             with %Compute{$prop} {
