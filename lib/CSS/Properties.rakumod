@@ -1,5 +1,5 @@
 #| management class for a set of CSS Properties
-unit class CSS::Properties:ver<0.10.1>:api<0.9>;
+unit class CSS::Properties:ver<0.10.2>:api<0.9>;
 
 =begin pod
 
@@ -85,10 +85,10 @@ say ~$css; # font:italic bold 14pt/16pt Helvetica;
 
 =end pod
 
-use CSS::Module:ver(v0.4.6+);
+use CSS::Module;
 use CSS::Module::CSS3;
-use CSS::Writer:ver(v0.2.4+);
 use CSS::Module::Property;
+use CSS::Writer;
 use CSS::Properties::Util :&from-ast, :&to-ast;
 use CSS::Properties::Calculator;
 use CSS::Properties::PropertyInfo;
@@ -738,7 +738,7 @@ method property(Str \name) is rw {
         fail "unknown property: {name}";
     }
 }
-multi method Bool(::?CLASS:D:) { %!values.Bool }
+multi method Bool(::?CLASS:D:) { %!values.so }
 multi method Bool(::?CLASS:U:) { Bool }
 multi method FALLBACK(Str \name) is rw {
     with $.property-number(name) {

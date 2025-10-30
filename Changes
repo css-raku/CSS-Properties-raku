@@ -1,8 +1,8 @@
 {{$NEXT}}
     - Add CSS::Properties::Util module. This initially contains
       from-ast() and to-ast(), factored out from CSS::Properties
-    - Fix some regressions from CSS::Module 0.7.0+. In particular
-      the SVG CSS module meta-data has been corrected.
+    - Fix some regressions from CSS::Module 0.6.8+. In particular
+      some SVG meta-data and properties have been corrected.
 
 0.10.1  2025-05-03T08:09:03+12:00
     - Fix inheritance relative font-size calculations
