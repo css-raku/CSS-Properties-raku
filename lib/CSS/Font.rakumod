@@ -106,21 +106,9 @@ class CSS::Font {
     method font-style(|c) is rw is DEPRECATED<font-props> { self.font-props(|c) }
 
     method setup {
-        @!family = [];
-        my $cont = False;
-        with $!css.font-family {
-            for .list {
-                when ',' { $cont = False }
-                when $cont && .type eq 'keyw' {
-                    @!family.tail ~= ' ' ~ $_;
-                }
-                default {
-                    @!family.push: $_;
-                    $cont = True;
-                }
-            }
-        }
-
+        @!family = $!css.property-exists('font-family')
+            ?? $!css.font-family.grep(* ne ',')
+            !! [];
         $!style = $!css.font-style;
         $!weight = $!css.computed('font-weight');
         $!stretch = $!css.font-stretch;
