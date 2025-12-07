@@ -1,6 +1,7 @@
 #| property calculator and measurement tool.
 class CSS::Properties::Calculator {
     use CSS::Units :Lengths, :&dimension, :pt;
+    use CSS::Properties::Util :&from-ast;
 
     =begin pod
     =head2 Synopsis
@@ -13,16 +14,19 @@ class CSS::Properties::Calculator {
     my Numeric $font-size = $css.measure: :font-size; # get current font size (mm)
     $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
     $font-size = $css.measure: :font-size(120%);      # compute a larger font
+    $font-size = "calc(100%/3 + .5*1em)";
+    $font-size = $css.measure: :font-size;            # compute a larger font
     my $weight = $css.measure: :font-weight;          # get current font weight 100..900
     $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
     =end code
 
     =head2 Description
 
-    This module supports conversion of quantities to numerical values.
+    This module supports conversion or evaluation of quantities to numerical values.
     =item CSS length quantities may rely on context. For example `ex` depends on the current font and font-size
     =item Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
     =item `font-weight` is converted to a numerical value in the range 100 .. 900
+    =item Evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> calc() in property values is supported.
 
     Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
     =begin code
@@ -146,6 +150,50 @@ class CSS::Properties::Calculator {
         }
     }
 
+    proto sub calc(|c) {
+        {*}
+    }
+
+    multi sub calc( % ( :@expr! ) ) {
+        calc |@expr;
+    }
+
+    multi sub calc( % ( :op($)! where '(' ), %expr, % ( :op($)! where ')' ) ) {
+        calc %expr;
+    }
+
+    multi sub calc( %expr1, % ( :$op! ),  %expr2 ) {
+        my \v1 := calc(%expr1);
+        my \v2 := calc(%expr2);
+        given $op {
+            when '+' { v1 + v2 }
+            when '-' { v1 - v2 }
+            when '*' { v1 * v2 }
+            when '/' { v1 / v2 }
+        }
+    }
+
+    multi sub calc( %ast ) {
+        $*calc.measure: from-ast(%ast), :$*ref;
+    }
+    multi sub calc( *@expr ) {
+        warn "Unhandled expression: {@expr.map(*.raku).join: "|"}";
+    }
+
+    multi sub func('calc', @expr) {
+        calc |@expr;
+    }
+
+    multi sub func($ident, |) {
+        warn "Unrecognised function: " ~ $ident;
+    }
+
+    multi sub eval(:%func! ( :$ident!, :@expr! )) {
+        func $ident, @expr;
+    }
+    multi method measure($*calc: Pair $expr, Numeric :$*ref = $!em) {
+        eval |$expr;
+    }
     multi method measure(Numeric $v is copy,
                          Numeric :$ref = $!em,
                   ) {

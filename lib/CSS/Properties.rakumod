@@ -409,7 +409,7 @@ method !item-value(Str $prop) is rw {
     sub STORE($, $v) {
         with self!coerce( $v, :$prop ) {
             $!calc.em = self.measure(:font-size($_))
-                            if $prop eq 'font-size';
+                if $prop eq 'font-size';
             %!values{$prop} = $_;
         }
         else {

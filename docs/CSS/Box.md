@@ -113,7 +113,7 @@ These methods return measured positions of each of the four corners of the inner
 
     $box.top += 5;
 
-Outer boxes will grow and shrink, retaining their original width and height.
+The size of the enclosing rectangles (padding, margin, border) also changes; enclosing edges remaining fixed.
 
 ### content, padding, margin, border
 
@@ -126,7 +126,7 @@ These values are rw. The box can be both moved and resized, by adjusting this ar
 
     $box.content.Array = (10, 50, 35, 10); # 40x25 box, top-left @ 10,10
 
-Outer boxes, will grow or shrink to retain their original widths.
+Enclosing rectangles, will grow or shrink; enclosing edges remain fixed.
 
 ### [padding|margin|border|content]-[width|height]
 

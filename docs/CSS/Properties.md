@@ -196,20 +196,10 @@ multi method important() returns Mu
 
 Return all properties that have the !important attribute
 
-### sub alpha
+### method inherit
 
 ```raku
-sub alpha(
-    $a
-) returns Mu
-```
-
-convert 0 .. 255 => 0.0 .. 1.0. round to 2 decimal places
-
-### multi method inherit
-
-```raku
-multi method inherit(
+method inherit(
     CSS::Properties:D(Any):D $css
 ) returns Mu
 ```
