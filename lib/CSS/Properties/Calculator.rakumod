@@ -26,7 +26,7 @@ class CSS::Properties::Calculator {
     =item CSS length quantities may rely on context. For example `ex` depends on the current font and font-size
     =item Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
     =item `font-weight` is converted to a numerical value in the range 100 .. 900
-    =item Basic evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> calc() arithmetic expressions in
+    =item Basic evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> arithmetic expressions in
           property values is supported.
 
     Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.

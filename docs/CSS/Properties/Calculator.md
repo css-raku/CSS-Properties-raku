@@ -37,7 +37,7 @@ This module supports conversion or evaluation of quantities to numerical values.
 
   * `font-weight` is converted to a numerical value in the range 100 .. 900
 
-  * Basic evaluation of [calc()](https://www.w3.org/TR/css-values-3/#calc-notation) calc() arithmetic expressions in property values is supported.
+  * Basic evaluation of [calc()](https://www.w3.org/TR/css-values-3/#calc-notation) arithmetic expressions in property values is supported.
 
 Note: [CSS::Properties](https://css-raku.github.io/CSS-Properties-raku/CSS/Properties), [CSS::Box](https://css-raku.github.io/CSS-Properties-raku/CSS/Box) and [CSS::Font](https://css-raku.github.io/CSS-Properties-raku/CSS/Font) objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
 
