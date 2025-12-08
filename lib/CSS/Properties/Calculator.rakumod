@@ -169,13 +169,13 @@ class CSS::Properties::Calculator {
     # binary left associative arithmetic operation
     multi sub calc( %lhs, % ( :$op! ),  *@rhs ) {
         use CSS::Units :ops; # Use arithmetic operator overloading
-        my \v1 := calc(%lhs);
-        my \v2 := calc(|@rhs);
+        my $v1 := calc(%lhs);
+        my $v2 := calc(|@rhs);
         given $op {
-            when '+' { v1 + v2 }
-            when '-' { v1 - v2 }
-            when '*' { v1 * v2 }
-            when '/' { v1 / v2 }
+            when '+' { $v1 + $v2 }
+            when '-' { $v1 - $v2 }
+            when '*' { $v1 * $v2 }
+            when '/' { $v1 / $v2 }
         }
     }
 
