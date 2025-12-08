@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.10.4  2025-12-09T11:12:16+13:00
     - Support evaluation of simple arithmetic calc() expressions
       in property values
     - Simplify CSS::Font initialization
