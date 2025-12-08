@@ -1,5 +1,7 @@
 {{$NEXT}}
-    - Support evaluation of calc() expressions in property values
+    - Support evaluation of simple arithmetic calc() expressions
+      in property values
+    - Simplify CSS::Font initialization
 
 0.10.3  2025-10-31T09:08:12+13:00
     - Remove deprecated CSS::Properties::Font
