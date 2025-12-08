@@ -12,10 +12,10 @@ class CSS::Properties::Calculator {
     my CSS::Properties::Calculator $calc .= new: :$css, :units<mm>, :veiwport-width<250>;
     # Converts a value to a numeric quantity;
     my Numeric $font-size = $css.measure: :font-size; # get current font size (mm)
-    $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font
-    $font-size = $css.measure: :font-size(120%);      # compute a larger font
-    $font-size = "calc(100%/3 + .5*1em)";
-    $font-size = $css.measure: :font-size;            # compute a larger font
+    $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font-size
+    $font-size = $css.measure: :font-size(120%);      # compute a larger font-size
+    $font-size = "calc(1.5rem + 3vw)";
+    $font-size = $css.measure: :font-size;            # compute calculated font-size
     my $weight = $css.measure: :font-weight;          # get current font weight 100..900
     $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
     =end code
@@ -26,7 +26,8 @@ class CSS::Properties::Calculator {
     =item CSS length quantities may rely on context. For example `ex` depends on the current font and font-size
     =item Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
     =item `font-weight` is converted to a numerical value in the range 100 .. 900
-    =item Evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> calc() in property values is supported.
+    =item Basic evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> calc() arithmetic expressions in
+          property values is supported.
 
     Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
     =begin code
@@ -39,6 +40,7 @@ class CSS::Properties::Calculator {
     has Str $.units = 'pt';
     has Numeric $!scale = Lengths.enums{$!units};
     has Numeric $.em is rw = 12pt.scale($!units);
+    has Numeric $!rem = $!em; # original $!em
     method ex { $!em * 3/4 }
     has Numeric $.viewport-width;
     has Numeric $.viewport-height;
@@ -151,20 +153,24 @@ class CSS::Properties::Calculator {
     }
 
     proto sub calc(|c) {
-        {*}
+        {*};
     }
 
+    # trivial epxression
     multi sub calc( % ( :@expr! ) ) {
         calc |@expr;
     }
 
+    # parenthesized sub-expression
     multi sub calc( % ( :op($)! where '(' ), %expr, % ( :op($)! where ')' ) ) {
         calc %expr;
     }
 
-    multi sub calc( %expr1, % ( :$op! ),  %expr2 ) {
-        my \v1 := calc(%expr1);
-        my \v2 := calc(%expr2);
+    # binary left associative arithmetic operation
+    multi sub calc( %lhs, % ( :$op! ),  *@rhs ) {
+        use CSS::Units :ops; # Use arithmetic operator overloading
+        my \v1 := calc(%lhs);
+        my \v2 := calc(|@rhs);
         given $op {
             when '+' { v1 + v2 }
             when '-' { v1 - v2 }
@@ -173,9 +179,16 @@ class CSS::Properties::Calculator {
         }
     }
 
+    # numeric constant
+    multi sub calc( % ( Numeric:D :$num! ) ) {
+        $num;
+    }
+
+    # css quantity
     multi sub calc( %ast ) {
         $*calc.measure: from-ast(%ast), :$*ref;
     }
+
     multi sub calc( *@expr ) {
         warn "Unhandled expression: {@expr.map(*.raku).join: "|"}";
     }
@@ -202,13 +215,23 @@ class CSS::Properties::Calculator {
         my Numeric $scale = do given $units {
             when 'none' { $v = Nil }
             when 'em'   { $!em }
+            when 'ch'   { $!em * .8 } # todo: should be advance width of '0'
+            when 'rem'  { $!rem }
             when 'ex'   { $.ex }
             when 'vw'   { $!viewport-width }
             when 'vh'   { $!viewport-height }
             when 'vmin' { min($!viewport-width, $!viewport-height) }
             when 'vmax' { max($!viewport-width, $!viewport-height) }
             when 'percent' { $ref * $!scale / 100; }
-            default     { dimension($_).enums{$_} }
+            default     {
+                given dimension($_) {
+                    when Enumeration { .enums{$units} }
+                    default {
+                        warn "Unknown units: $units";
+                        1;
+                    }
+                }
+            }
         };
         with $scale {
             CSS::Units.value($v * $_ / $!scale, $!units);

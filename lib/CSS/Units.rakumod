@@ -1,7 +1,7 @@
 use v6;
 
 my enum Lengths is export(:Lengths) «
-    :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(0.0) :vh(0.0)
+    :pt(1.0) :pc(12.0) :px(.75) :mm(2.8346) :cm(28.346) :in(72.0) :vw(1.0) :vh(1.0), ch(1.0), :rem(1.0)
 »;
 
 my enum Resolutions is export(:Resolutions) « :dpi(1.0/in) :dpcm(1.0/cm) :dppx(1.0/px) »;
@@ -45,12 +45,13 @@ role CSS::Units[\dimension, \units] {
     method units {units}
     method gist {self ~ units}
 
-    multi method scale(Str $u) {
-        self * (units eq $u ?? 1 !! dimension.enums{units} / dimension.enums{$u});
+    multi method scale(CSS::Units $v) is default {
+        self.scale($v.type);
     }
 
-    multi method scale(CSS::Units $v) {
-        self.scale($v.type);
+    multi method scale(Str $u) {
+        my $scale = (units eq $u ?? 1 !! dimension.enums{units} / (dimension.enums{$u}));
+        self * $scale;
     }
 
     my subset Length of CSS::Units is export(:Length) where .dimension === Lengths;
@@ -95,6 +96,23 @@ role CSS::Units[\dimension, \units] {
     multi sub infix:<->(CSS::Units $v, 0) is default is export(:ops) {
         $v;
     }
+    multi sub infix:</>(CSS::Units $v, CSS::Units $n) is default is export(:ops) {
+dd [:$v,'/',:$n];
+        $v  /  $n.scale($v);
+    }
+    multi sub infix:</>(CSS::Units $v, Numeric $n) is default is export(:ops) {
+dd [:$v,'/',:$n];
+        ($v  /  $n) but CSS::Units[$v.dimension, $v.type];
+    }
+    multi sub infix:<*>(CSS::Units $v, CSS::Units $n) is default {
+        fail "Unable to multiply united quantities: $v * $n"
+    }
+    multi sub infix:<*>(CSS::Units $v, Numeric $n) {
+        ($v  *  $n) but CSS::Units[$v.dimension, $v.type];
+    }
+    multi sub infix:<*>(Numeric $n, CSS::Units $v) {
+        ($v  *  $n) but CSS::Units[$v.dimension, $v.type];
+    }
     multi sub infix:«>css»(CSS::Units $v, CSS::Units $n) { $v > $n.scale($v) }
     multi sub infix:«<css»(CSS::Units $v, CSS::Units $n) { $v < $n.scale($v) }
     #| explicit add
@@ -108,8 +126,9 @@ role CSS::Units[\dimension, \units] {
 role CSS::Units {
     use Color;
 
+    my constant %Dimension = %( flat (Lengths, Resolutions, Percentages, Angles, Time, Frequency, Function).map: -> $dim { $dim.keys.map: { $_ => $dim } } );
     sub dimension(\units) is export(:dimension) {
-        (Lengths, Resolutions, Percentages, Angles, Time, Frequency, Function).first({.enums{units}:exists})
+        %Dimension{units}
     }
     method value(\v, \units) {
         v ~~ Color|Hash|List
