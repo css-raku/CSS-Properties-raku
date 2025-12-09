@@ -14,8 +14,8 @@ class CSS::Properties::Calculator {
     my Numeric $font-size = $css.measure: :font-size; # get current font size (mm)
     $font-size = $css.measure: :font-size<smaller>;   # compute a smaller font-size
     $font-size = $css.measure: :font-size(120%);      # compute a larger font-size
-    $font-size = "calc(1.5rem + 3vw)";
-    $font-size = $css.measure: :font-size;            # compute calculated font-size
+    $font-size = "calc(1.5rem + 3vw)";                # compute a calculated font-size
+    $font-size = $css.measure: :font-size;
     my $weight = $css.measure: :font-weight;          # get current font weight 100..900
     $weight = $css.measure: :font-weight<bold>;       # compute bold font weight
     =end code
@@ -152,10 +152,6 @@ class CSS::Properties::Calculator {
         }
     }
 
-    proto sub calc(|c) {
-        {*};
-    }
-
     # trivial epxression
     multi sub calc( % ( :@expr! ) ) {
         calc |@expr;
@@ -167,7 +163,7 @@ class CSS::Properties::Calculator {
     }
 
     # binary left associative arithmetic operation
-    multi sub calc( %lhs, % ( :$op! ),  *@rhs ) {
+    multi sub calc( %lhs, % ( :$op! ),  *@rhs (%, *@) ) {
         use CSS::Units :ops; # Use arithmetic operator overloading
         my $v1 := calc(%lhs);
         my $v2 := calc(|@rhs);
@@ -201,11 +197,11 @@ class CSS::Properties::Calculator {
         warn "Unrecognised function: " ~ $ident;
     }
 
-    multi sub eval(:%func! ( :$ident!, :@expr! )) {
+    sub evaluate(:%func! ( :$ident!, :@expr! )) {
         func $ident, @expr;
     }
     multi method measure($*calc: Pair $expr, Numeric :$*ref = $!em) {
-        eval |$expr;
+        evaluate |$expr;
     }
     multi method measure(Numeric $v is copy,
                          Numeric :$ref = $!em,
@@ -240,6 +236,7 @@ class CSS::Properties::Calculator {
             $v;
         }
     }
+
     multi method measure(Str $v is copy) {
         my Numeric $n;
         with $v {
