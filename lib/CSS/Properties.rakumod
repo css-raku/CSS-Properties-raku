@@ -119,7 +119,8 @@ method optimizer(::?CLASS:D $css:) handles<optimize> {
     $!optimizer //= CSS::Properties::Optimizer.new: :$css, :$!index;
 }
 has CSS::Properties::Calculator $!calc handles<em ex units computed measure viewport-width viewport-height reference-width>;
-my Lock:D $lock .= new;
+my  Lock:D $lock .= new;   # global lock
+has Lock:D $!lock .= new;  # object instance lock
 
 =begin pod
 =head2 Other Methods
@@ -410,6 +411,8 @@ method !item-value(Str $prop) is rw {
         with self!coerce( $v, :$prop ) {
             $!calc.em = self.measure(:font-size($_))
                 if $prop eq 'font-size';
+            $!calc.font-weight = self.measure(:font-weight($_))
+                if $prop eq 'font-weight';
             %!values{$prop} = $_;
         }
         else {
@@ -489,7 +492,7 @@ multi sub coerce-str($_) {
 has %!ast-cache{Str}; # cache, for performance
 method !coerce($val, Str :$prop) {
     my \expr = do with $prop && coerce-str($val) {
-        $lock.protect: {(%!ast-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))}
+        $!lock.protect: {(%!ast-cache{$prop}{$_} //= $.parse-property($prop, $_, :$!warn))}
     }
     else {
         $val;
@@ -504,6 +507,10 @@ method inherit(CSS::Properties:D() $css) {
     # font-size may be relative to parent, e.g. '.5em' or '85%'
     $!calc.em = self.measure: :font-size($_)
         with %!values<font-size>;
+    $!calc.font-weight = $css.measure: :font-weight;
+    # font-weight may also be relative to parent, e.g. 'lighter' or 'bolder'
+    $!calc.font-weight = self.measure: :font-weight($_)
+        with %!values<font-weight>;
 
     for $css.properties -> \name {
         # skip unknown extension properties
@@ -546,6 +553,8 @@ multi method copy(::?CLASS:D: ::?CLASS:D $orig, :@properties = $orig.properties)
     for @properties {
         $!calc.em = $orig.computed($_)
            if $_ eq 'font-size';
+        $!calc.font-weight = $orig.computed($_)
+            if $_ eq 'font-weight';
         %!values{$_} = $orig."$_"()
             if $.property-number($_).defined;
     }

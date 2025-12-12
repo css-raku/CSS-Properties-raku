@@ -49,7 +49,7 @@ subtest 'font-size inheritance', {
 
     $inherit = CSS::Properties.new: :style("font-size: larger;");
     $css = CSS::Properties.new: :style("color:red; font-size:inherit;"), :$inherit;
-    is ~$css, 'color:red; font-size:14.4pt;', 'inheritance of relative font-size';
+    is ~$css, 'color:red; font-size:14.5pt;', 'inheritance of relative font-size';
 
     $inherit = CSS::Properties.new: :style("font-size: 40pt;");
     $css = CSS::Properties.new: :style("font-size:75%;"), :$inherit;

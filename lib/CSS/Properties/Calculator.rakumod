@@ -27,7 +27,7 @@ class CSS::Properties::Calculator {
     =item Furthermore the `measure` method converts lengths to preferred units (by default `pt`).
     =item `font-weight` is converted to a numerical value in the range 100 .. 900
     =item Basic evaluation of L<calc()|https://www.w3.org/TR/css-values-3/#calc-notation> arithmetic expressions in
-          property values is supported.
+          property values is supported for CSS3 and SVG.
 
     Note: L<CSS::Properties>, L<CSS::Box> and L<CSS::Font> objects all encapsulate a calculator object which handles `measure` and `calculate` methods.
     =begin code
@@ -40,6 +40,7 @@ class CSS::Properties::Calculator {
     has Str $.units = 'pt';
     has Numeric $!scale = Lengths.enums{$!units};
     has Numeric $.em is rw = 12pt.scale($!units);
+    has Numeric $.font-weight is rw = 400;
     has Numeric $!rem = $!em; # original $!em
     method ex { $!em * 3/4 }
     has Numeric $.viewport-width;
@@ -69,8 +70,8 @@ class CSS::Properties::Calculator {
     BEGIN %Compute = (
         font-size => method ($_) {
             when %FontSizes{$_}:exists { %FontSizes{$_}.scale: $!units }
-            when 'larger'   { self!em: $!em * 1.2 }
-            when 'smaller'  { self!em: $!em / 1.2 }
+            when 'larger'   { self!em: ($!em * 1.2).round: 0.5 }
+            when 'smaller'  { self!em: ($!em / 1.2).round: 0.5 }
             default { $.measure($_, :ref($!em)) }
         },
         font-weight => method ($_) {
@@ -114,8 +115,8 @@ class CSS::Properties::Calculator {
             when FontWeight       { .Int }
             when 'normal'         { 400 }
             when 'bold'           { 700 }
-            when 'lighter'        { 100 }
-            when 'bolder'         { 700 }
+            when 'lighter'        { $!font-weight - 300 }
+            when 'bolder'         { $!font-weight + 300 }
             default {
                 if /^ <[1..9]>00 $/ {
                     .Int
@@ -135,6 +136,11 @@ class CSS::Properties::Calculator {
         default   { %Compute<font-size>(self, $_) }
     }
 
+    multi method measure(:font-weight($_)!) {
+        when Bool { CSS::Units.value($!font-weight, $!units) }
+        default   { %Compute<font-weight>(self, $_) }
+    }
+
     multi method measure(:$ref = 0, *%misc where .elems == 1) {
         my :($prop, $value) := %misc.kv;
         given $value {
@@ -152,7 +158,7 @@ class CSS::Properties::Calculator {
         }
     }
 
-    # trivial epxression
+    # trivial expression
     multi sub calc( % ( :@expr! ) ) {
         calc |@expr;
     }

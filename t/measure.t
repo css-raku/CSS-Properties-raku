@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 30;
+plan 32;
 
 use CSS::Units :pt, :px, :pc, :in, :vw, :vh, :em, :ex, :percent;
 use CSS::Properties;
@@ -26,6 +26,45 @@ is '%0.2f'.sprintf($css.measure: :font-size<medium>), '12.00', '$css.measure(:fo
 is '%0.2f'.sprintf($css.measure: :font-size<thick>), '3.00', '$css.measure("thick")';
 is '%0.2f'.sprintf($css.measure: :font-size<x-large>), '18.00', '$css.measure("x-large")';
 is '%0.2f'.sprintf($css.measure: :font-size<smaller>), '10.00', '$css.measure("smaller")';
+
+subtest 'font-size', {
+    is $css.measure(:font-size), 12;
+    is $css.measure(:font-size<large>), 13.5;
+    is $css.measure(:font-size<larger>), 14.5;
+    is $css.measure(:font-size<smaller>), 10;
+    $css.font-size = 'large';
+    is $css.measure(:font-size), 13.5;
+    is $css.measure(:font-size<large>), 13.5;
+    is $css.measure(:font-size<larger>), 16;
+    is $css.measure(:font-size<smaller>), 11.5;
+    is $css.measure(:font-size<small>), 10;
+    $css.font-size = 'smaller';
+    is $css.measure(:font-size), 11.5;
+    $css.font-size = 'smaller';
+    is $css.measure(:font-size), 9.5;
+    is $css.measure(:font-size<large>), 13.5;
+    is $css.measure(:font-size<larger>), 11.5;
+    is $css.measure(:font-size<smaller>), 8;
+}
+
+subtest 'font-weight', {
+    is $css.measure(:font-weight), 400;
+    is $css.measure(:font-weight<bold>), 700;
+    is $css.measure(:font-weight<bolder>), 700;
+    is $css.measure(:font-weight<lighter>), 100;
+    $css.font-weight = 'bold';
+    is $css.measure(:font-weight), 700;
+    is $css.measure(:font-weight<bold>), 700;
+    is $css.measure(:font-weight<bolder>), 900;
+    is $css.measure(:font-weight<lighter>), 400;
+    $css.font-weight = 'lighter';
+    is $css.measure(:font-weight), 400;
+    $css.font-weight = 'lighter';
+    is $css.measure(:font-weight), 100;
+    is $css.measure(:font-weight<bold>), 700;
+    is $css.measure(:font-weight<bolder>), 400;
+    is $css.measure(:font-weight<lighter>), 100;
+}
 
 $css .= new: :style("border-spacing: 3pt .75em");
 is $css.measure(:border-spacing), [3.0, 9.0];

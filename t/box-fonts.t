@@ -39,7 +39,7 @@ subtest 'measure' => {
     is $font.measure(:font-size(80%)), 8, 'measure percentage font-size';
     is $font.measure(:font-size(0%)), 0, 'measure percentage font-size';
     is $font.measure(:font-size(keyw('medium'))), 12, 'measure named font-size';
-    is $font.measure(:font-size(keyw('smaller'))), 10/1.2, 'measure named font-size';
+    is $font.measure(:font-size(keyw('smaller'))), 8.5, 'measure named font-size';
 }
 
 subtest 'patterns' => {
