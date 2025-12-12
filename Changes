@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+0.10.5  2025-12-13T08:33:06+13:00
+    - Round relative font-size calculations to the nearest 0.5pt;
+      avoid recurring decimal values, in some cases.
+    - Fix inheritance and update of relative font weights 'bolder' and
+      'lighter'; make similar to relative font-size handling, e.g.
+      'smaller', 'larger'.
+
 0.10.4  2025-12-09T11:12:16+13:00
     - Support evaluation of simple arithmetic calc() expressions
       in property values
