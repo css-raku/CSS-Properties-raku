@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 44;
+plan 45;
 
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
@@ -48,6 +48,7 @@ is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
 
 $css.margin = '0';
 is $css.margin-left, 0, 'reset margin-left';
+is $css.Str, 'border-color:rgb(10, 20, 30) red;';
 
 $css.border-color = 'green';
 $css.border-top-color = 'blue';
