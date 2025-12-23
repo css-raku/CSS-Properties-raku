@@ -153,7 +153,7 @@ Options:
 =item `*%props` - CSS property settings
 =end pod
 
- submethod TWEAK( Str :$style, List() :$ast, :$inherit, ::?CLASS :$copy,
+ submethod TWEAK( Str :$style, List() :$ast, CSS::Properties() :$inherit, ::?CLASS :$copy,
                  List() :$declarations,
                  Str :$units = 'pt',
                  Numeric :$em = 12pt.scale($units),
@@ -174,9 +174,7 @@ Options:
     @style.append: .list with $ast;
 
     my @decls = self!build-declarations(@style);
-    with $inherit -> CSS::Properties() $_ {
-        self.inherit: $_;
-    }
+    self.inherit: $_ with $inherit;
 
     self!set-decls(@decls);
     self.copy($_) with $copy;
@@ -320,23 +318,21 @@ method !box-value(Str $prop, CArray $edges) is rw {
             @bound;
         }
     }
-    sub STORE($, $v) {
-        with $v {
-            # expand and assign values to child properties
-            my @v = .isa(List) ?? .list !! $_;
-            @v[1] //= @v[0];
-            @v[2] //= @v[0];
-            @v[3] //= @v[1];
+    multi sub STORE($, Any:D $_) {
+        # expand and assign values to child properties
+        my @v = .isa(List) ?? .list !! $_;
+        @v[1] //= @v[0];
+        @v[2] //= @v[0];
+        @v[3] //= @v[1];
 
-            my $n = 0;
-            for $edges.list -> $prop {
-                %!values{$prop} = $_
-                    with self!coerce( @v[$n++], :$prop )
-            }
+        my $n = 0;
+        for $edges.list -> $prop {
+            %!values{$prop} = $_
+                with self!coerce( @v[$n++], :$prop )
         }
-        else {
-            self.delete($prop);
-        }
+    }
+    multi sub STORE($, Any:U $_) {
+        self.delete($prop)
     }
 
     Proxy.new: :&FETCH, :&STORE;
@@ -355,7 +351,7 @@ method !struct-value(Str $prop, CArray $children) is rw {
         }
     }
 
-    sub STORE($, $rval) {
+    multi sub STORE($, Any:D $rval) {
         my %vals;
         with $rval {
             when Associative { %vals = .Hash; }
@@ -366,46 +362,41 @@ method !struct-value(Str $prop, CArray $children) is rw {
                 }
             }
         }
-        else {
-            self.delete($prop);
-        }
 
         for $children.list -> $prop {
             with %vals{$prop}:delete {
                 self!lval($prop) = $_
                     with self!coerce($_, :$prop);
             }
-            else {
-                self.delete($prop);
-            }
         }
         note "unknown child properties of $prop: {%vals.keys.sort}"
             if %vals
+    }
+    multi sub STORE($, Any:U) {
+        self.delete($prop);
     }
 
     Proxy.new: :&FETCH, :&STORE;
 }
 
 # get the default for this property.
-method !default-value($_) {
-    when .starts-with('border-') && .ends-with('-color') {
-        # border colors default to the 'color' property
-        self.?color;
-    }
-    when 'text-align' {
-        # text alignment depends on current direction
-        %!values<direction> ~~ 'rtl' ?? 'right' !! 'left';
-    }
-    default {
-        # consult property metadata for other defaults
-        %!defaults{$_} //= self!coerce( $.info($_).default-value )
-    }
+multi method default-value('text-align') {
+    # text alignment depends on current direction
+    %!values<direction> ~~ 'rtl' ?? 'right' !! 'left';
+}
+multi method default-value($ where .starts-with('border-') && .ends-with('-color') && $.property-number('color').defined) {
+    # border colors default to the 'color' property
+    self.color;
+}
+multi method default-value($_)  {
+    # consult property metadata for other defaults
+    %!defaults{$_} //= self!coerce( $.info($_).default-value )
 }
 
 # accessor for a simple value
 method !item-value(Str $prop) is rw {
     sub FETCH($) {
-        %!values{$prop} // self!default-value($prop);
+        %!values{$prop} // $.default-value($prop);
     }
     sub STORE($, $v) {
         with self!coerce( $v, :$prop ) {
@@ -419,6 +410,7 @@ method !item-value(Str $prop) is rw {
             self.delete($prop);
         }
     }
+
     Proxy.new: :&FETCH, :&STORE;
 }
 
@@ -575,7 +567,7 @@ method !coerce-decl(&coercer, Pair \p --> Bool) {
             my $message = "usage: " ~ $_
                 with self.info(p.key).synopsis;
             $message //= $!.message;
-            note "dropping {$!module.name} property {p.key}: {$message}"
+            note "dropping {$!module.name} property {p.key}: {$message}";
         }
         False;
     }
@@ -724,7 +716,7 @@ dd $css.Pairs;
 method dispatch:<.?>(\name, |c) is raw {
     self.can(name)
         ?? self."{name}"(|c)
-        !! do with $.propertry-number(name) { self!lval(name, $_) } else { Nil }
+        !! do with $.property-number(name) { self!lval(name, $_) } else { Nil }
 }
 method !value($_, \name, |c) is rw {
     .children
