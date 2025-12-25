@@ -308,12 +308,12 @@ say $css.measure: :margin-left;      # 2.646mm
 
 Name | Default | Inherit | Type | Synopsis
 --- | --- | --- | --- | ---
-azimuth | center | Yes |  | \<angle\> \| [[ left-side \| far-left \| left \| center-left \| center \| center-right \| right \| far-right \| right-side ] \|\| behind ] \| leftwards \| rightwards
+azimuth | center | Yes |  | \<angle\> \| [ \<direction\> \|\| \<behind\> ] \| \<delta\>
 background |  |  | hash | ['background-color' \|\| 'background-image' \|\| 'background-repeat' \|\| 'background-attachment' \|\| 'background-position']
 background-attachment | scroll |  |  | scroll \| fixed
 background-color | transparent |  |  | \<color\> \| transparent
 background-image | none |  |  | \<uri\> \| none
-background-position | 0% 0% |  |  | [ [ \<percentage\> \| \<length\> \| left \| center \| right ] [ \<percentage\> \| \<length\> \| top \| center \| bottom ]? ] \| [ [ left \| center \| right ] \|\| [ top \| center \| bottom ] ]
+background-position | 0% 0% |  |  | [ [ \<percentage\> \| \<length\> \| \<align\> ] [ \<percentage\> \| \<length\> \| \<valign\> ]? ] \| [ \<align\> \|\| \<valign\> ]
 background-repeat | repeat |  |  | repeat \| repeat-x \| repeat-y \| no-repeat
 border |  |  | hash,box | [ 'border-width' \|\| 'border-style' \|\| 'border-color' ]
 border-bottom |  |  | hash | [ 'border-bottom-width' \|\| 'border-bottom-style' \|\| 'border-bottom-color' ]
@@ -342,7 +342,7 @@ caption-side | top | Yes |  | top \| bottom
 clear | none |  |  | none \| left \| right \| both
 clip | auto |  |  | \<shape\> \| auto
 color | depends on user agent | Yes |  | \<color\>
-content | normal |  |  | normal \| none \| [ \<string\> \| \<uri\> \| \<counter\> \| \<counters\> \| attr(\<identifier\>) \| open-quote \| close-quote \| no-open-quote \| no-close-quote ]+
+content | normal |  |  | normal \| none \| [ \<string\> \| \<uri\> \| \<counter()\> \| \<counters()\> \| attr(\<identifier\>) \| open-quote \| close-quote \| no-open-quote \| no-close-quote ]+
 counter-increment | none |  |  | none \| [ \<identifier\> \<integer\>? ]+
 counter-reset | none |  |  | none \| [ \<identifier\> \<integer\>? ]+
 cue |  |  | hash | [ 'cue-before' \|\| 'cue-after' ]
@@ -351,10 +351,10 @@ cue-before | none |  |  | \<uri\> \| none
 cursor | auto | Yes |  | [ [\<uri\> ,]* [ auto \| crosshair \| default \| pointer \| move \| e-resize \| ne-resize \| nw-resize \| n-resize \| se-resize \| sw-resize \| s-resize \| w-resize \| text \| wait \| help \| progress ] ]
 direction | ltr | Yes |  | ltr \| rtl
 display | inline |  |  | inline \| block \| list-item \| inline-block \| table \| inline-table \| table-row-group \| table-header-group \| table-footer-group \| table-row \| table-column-group \| table-column \| table-cell \| table-caption \| none
-elevation | level | Yes |  | \<angle\> \| below \| level \| above \| higher \| lower
+elevation | level | Yes |  | \<angle\> \| \<tilt\>
 empty-cells | show | Yes |  | show \| hide
 float | none |  |  | left \| right \| none
-font |  | Yes | hash | [ [ \<‘font-style’\> \|\| \<font-variant-css21\> \|\| \<‘font-weight’\> \|\| \<‘font-stretch’\> ]? \<‘font-size’\> [ / \<‘line-height’\> ]? \<‘font-family’\> ] \| caption \| icon \| menu \| message-box \| small-caption \| status-bar
+font |  | Yes | hash | [ [ \<‘font-style’\> \|\| \<font-variant-css21\> \|\| \<‘font-weight’\> \|\| \<‘font-stretch’\> ]? \<‘font-size’\> [ / \<‘line-height’\> ]? \<‘font-family’\>\# ] \| caption \| icon \| menu \| message-box \| small-caption \| status-bar
 font-family | depends on user agent | Yes |  | [ \<generic-family\> \| \<family-name\> ]\#
 font-feature-settings | normal | Yes |  | normal \| \<feature-tag-value\>\#
 font-kerning | auto | Yes |  | auto \| normal \| none
@@ -422,7 +422,7 @@ speak-punctuation | none | Yes |  | code \| none
 speech-rate | medium | Yes |  | \<number\> \| x-slow \| slow \| medium \| fast \| x-fast \| faster \| slower
 stress | 50 | Yes |  | \<number\>
 table-layout | auto |  |  | auto \| fixed
-text-align | a nameless value that acts as 'left' if 'direction' is 'ltr', 'right' if 'direction' is 'rtl' | Yes |  | left \| right \| center \| justify
+text-align | a nameless value that acts as 'left' if 'direction' is 'ltr', 'right' if 'direction' is 'rtl' | Yes |  | \<align\> \| justify
 text-decoration | none |  |  | none \| [ underline \|\| overline \|\| line-through \|\| blink ]
 text-indent | 0 | Yes |  | \<length\> \| \<percentage\>
 text-transform | none | Yes |  | capitalize \| uppercase \| lowercase \| none
