@@ -8,7 +8,7 @@
   ],
   "depends": [
     "CSS::Module:ver<0.7.4+>",
-    "CSS::Writer:ver<0.2.12+>",
+    "CSS::Writer:ver<0.2.13+>",
     "Color",
     "Method::Also"
   ],
@@ -38,5 +38,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.10.5"
+  "version": "0.10.6"
 }
