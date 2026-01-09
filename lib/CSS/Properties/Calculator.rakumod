@@ -1,6 +1,6 @@
 #| property calculator and measurement tool.
 class CSS::Properties::Calculator {
-    use CSS::Units :Lengths, :&dimension, :pt;
+    use CSS::Units :Lengths, :&dimension, :pt, :px;
     use CSS::Properties::Util :&from-ast;
 
     =begin pod
@@ -43,9 +43,9 @@ class CSS::Properties::Calculator {
     has Numeric $.font-weight is rw = 400;
     has Numeric $!rem = $!em; # original $!em
     method ex { $!em * 3/4 }
-    has Numeric $.viewport-width;
-    has Numeric $.viewport-height;
-    has Numeric $.reference-width;
+    has Numeric $.viewport-width = 1024px.scale($!units);
+    has Numeric $.viewport-height = 768px.scale($!units);
+    has Numeric $.reference-width = $!viewport-width;
     has Numeric $.user-width = 1.0;
     method reference-width is rw {
         Proxy.new(
@@ -91,7 +91,7 @@ class CSS::Properties::Calculator {
             when 'normal' { self!em }
             default { self.measure: $_, :ref($!em) }
         },
-        'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_, :$ref = 0) {
+        'border-top-width'|'border-right-width'|'border-bottom-width'|'border-left-width' => method ($_, :$ref = $!reference-width) {
             self.measure($_, :$ref); # percentage needs to be supplied
         },
         'width'|'height'|'min-width'|'max-width'|'min-height'|'max-height'|'padding-top'|'padding-right'|'padding-bottom'|'padding-left'|'margin-top'|'margin-right'|'margin-bottom'|'margin-left' => method ($_) {
@@ -141,17 +141,17 @@ class CSS::Properties::Calculator {
         default   { %Compute<font-weight>(self, $_) }
     }
 
-    multi method measure(:$ref = 0, *%misc where .elems == 1) {
+    multi method measure(*%misc where .elems == 1) {
         my :($prop, $value) := %misc.kv;
         given $value {
             my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
             with %Compute{$prop} {
-                .(self, $v, :$ref);
+                .(self, $v);
             }
             else {
-                given $.measure($v, :$ref) {
+                given $.measure($v) {
                     .isa(List)
-                        ??  [ $v.map: {$.measure($_, :$ref)} ]
+                        ??  [ $v.map: {$.measure($_)} ]
                         !!  $v;
                 }
             }

@@ -1,5 +1,5 @@
 #| management class for a set of CSS Properties
-unit class CSS::Properties:ver<0.10.5>:api<0.9>;
+unit class CSS::Properties:ver<0.10.6>:api<0.9>;
 
 =begin pod
 
@@ -93,7 +93,7 @@ use CSS::Properties::Util :&from-ast, :&to-ast;
 use CSS::Properties::Calculator;
 use CSS::Properties::PropertyInfo;
 use CSS::Properties::Optimizer :%Punctuation, :&punctuate, :&make-declaration-list;
-use CSS::Units :pt;
+use CSS::Units :pt, :px;
 use Method::Also;
 use NativeCall;
 
@@ -155,11 +155,12 @@ Options:
 
  submethod TWEAK( Str :$style, List() :$ast, CSS::Properties() :$inherit, ::?CLASS :$copy,
                  List() :$declarations,
-                 Str :$units = 'pt',
-                 Numeric :$em = 12pt.scale($units),
-                 Numeric :$viewport-width, Numeric :$viewport-height,
-                 Numeric :$reference-width = 0,
-                 Numeric :$user-width = 1.0,
+                 Str:D :$units = 'pt',
+                 Numeric:D :$em = 12pt.scale($units),
+                 Numeric:D :$viewport-width = 1024px.scale($units),
+                 Numeric:D :$viewport-height = 768px.scale($units),
+                 Numeric:D :$reference-width = $viewport-width,
+                 Numeric:D :$user-width = 1.0,
                  :module($), :warn($), :warnings($),
                  *%props, ) {
     $lock.protect: {
@@ -320,15 +321,14 @@ method !box-value(Str $prop, CArray $edges) is rw {
     }
     multi sub STORE($, Any:D $_) {
         # expand and assign values to child properties
-        my @v = .isa(List) ?? .list !! $_;
+        my @v = .list;
         @v[1] //= @v[0];
         @v[2] //= @v[0];
         @v[3] //= @v[1];
 
-        my $n = 0;
         for $edges.list -> $prop {
             %!values{$prop} = $_
-                with self!coerce( @v[$n++], :$prop )
+                with self!coerce( @v.shift, :$prop )
         }
     }
     multi sub STORE($, Any:U $_) {

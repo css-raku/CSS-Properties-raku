@@ -34,6 +34,8 @@ is-approx 1200hz.scale("khz"), 1.20, 'hz to khz';
 is-approx 1turn.scale("deg"), 360, 'turn to deg';
 is-approx 1turn.scale("rad"), (2*pi), 'turn to rad';
 
+is-approx 768px.scale("pt"), 576, 'px to pt';
+
 is '%0.2f'.sprintf(10dpi.scale('dpcm')), '3.94', 'dpi to dpcm';
 is '%0.1f'.sprintf(1dppx.scale('dpi')), '96.0', 'dppx to dpi';
 
