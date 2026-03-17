@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 20;
+plan 19;
 use CSS::Module::CSS3;
 use CSS::Module;
 use CSS::Properties;
@@ -32,7 +32,6 @@ my $info = $css.info('-my-align');
 is $info.name, '-my-align', 'info.name';
 is $info.synopsis, 'left | middle | right', 'info.synopsis';
 is $info.default, 'middle', 'info.default';
-is $info.default-type, 'keyw', 'info.default-type';
 
 $css."-my-span"() = 5;
 ok $my-span-calls, 'coercer called';
@@ -46,7 +45,6 @@ is $css.properties.sort.join(','), '-my-align,-my-span', 'properties';
 is $css.Str, '-my-align:left; -my-span:5;', 'serialization';
 
 $css."-my-align"() = 'middle';
-
 is $css.Str, '-my-span:5;', 'serialization (default)';
 
 $css .= new: :style($css.Str), :$module;

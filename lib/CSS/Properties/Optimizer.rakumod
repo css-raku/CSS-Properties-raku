@@ -120,7 +120,7 @@ method purge-defaults(%prop-ast) {
 
         with %prop-ast{prop}<expr> -> \val {
             %prop-ast{prop}:delete
-                if (val ~~ List ?? val.&css-eqv(info.default-value) !! val[0].&css-eqv(info.default-value[0]));
+                if (val ~~ List ?? val.&css-eqv(info.default-value.list) !! val[0].&css-eqv(info.default-value[0]));
         }
    }
 }

@@ -153,7 +153,7 @@ Options:
 =item `*%props` - CSS property settings
 =end pod
 
- submethod TWEAK( Str :$style, List() :$ast, CSS::Properties() :$inherit, ::?CLASS :$copy,
+ submethod TWEAK($css: Str :$style, List() :$ast, CSS::Properties() :$inherit, ::?CLASS :$copy,
                  List() :$declarations,
                  Str:D :$units = 'pt',
                  Numeric:D :$em = 12pt.scale($units),
@@ -168,18 +168,18 @@ Options:
             // die "module {$!module.name} lacks an index";
         $!properties //= (%module-properties{$!module} //= []);
     }
-    $!calc .= new: :css(self), :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width, :$em;
+    $!calc .= new: :$css, :$units, :$viewport-width, :$viewport-height, :$reference-width, :$user-width, :$em;
 
     my @style = .list with $declarations;
     @style.append: self!parse-style($_) with $style;
     @style.append: .list with $ast;
 
     my @decls = self!build-declarations(@style);
-    self.inherit: $_ with $inherit;
+    $css.inherit: $_ with $inherit;
 
-    self!set-decls(@decls);
-    self.copy($_) with $copy;
-    self.set-properties(|%props);
+    $css!set-decls(@decls);
+    $css.copy($_) with $copy;
+    $css.set-properties(|%props);
 }
 
 =begin pod

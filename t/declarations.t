@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 45;
+plan 47;
 
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
@@ -12,7 +12,7 @@ is $css.border-top-color, '#FF0000', ':values constructor';
 
 my $margin-info = $css.info('margin');
 ok $margin-info.box, 'box property';
-is-deeply [$margin-info.edges.list], [<margin-top margin-right margin-bottom margin-left>.map({$css.property-number($_)})], 'edges property';
+is-deeply $margin-info.edges.Array, [<margin-top margin-right margin-bottom margin-left>.map({$css.property-number($_)})], 'edges property';
 
 my $margin-left-info = $css.info('margin-left');
 isa-ok $margin-left-info, CSS::Properties::PropertyInfo, 'simple property';
@@ -43,11 +43,15 @@ is $css.margin-top.type, 'pt', 'updated margin-right units';
 $css.margin[1] = 20px;
 is $css.margin-right.type, 'px', 'updated margin-right units';
 is $css.margin, [10, 20, 0, 0], 'updated margin';
-$css.border-color = [ :rgb[10,20,30], :color<red> ];
-is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
-
+is $css.measure(:margin), [10, 15, 0, 0], 'measured margin';
+$css.margin = Nil;
+is $css.margin, [0, 0, 0, 0], 'reset margin';
+$css.margin-top = 10pt;
 $css.margin = '0';
 is $css.margin-left, 0, 'reset margin-left';
+
+$css.border-color = [ :rgb[10,20,30], :color<red> ];
+is $css.border-color, <#0A141E red #0A141E red>, 'named and rgb colors';
 is $css.Str, 'border-color:rgb(10, 20, 30) red;';
 
 $css.border-color = 'green';
