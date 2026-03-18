@@ -16,12 +16,13 @@ $css.reference-width = 80;
 my $pw := $css.reference-width/10;
 
 my %sides = :top(80), :right(50), :bottom(0), :left(0);
+my @sides = [<top right bottom left>.map: { %sides{$_} }];
 my CSS::Box $box .= new: :$css, |%sides;
 is $box.units, 'pt', 'default units';
-is-deeply $box.Array, [%sides<top>+0e0, %sides<right>+0e0, %sides<bottom>+0e0, %sides<left>+0e0], '.Array';
-is $box.padding.Array, [%sides<top>+$pw, %sides<right>+$pw, %sides<bottom>-$pw, %sides<left>-$pw], '.padding';
-is $box.border.Array, [%sides<top>+3+$pw, %sides<right>+3+$pw, %sides<bottom>-3-$pw, %sides<left>-3-$pw], '.border';
-is $box.margin.Array, [%sides<top>+8+$pw, %sides<right>+8+$pw, %sides<bottom>-8-$pw, %sides<left>-8-$pw], '.margin';
+is-deeply $box.Array, [@sides.map(*.Num) ], '.Array';
+is $box.padding.Array, [@sides Z+ ($pw, $pw, -$pw, -$pw) ], '.padding';
+is $box.border.Array, [@sides Z+ ($pw+3, $pw+3, -$pw-3, -$pw-3)], '.border';
+is $box.margin.Array, [@sides Z+ ($pw+8, $pw+8, -$pw-8, -$pw-8)], '.margin';
 is $box.width, %sides<right> - %sides<left>, '.width';
 is $box.height, %sides<top> - %sides<bottom>, '.height';
 is $box.width('padding'), %sides<right> - %sides<left> + $pw*2, '.width("padding")';
@@ -38,13 +39,13 @@ $css .= clone: :units<px>;
 is $css.units, 'px';
 $box .= new: :$css, |%sides;
 is $box.units, 'px', 'changed units';
-is-deeply $box.Array, [%sides<top>+0e0, %sides<right>+0e0, %sides<bottom>+0e0, %sides<left>+0e0], '.Array';
+is-deeply $box.Array, [@sides.map(*.Num) ], '.Array';
 
 # padding is a percentage adjustment, so does not change
-is $box.padding.Array, [%sides<top>+$pw, %sides<right>+$pw, %sides<bottom>-$pw, %sides<left>-$pw], '.padding';
+is $box.padding.Array, [@sides Z+ ($pw, $pw, -$pw, -$pw)], '.padding';
 
 # padding (10%) + 7pt
 my \adj = $pw + $box.measure(8pt);
-is-deeply $box.margin.Array.map(*.round(0.001)), (%sides<top>+adj, %sides<right>+adj, %sides<bottom>-adj, %sides<left>-adj).map(*.round(0.001)), 'adjusted .margin';
+is-deeply $box.margin.Array.map(*.round(0.001)), (@sides Z+ (adj, adj, -adj, -adj)).map(*.round(0.001)), 'adjusted .margin';
 
 done-testing;
