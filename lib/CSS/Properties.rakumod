@@ -80,7 +80,7 @@ $css.line-height = 16pt;   # unit value
 $css.border-color = Color.new(0, 255, 0);
 $css.font-style = :keyw<italic>; # type/value pair
 
-say ~$css; # font:italic bold 14pt/16pt Helvetica;
+say ~$css; # border:lime; font:italic bold 14pt/16pt Helvetica;
 =end code
 
 =end pod

@@ -158,7 +158,7 @@ multi method measure(*%misc where .elems == 1) {
     }
 }
 
-# trivial expression
+# unary expression
 multi sub calc( % ( :@expr! ) ) {
     calc |@expr;
 }
