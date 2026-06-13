@@ -7,7 +7,7 @@
   "build-depends": [
   ],
   "depends": [
-    "CSS::Module:ver<0.7.6+>",
+    "CSS::Module:ver<0.7.7+>",
     "CSS::Writer:ver<0.2.13+>",
     "Color",
     "Method::Also"
@@ -38,5 +38,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.10.7"
+  "version": "0.10.8"
 }
