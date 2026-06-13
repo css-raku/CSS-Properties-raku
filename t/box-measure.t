@@ -44,7 +44,7 @@ is-deeply $box.Array, [@sides.map(*.Num) ], '.Array';
 # padding is a percentage adjustment, so does not change
 is $box.padding.Array, [@sides Z+ ($pw, $pw, -$pw, -$pw)], '.padding';
 
-# padding (10%) + 7pt
+# padding (10%) + 8pt
 my \adj = $pw + $box.measure(8pt);
 is-deeply $box.margin.Array.map(*.round(0.001)), (@sides Z+ (adj, adj, -adj, -adj)).map(*.round(0.001)), 'adjusted .margin';
 

@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 19;
+plan 22;
 use CSS::Module::CSS3;
 use CSS::Module;
 use CSS::Properties;
@@ -25,13 +25,20 @@ my %extensions = %(
     '-my-mixed-CASE' => %(),
 );
 
-my $module = CSS::Module::CSS3.module: :%extensions;
+my %alias = :foo<color>;
+
+my $module = CSS::Module::CSS3.module: :%alias, :%extensions;
 
 my CSS::Properties $css .= new( :$module, );
 my $info = $css.info('-my-align');
 is $info.name, '-my-align', 'info.name';
 is $info.synopsis, 'left | middle | right', 'info.synopsis';
 is $info.default, 'middle', 'info.default';
+
+$info = $css.info('foo');
+is $info.name, 'foo', 'info.name';
+is $info.synopsis, '<color>';
+is $info.default, 'depends on user agent', 'info.default';
 
 $css."-my-span"() = 5;
 ok $my-span-calls, 'coercer called';
