@@ -75,7 +75,7 @@ multi method build(UInt:D :$prop-num!, CSS::Module :$module!, :%edges) {
     $!meta = $module.index[ $prop-num ];
     with $module.property-metadata{$!meta.name}<default> {
         $!default-value = $module.parse-property($!meta.name, $_)
-            unless .contains('agent'|'value of'|'nameless');
+            unless m/:i 'agent'|'value of'|'nameless'|'n/a'|'ua specific'|'properties'/;
     }
     $!default-value = [:rgba[:num(0) xx 4]]
         if $!default-value ~~ [{:keyw<transparent>}];
