@@ -137,7 +137,7 @@ multi method measure(:font-size($_)!) {
 }
 
 multi method measure(:font-weight($_)!) {
-    when Bool { CSS::Units.value($!font-weight, $!units) }
+    when Bool { CSS::Units.value($!font-weight, 'int') }
     default   { %Compute<font-weight>(self, $_) }
 }
 
