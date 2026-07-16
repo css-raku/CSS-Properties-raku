@@ -35,7 +35,7 @@ Information class for individual properties
     CSS::Properties::PropertyInfo :%edges{ :$top, :$left, :$bottom, :$right},
  ) returns CSS::Properties::PropertyInfo;
 =end code
-=para Returns a new object containing inforation on the given property
+=para Returns a new object containing information on the given property
 
 =head2 Accessors
 

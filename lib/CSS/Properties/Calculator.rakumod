@@ -127,7 +127,7 @@ method !weigh($_, Int $delta = 0) returns FontWeight {
             }
         }
     };
-    $v = min(900, max(100, $v + $delta));
+    $v = ($v + $delta).&max(100).&min(900);
     CSS::Units.value($v, 'int');
 }
 

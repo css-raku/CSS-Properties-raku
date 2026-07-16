@@ -42,7 +42,7 @@ Methods
  ) returns CSS::Properties::PropertyInfo;
 ```
 
-Returns a new object containing inforation on the given property
+Returns a new object containing information on the given property
 
 Accessors
 ---------
