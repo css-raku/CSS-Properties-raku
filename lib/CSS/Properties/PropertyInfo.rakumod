@@ -90,7 +90,7 @@ multi method build(UInt:D :$prop-num!, CSS::Module :$module!, :%edges) {
             if %edges;
     }
 }
-multi method build(Str:D :$name!, CSS::Module :$module = (require ::('CSS::Module::CSS3')).module, |c) {
+multi method build(Str:D :$name!, CSS::Module:D :$module!, |c) {
     my $prop-num := $module.property-number($name)
         // die "unknown css property: $name";
     self.build(:$prop-num, :$module, |c);

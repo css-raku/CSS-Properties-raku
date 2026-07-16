@@ -3,11 +3,14 @@ use Test;
 plan 18;
 
 use CSS::Properties::PropertyInfo;
+use CSS::Module;
+use CSS::Module::CSS3;
 use CSS::Properties;
 use CSS::Units :pt, :px;
 use CSS::Grammar::Test :&json-eqv;
 
-my CSS::Properties::PropertyInfo $sample-prop .= new( :name<background-image> );
+my CSS::Module:D $module = CSS::Module::CSS3.module;
+my CSS::Properties::PropertyInfo:D $sample-prop .= new: :name<background-image> :$module;
 
 is-deeply $sample-prop.name, 'background-image', '$prop.name';
 is-deeply $sample-prop.box, False, '$prop.box';
@@ -16,10 +19,10 @@ is-deeply $sample-prop.synopsis, '<uri> | none', '$prop.synopsis';
 is-deeply $sample-prop.default, "none", '$prop.default';
 
 my CSS::Properties::PropertyInfo %edges = <top right bottom left>.map: {
-    $_ => CSS::Properties::PropertyInfo.new: :name('margin-' ~ $_);
+    $_ => CSS::Properties::PropertyInfo.new: :name('margin-' ~ $_), :$module;
 }
-dies-ok {CSS::Properties::PropertyInfo.new( :name<margin> )}, 'missing edges detected';
-$sample-prop = CSS::Properties::PropertyInfo.new( :name<margin>, :%edges );
+dies-ok {CSS::Properties::PropertyInfo.new: :name<margin>, :$module}, 'missing edges detected';
+$sample-prop = CSS::Properties::PropertyInfo.new: :name<margin>, :%edges, :$module;
 
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
