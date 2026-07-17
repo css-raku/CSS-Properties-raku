@@ -54,13 +54,15 @@ The following [CSS::Module::Property](https://css-raku.github.io/CSS-Module-raku
 <th>Name</th> <th>Type</th> <th>Description</th>
 </tr></thead>
 <tbody>
-<tr> <td>name</td> <td>Str</td> <td>Property name, e.g. &#39;top-margin&#39;</td> </tr> <tr> <td>prop-num</td> <td>UInt</td> <td>A unique number for the property</td> </tr> <tr> <td>inherit</td> <td>Bool</td> <td>The property is inherited?</td> </tr> <tr> <td>initial</td> <td>Bool</td> <td>Property should reset to it&#39;s initial value?</td> </tr> <tr> <td>important</td> <td>Bool</td> <td>Property has !important inheritance mode</td> </tr> <tr> <td>synposis</td> <td>Bool</td> <td>Property value L&lt;syntax|http://www.w3.org/TR/CSS21/about.html#property-defs&gt; definition</td> </tr> <tr> <td>default-value</td> <td>Any</td> <td>Default value for the property</td> </tr> <tr> <td>edge-names</td> <td>List</td> <td>top, right, bottom, left components [1]</td> </tr> <tr> <td>child-names</td> <td>List</td> <td>child components [2]</td> </tr>
+<tr> <td>name</td> <td>Str</td> <td>Property name, e.g. &#39;top-margin&#39;</td> </tr> <tr> <td>prop-num</td> <td>UInt</td> <td>A unique number for the property</td> </tr> <tr> <td>inherit</td> <td>Bool</td> <td>The property is inherited?</td> </tr> <tr> <td>initial</td> <td>Bool</td> <td>Property should reset to it&#39;s initial value?</td> </tr> <tr> <td>important</td> <td>Bool</td> <td>Property has !important inheritance mode</td> </tr> <tr> <td>synposis</td> <td>Bool</td> <td>Property value [1]</td> </tr> <tr> <td>default-value</td> <td>Any</td> <td>Default value for the property</td> </tr> <tr> <td>edge-names</td> <td>List</td> <td>top, right, bottom, left components [2]</td> </tr> <tr> <td>child-names</td> <td>List</td> <td>child components [3]</td> </tr>
 </tbody>
 </table>
 
 Notes:
 
-  * [1] for example `margin` has edge-names `top-margin` ... `left-margin`
+  * [1] see [property definition syntax](http://www.w3.org/TR/CSS21/about.html#property-defs)
 
-  * [2] for example `font` has child-names `family-name`, `font-weight` ...
+  * [2] for example `margin` has edge-names `top-margin` ... `left-margin`
+
+  * [3] for example `font` has child-names `family-name`, `font-weight` ...
 

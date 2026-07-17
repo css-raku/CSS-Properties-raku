@@ -22,7 +22,7 @@ my CSS::Properties::PropertyInfo %edges = <top right bottom left>.map: {
     $_ => CSS::Properties::PropertyInfo.new: :name('margin-' ~ $_), :$module;
 }
 dies-ok {CSS::Properties::PropertyInfo.new: :name<margin>, :$module}, 'missing edges detected';
-$sample-prop = CSS::Properties::PropertyInfo.new: :name<margin>, :%edges, :$module;
+$sample-prop .= new: :name<margin>, :%edges, :$module;
 
 is-deeply $sample-prop.name, 'margin', '$prop.name';
 is-deeply $sample-prop.box, True, '$prop.box';
@@ -30,11 +30,11 @@ is-deeply $sample-prop.inherit, False, '$prop.inherit';
 is-deeply $sample-prop.synopsis, '<margin-width>{1,4}', '$prop.synopsis';
 is-deeply $sample-prop.top.name, 'margin-top', '$prop.top.name';
 
-my $css = CSS::Properties.new: :margin(5pt), :width(4px);
+my CSS::Properties:D $css .= new: :margin(5pt), :width(4px);
 is $css.width, 4px, 'declared property';
 is $css.height, 'auto', 'defaulted property';
 is $css.write, 'margin:5pt; width:4px;', 'write';
-my $css2 = CSS::Properties.new: :style("margin:7pt; height:5px");
+my CSS::Properties:D $css2 .= new: :style("margin:7pt; height:5px");
 is $css2.write, 'height:5px; margin:7pt;', 'write';
 
 $css2.copy($css);

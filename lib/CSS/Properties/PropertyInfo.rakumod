@@ -49,15 +49,16 @@ prop-num | UInt | A unique number for the property
 inherit | Bool | The property is inherited?
 initial | Bool | Property should reset to it's initial value?
 important | Bool | Property has !important inheritance mode
-synposis | Bool | Property value L<syntax|http://www.w3.org/TR/CSS21/about.html#property-defs> definition
+synposis | Bool | Property value [1]
 default-value | Any | Default value for the property
-edge-names | List | top, right, bottom, left components [1]
-child-names | List | child components [2]
+edge-names | List | top, right, bottom, left components [2]
+child-names | List | child components [3]
 =end table
 
 Notes:
-=item [1] for example `margin` has edge-names `top-margin` ... `left-margin`
-=item [2] for example `font` has child-names `family-name`, `font-weight` ...
+=item [1] see L<property definition syntax|http://www.w3.org/TR/CSS21/about.html#property-defs>
+=item [2] for example `margin` has edge-names `top-margin` ... `left-margin`
+=item [3] for example `font` has child-names `family-name`, `font-weight` ...
 =end pod
 
 my class Edges {
