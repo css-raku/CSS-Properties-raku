@@ -188,6 +188,21 @@ multi sub calc( % ( Numeric:D :$num! ) ) {
     $num;
 }
 
+# named constant
+multi sub calc( % ( Str:D :$keyw! ) ) {
+    given $keyw {
+        when 'e'         { e }
+        when 'pi'        { pi }
+        when 'infinity'  { Inf }
+        when '-infinity' { -Inf }
+        when 'Nan'       { Mu }
+        default {
+            warn "Unhandled calc keyword {.raku}";
+            Any
+        }
+    }
+}
+
 # css quantity
 multi sub calc( %ast ) {
     $*calc.measure: from-ast(%ast), :$*ref;

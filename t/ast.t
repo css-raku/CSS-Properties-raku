@@ -15,10 +15,10 @@ is $css.write(:!optimize), 'background-position:center; background-repeat:repeat
 
 my $ast = $css.ast;
 is $ast, (:declaration-list[
-                   {:expr["expr:background-repeat" => [:keyw<repeat-x>], "expr:background-position" => [:keyw<center>]], :ident("background")},
-                   {:expr[:keyw<inherit>], :ident<border-left-style>},
-                   {:expr[:rgb[:num(255), :num(0), :num(0)]], :ident<color>, :prio<important> }
-               ]), 'ast';
-is $css.write , 'background:repeat-x center; border-left-style:inherit; color:red!important;', 'style optimized';
+                   {:expr["expr:background-position" => :keyw<center>, "expr:background-repeat" => :keyw<repeat-x>], :ident<background>},
+                   {:expr[:keyw<inherit>], :ident("border-left-style")},
+                   {:expr(:rgb[:num(255), :num(0), :num(0)],), :ident("color"), :prio("important")}
+         ]), 'ast';
+is $css.write , 'background:center repeat-x; border-left-style:inherit; color:red!important;', 'style optimized';
 
 done-testing;

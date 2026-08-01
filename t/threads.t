@@ -36,21 +36,22 @@ blat 'basic', {
 my atomicint $err = 0;
 my CSS::Properties() $css = "color:red !important; padding: 1pt";
 blat 'info', {
-    for $css.module.prop-names.values.pick(5) {
-        my $info = $css.info($_);
-        my $num = $info.prop-num;
-        unless $num == $_ {
+    for $css.module.prop-names.pick(5) {
+        my $enum-prop-name = .key;
+        my $enum-prop-num = .value;
+        my $prop-name = $css.property-name($enum-prop-num);
+        my $info = $css.info($enum-prop-num);
+        my $prop-num = $info.prop-num;
+
+        unless $prop-num == $enum-prop-num {
             unless $err⚛++ > 5  {
-                diag "property number mismatch: $num <-> $_";
+                diag "property number mismatch ($prop-name, $enum-prop-name): $prop-num <-> $enum-prop-num";
             }
         }
     }
 }
 
-todo "may fail on older Rakudo versions"
-  if $*RAKU.compiler.version < v2022.03;
 nok $err, 'no property name errors';
-
 
 use CSS::Module;
 use CSS::Module::CSS1;

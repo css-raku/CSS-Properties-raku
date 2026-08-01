@@ -29,7 +29,7 @@ from the body of a CSS rule-set or from an inline `style` tag.
 
 =head2 CSS Property Accessors
 
-CSS Properties provides `rw` accessors for all standard CSS3 properties.
+CSS Properties provides `rw` accessors for all standard CSS properties.
 
 =item color values are converted to Color objects
 =item other values are converted to strings or numeric, as appropriate
@@ -86,7 +86,7 @@ say ~$css; # border:lime; font:italic bold 14pt/16pt Helvetica;
 =end pod
 
 use CSS::Module;
-use CSS::Module::CSS3;
+use CSS::Module::Snapshot2026;
 use CSS::Module::Property;
 use CSS::Writer;
 use CSS::Properties::Util :&from-ast, :&to-ast;
@@ -103,13 +103,13 @@ my %module-index{CSS::Module};        # per-module objects
 my %module-properties{CSS::Module};   # per-module property attributes
 
 # contextual variables
-has Any   %!values handles <keys>;    # property values
+has Any   %.values handles <keys>;    # property values
 has Any   %!defaults;
 has Array %!box;
 has Hash  %!struct;
 has Bool  %!important{Int};
 has Handling %!handling{Int};
-has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; # associated CSS module
+has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::Snapshot2026.module; # associated CSS module
 has Exception @.warnings;
 has Bool $.warn = True;
 has Array $!properties;
@@ -578,7 +578,7 @@ method !coerce-decl(&coercer, Pair \p --> Bool) {
 
 method !set-decls(@decls) {
     my %coerce := $!module.coerce;
-    my CSS::Writer $writer .= new;
+
     for @decls -> \p {
         with $.property-number(p.key) {
             with %coerce{p.key} {

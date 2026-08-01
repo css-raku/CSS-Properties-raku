@@ -61,34 +61,35 @@ subtest 'font-size inheritance', {
 }
 
 subtest 'inherit+clone', {
-    my CSS::Properties $valign-middle .= new(:vertical-align<middle>);
-    $css .= new: :style("border-top-color:red; vertical-align:inherit;");
+    my CSS::Properties $valign-fast .= new(:speech-rate<fast>);
+    $css .= new: :style("border-top-color:red; speech-rate:inherit;");
     my $original-css = $css;
     $css .= clone;
-    is ~$css, "border-top:red; vertical-align:inherit;", 'cloned css';
+    is $css.info("speech-rate").inherit, True, 'speech-rate inherit metadata';
+    is ~$css, "border-top:red; speech-rate:inherit;", 'cloned css';
     $css.border-color = 'blue';
-    is ~$css, "border:blue; vertical-align:inherit;", 'cloned css';
-    $css.inherit: $valign-middle;
-    is ~$css, "border:blue; vertical-align:middle;", 'cloned+inherited css';
+    is ~$css, "border:blue; speech-rate:inherit;", 'cloned css';
+    $css.inherit: $valign-fast;
+    is ~$css, "border:blue; speech-rate:fast;", 'cloned+inherited css';
 
     $css = $original-css.clone;
-    $css.inherit: $valign-middle;
+    $css.inherit: $valign-fast;
     $css .= clone;
-    is ~$css, "border-top:red; vertical-align:middle;", 'inherited+cloned css';
+    is ~$css, "border-top:red; speech-rate:fast;", 'inherited+cloned css';
 
     $css = $original-css.clone;
-    $css.vertical-align = 'bottom';
-    $css.vertical-align = Nil;
-    is ~$css, "border-top:red; vertical-align:inherit;";
-    $css.inherit: $valign-middle;
-    is ~$css, "border-top:red; vertical-align:middle;";
+    $css.speech-rate = 'slow';
+    $css.speech-rate = Nil;
+    is ~$css, "border-top:red; speech-rate:inherit;";
+    $css.inherit: $valign-fast;
+    is ~$css, "border-top:red; speech-rate:fast;";
 
     $css = $original-css.clone;
-    $css.vertical-align = 'bottom';
-    $css.inherit: $valign-middle;
-    is ~$css, "border-top:red; vertical-align:bottom;";
+    $css.speech-rate = 'slow';
+    $css.inherit: $valign-fast;
+    is ~$css, "border-top:red; speech-rate:slow;";
 
-    is ~$original-css, "border-top:red; vertical-align:inherit;", 'original css';
+    is ~$original-css, "border-top:red; speech-rate:inherit;", 'original css';
 }
 
 subtest 'issue#11 inheritence', {

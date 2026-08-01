@@ -17,9 +17,14 @@ multi sub from-ast(ColorAST $v) {
     my @channels = $v.value.map: {from-ast($_)};
     my Color $color;
     my $type = $v.key;
-    if $type ~~ 'rgba'|'hsla' {
+    if @channels == 4 {
+        # alpha channel present
+        $type ~= "a" unless $type.ends-with: "a"; 
         @channels.tail *= (@channels.tail.type ~~ 'percent'
                            ?? 2.56 !! 256);
+    }
+    else {
+        $type .= chop if $type.ends-with: "a";
     }
 
     $color .= new: |($type => @channels);
