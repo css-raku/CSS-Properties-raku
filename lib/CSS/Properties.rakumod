@@ -108,6 +108,7 @@ has Any   %!defaults;
 has Array %!box;
 has Hash  %!struct;
 has Bool  %!important{Int};
+has Array @!background;
 has Handling %!handling{Int};
 has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::Snapshot2026.module; # associated CSS module
 has Exception @.warnings;
@@ -343,7 +344,6 @@ method !struct-value(Str $prop, CArray $children) is rw {
 
     sub FETCH($) {
         %!struct{$prop} //= do {
-            my $n = 0;
             my %bound;
             %bound{$_} := self!lval($_)
                 for $children.list;
@@ -718,7 +718,29 @@ method dispatch:<.?>(\name, |c) is raw {
         ?? self."{name}"(|c)
         !! do with $.property-number(name) { self!lval(name, $_) } else { Nil }
 }
-method !value($_, \name, |c) is rw {
+# backgrounds have layers (as of Snapshot2026), slice the individual layers and
+# return an overall array of layers.
+# background-color can only occur on the final layer
+multi method value($_, 'background', |c) is rw {
+    my @bg-layers;
+    my %bg-struct = self!struct-value('background', .child-names);
+    my $bg-color = %bg-struct<background-color>:delete;
+    for %bg-struct.pairs {
+        my $bg-prop = .key;
+        if .value.isa(List) {
+            for .value.pairs {
+                @bg-layers[.key]{$bg-prop} := .value;
+            }
+        }
+        else {
+            @bg-layers[0]{$bg-prop} := .value;
+        }
+    }
+    @bg-layers.tail<background-color> := $_
+        with $bg-color;
+    @bg-layers;
+}
+multi method value($_, \name, |c) is rw {
     .children
         ?? self!struct-value(name, .child-names)
         !! ( .box
@@ -728,12 +750,12 @@ method !value($_, \name, |c) is rw {
 }
 # build rw accessor for a named property
 method !lval(\name, $_ =  $.property-number(name)) is rw {
-    self!value($!index[$_], name);
+    self.value($!index[$_], name);
 }
 #| returns the value of the named property
 method property(Str \name) is rw {
     with $.property-number(name) {
-        self!value($!index[$_], name)
+        self.value($!index[$_], name)
     }
     else {
         fail "unknown property: {name}";

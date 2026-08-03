@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 18;
+plan 21;
 
 use CSS::Properties::PropertyInfo;
 use CSS::Module;
@@ -37,6 +37,7 @@ is $css.write, 'margin:5pt; width:4px;', 'write';
 my CSS::Properties:D $css2 .= new: :style("margin:7pt; height:5px");
 is $css2.write, 'height:5px; margin:7pt;', 'write';
 
+
 $css2.copy($css);
 is $css2.write, 'height:5px; margin:5pt; width:4px;', 'copy/write';
 cmp-ok $css2.List, &json-eqv, (
@@ -56,5 +57,10 @@ cmp-ok $css2.Hash, &json-eqv, {
     :margin-top(5.0),
     :width(3.0)
 };
+
+$css .= new: :style("background-image: url(x)");
+is $css.background[0]<background-image>, 'x';
+is $css.background-image[0], 'x';
+is $css, "background:url('x');";
 
 done-testing;
