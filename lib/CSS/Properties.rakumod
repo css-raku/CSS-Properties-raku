@@ -37,7 +37,7 @@ CSS Properties provides `rw` accessors for all standard CSS properties.
 =item box properties are arrays that contain four sides. For example, 'margin' contains 'margin-top', 'margin-right', 'margin-bottom' and 'margin-left';
 =item there are also some container properties that may be accessed directly or via a hash; for example, The 'font' accessor returns a hash containing 'font-size', 'font-family', and other font properties.
 
-=begin code :lang<raku> 
+=begin code :lang<raku>
 use CSS::Properties;
 
 my CSS::Properties $css .= new: :style("color: orange; text-align: CENTER; margin: 2pt; font: 12pt Helvetica");
@@ -211,7 +211,7 @@ say $css.measure: :width(75%); # 60
 multi method COERCE(Str:D $style) { self.new: :$style }
 multi method COERCE(%opts) { self.new: |%opts; }
 
-# make or reuse a cached property definition 
+# make or reuse a cached property definition
 sub make-property(CSS::Module $module, UInt:D $prop-num) {
     $lock.protect: {
         my CSS::Module::Property $meta = %module-index{$module}[$prop-num];
@@ -351,27 +351,22 @@ method !struct-value(Str $prop, CArray $children) is rw {
         }
     }
 
-    multi sub STORE($, Any:D $rval) {
-        my %vals;
-        with $rval {
-            when Associative { %vals = .Hash; }
-            default {
-                with self.parse-property($prop, $_, :$!warn) -> $expr {
-                    %vals{.key} = .value
-                        for self!get-container-prop($prop, $expr);
-                }
-            }
+    multi sub STORE($, %vals) {
+        for %vals.sort {
+            my $prop = .key;
+            self!lval($prop) = $_
+                with self!coerce(.value, :$prop);
         }
-
-        for $children.list -> $prop {
-            with %vals{$prop}:delete {
-                self!lval($prop) = $_
-                    with self!coerce($_, :$prop);
-            }
-        }
-        note "unknown child properties of $prop: {%vals.keys.sort}"
-            if %vals
     }
+    multi sub STORE($proxy, Any:D $_) {
+        my %vals;
+        with self.parse-property($prop, $_, :$!warn) -> $expr {
+            %vals{.key} = .value
+                for self!get-container-prop($prop, $expr);
+            STORE($proxy, %vals);
+        }
+    }
+ 
     multi sub STORE($, Any:U) {
         self.delete($prop);
     }
@@ -721,11 +716,11 @@ method dispatch:<.?>(\name, |c) is raw {
 # backgrounds have layers (as of Snapshot2026), slice the individual layers and
 # return an overall array of layers.
 # background-color can only occur on the final layer
-multi method value($_, 'background', |c) is rw {
+multi method value($info, 'background', |c) is rw {
     my @bg-layers;
-    my %bg-struct = self!struct-value('background', .child-names);
+    my %bg-struct = self!struct-value('background', $info.child-names);
     my $bg-color = %bg-struct<background-color>:delete;
-    for %bg-struct.pairs {
+    for %bg-struct {
         my $bg-prop = .key;
         if .value.isa(List) {
             for .value.pairs {
@@ -736,8 +731,9 @@ multi method value($_, 'background', |c) is rw {
             @bg-layers[0]{$bg-prop} := .value;
         }
     }
-    @bg-layers.tail<background-color> := $_
+    @bg-layers[*-0]<background-color> := $_
         with $bg-color;
+
     @bg-layers;
 }
 multi method value($_, \name, |c) is rw {

@@ -9,7 +9,7 @@ use CSS::Grammar::Test :&json-eqv;
 use CSS::Units :px, :percent;
 use JSON::Fast;
 sub keyw($v) { CSS::Units.value($v, 'keyw') }
-my $font-props = 'italic bold condensed 10pt/12pt times-roman';
+my $font-props = 'italic bold condensed small-caps 10pt/12pt times-roman';
 my CSS::Font $font .= new: :$font-props;
 
 sub is-json-eqv(\a, |c) is export(:is-json-equiv) {
@@ -26,7 +26,7 @@ subtest 'basic' => {
     is $font.line-height, 12, 'line-height';
     is $font.stretch, 'condensed', 'font-stretch';
     is $font.units, 'pt', 'measuring unit';
-    is $font.Str, "font:{$font-props};", '$font.Str';
+    is $font.Str, "font:italic bold condensed 10pt/12pt times-roman; font-variant:small-caps;", '$font.Str';
 }
 
 subtest 'measure' => {
