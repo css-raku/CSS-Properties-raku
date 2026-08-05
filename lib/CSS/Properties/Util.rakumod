@@ -12,7 +12,7 @@ my constant TransparentColor = (Color but CSS::Units[Colors, 'rgba']).new( :r(0)
 
 my Lock:D $lock .= new;
 
-proto sub from-ast($) is export(:from-ast) {*}
+proto sub from-ast($_) is export(:from-ast) {*}
 multi sub from-ast(ColorAST $v) {
     my @channels = $v.value.map: {from-ast($_)};
     my Color $color;

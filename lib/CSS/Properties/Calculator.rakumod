@@ -105,6 +105,16 @@ BEGIN %Compute = (
     'fill-opacity'|'opacity'|'stop-opacity'|'stroke-opacity' => method (Numeric:D $v is copy) {
         $v /= 100 if $v.?type ~~ 'percent';
         max(0.0, min($v, 1.0));
+    },
+    'background-position' => method (@bg-layers, :@ref!) {
+        @bg-layers.grep(* !~~ ',').map({
+            my $x = .[0];
+            my $y = .[1] // $x;
+            (
+                self.measure($x, :ref(@ref[0])),
+                self.measure($y, :ref(@ref[1])),
+            )
+        }).List;
     }
 );
 
@@ -131,6 +141,8 @@ method !weigh($_, Int $delta = 0) returns FontWeight {
     CSS::Units.value($v, 'int');
 }
 
+proto method measure(|c) {*}
+
 multi method measure(:font-size($_)!) {
     when Bool { CSS::Units.value($!em, $!units) }
     default   { %Compute<font-size>(self, $_) }
@@ -141,19 +153,19 @@ multi method measure(:font-weight($_)!) {
     default   { %Compute<font-weight>(self, $_) }
 }
 
-multi method measure(*%misc where .elems == 1) {
+multi method measure(:background-position($_)!, :@ref = ($!viewport-width, $!viewport-height)) {
+    %Compute<background-position>(self, .isa(Bool) ??  $!css.background-position !! $_, :@ref)
+}
+
+multi method measure(:$ref = $!em, *%misc where .elems == 1) {
     my :($prop, $value) := %misc.kv;
     given $value {
         my $v = .isa(Bool) ?? $!css."$prop"() !! $_;
         with %Compute{$prop} {
-            .(self, $v);
+            .(self, $v, :$ref);
         }
         else {
-            given $.measure($v) {
-                .isa(List)
-                    ??  [ $v.map: {$.measure($_)} ]
-                    !!  $v;
-            }
+            $.measure($v, :$ref);
         }
     }
 }
@@ -226,6 +238,9 @@ sub evaluate(:%func! ( :$ident!, :@expr! )) {
 multi method measure($*calc: Pair $expr, Numeric :$*ref = $!em) {
     evaluate |$expr;
 }
+multi method measure(@v, :$ref = $!em) {
+    @v.grep(* !~~ ',').map({$.measure($_, :$ref)}).List;
+}
 multi method measure(Numeric $v is copy,
                      Numeric :$ref = $!em,
               ) {
@@ -260,13 +275,18 @@ multi method measure(Numeric $v is copy,
     }
 }
 
-multi method measure(Str $v is copy) {
+multi method measure('none', |) {
+    Mu;
+}
+multi method measure(Str $v, :$ref = $!em) {
     my Numeric $n;
     with $v {
-        when 'none'   { $v = Nil }
         when 'thin'   { $n := 1pt.scale: $!units }
         when 'medium' { $n := 2pt.scale: $!units }
         when 'thick'  { $n := 3pt.scale: $!units }
+        when 'top'|'right' { $n := $ref }
+        when 'center' { $n := $ref / 2 }
+        when 'bottom'|'left' { $n := 0 }
     }
 
     with $n {

@@ -4,6 +4,7 @@ plan 47;
 
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
+use CSS::Grammar::Test :&json-eqv;
 use CSS::Units :pt, :px;
 use Color;
 
@@ -22,15 +23,15 @@ is $css.azimuth, 'center', 'default azimuth';
 $css.azimuth = 'over-yonder';
 is $css.azimuth, 'center', 'default azimuth';
 
-is $css.background-position, [0, 0], 'default background position';
 is $css.margin, [0, 0, 0, 0], 'default margin';
 is $css.margin-left, 0, 'default margin-left';
 is $css.margin-left.type, 'px', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is $css.background-color.rgba.Str, '0 0 0 0', 'default background-color';
 is ~$css, 'border-top:red;', 'basic css rewritten';
+$css.background-position.&cmp-ok: &json-eqv, [[0, 0],], 'default background position';
 $css.background-position = <top left>;
-is $css.background-position[0], 'top left', 'list parse';
+$css.background-position.&cmp-ok: &json-eqv, [['top','left'],], 'list parse';
 is $css.background-position[0][0].type, 'keyw', 'list parse';
 is ~$css, 'background:top left; border-top:red;', 'list parse';
 $css.background-position = Nil;
