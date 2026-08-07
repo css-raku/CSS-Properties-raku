@@ -66,6 +66,50 @@ my constant %FontSizes = %(
 
 method !em($v = $!em) { CSS::Units.value: $v, $!units }
 
+subset XKeyw of Str:D where 'left'|'center'|'right';
+subset YKeyw of Str:D where 'top'|'center'|'bottom';
+
+# e.g. '20%', '20% top'
+multi sub bg-pos(Numeric:D $x, YKeyw $yk = 'center') {
+    ('left', $x), ($yk,)
+}
+# e.g. '10px 20%'
+multi sub bg-pos(Numeric:D $x, Numeric:D $y) {
+    ('left', $x), ('top', $y)
+}
+# e.g. 'center 20%'
+multi sub bg-pos(XKeyw $xk, Numeric:D $y) {
+    ($xk,), ('top',$y);
+}
+# e.g. 'top 10px'
+multi sub bg-pos(YKeyw $yk, Numeric:D $x) {
+    ('left', $x,), ($yk,);
+}
+# e.g. 'center', 'center top'
+multi sub bg-pos(XKeyw $xk, YKeyw $yk = 'center') {
+    ($xk,), ($yk,);
+}
+# e.g 'top', 'top left'
+multi sub bg-pos(YKeyw $yk, XKeyw $xk = 'center') {
+    ($xk,), ($yk,);
+}
+# e.g. 'center top 10px'
+multi sub bg-pos(XKeyw $xk, YKeyw $yk, Numeric:D $y) {
+    ($xk,), ($yk,$y);
+}
+# e.g. 'top center 10px'
+multi sub bg-pos(YKeyw $yk, XKeyw $xk, Numeric:D $x) {
+    ($xk,$x), ($yk,);
+}
+# e.g. 'left 1px center', 'left 1px center 2px'
+multi sub bg-pos(XKeyw $xk, Numeric $x, YKeyw $yk, Numeric $y?) {
+    ($xk,$x), ($yk,$y);
+}
+# e.g. 'top 1px center', 'top 1px center 2px'
+multi sub bg-pos(YKeyw $yk, Numeric $y, XKeyw $xk, Numeric $x?) {
+    ($xk,$x), ($yk,$y);
+}
+
 my Method %Compute;
 BEGIN %Compute = (
     font-size => method ($_) {
@@ -106,14 +150,17 @@ BEGIN %Compute = (
         $v /= 100 if $v.?type ~~ 'percent';
         max(0.0, min($v, 1.0));
     },
-    'background-position' => method (@bg-layers, :@ref!) {
-        @bg-layers.grep(* !~~ ',').map({
-            my $x = .[0];
-            my $y = .[1] // $x;
-            (
-                self.measure($x, :ref(@ref[0])),
-                self.measure($y, :ref(@ref[1])),
-            )
+    'background-position' => method (@layers, :@ref!) {
+        @layers.grep(* !~~ ',').map({
+            my :(@x, @y) := bg-pos(|$_);
+
+            my $x = self.measure(@x[0], :ref(@ref[0]));
+            $x += self.measure($_, :ref(@ref[0])) with @x[1];
+
+            my $y = self.measure(@y[0], :ref(@ref[1]));
+            $y += self.measure($_, :ref(@ref[1])) with @y[1];
+
+            ($x, $y)
         }).List;
     }
 );
@@ -284,9 +331,9 @@ multi method measure(Str $v, :$ref = $!em) {
         when 'thin'   { $n := 1pt.scale: $!units }
         when 'medium' { $n := 2pt.scale: $!units }
         when 'thick'  { $n := 3pt.scale: $!units }
-        when 'top'|'right' { $n := $ref }
+        when 'top'|'left' { $n := 0 }
         when 'center' { $n := $ref / 2 }
-        when 'bottom'|'left' { $n := 0 }
+        when 'bottom'|'right' { $n := $ref }
     }
 
     with $n {

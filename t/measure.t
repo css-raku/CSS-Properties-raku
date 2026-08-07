@@ -93,10 +93,17 @@ is '%0.2f'.sprintf($css.measure: :opacity(-1.1)), '0.00';
 subtest 'background-position', {
     my $vw := $css.viewport-width;
     my $vh := $css.viewport-height;
-    $css.background-position = "top left";
-    $css.measure(:background-position).&cmp-ok: &json-eqv, [[$vw,0],], 'measure background-position';
-    $css.background-position = "10% 20%, center 100%";
-    $css.measure(:background-position).&cmp-ok: &json-eqv, [[0.1*$vw, 0.2*$vh], [$vw/2, $vh]], 'measure background-position';
+
+    $css.background-position = "top left, bottom right";
+    $css.measure(:background-position).&cmp-ok: &json-eqv, [[0,0],[$vw, $vh]], 'measure background-position';
+
+    $css.background-position = "10% 20%, center 100%, bottom -10pt right -20pt, top 10pt right 20pt";
+    $css.measure(:background-position).&cmp-ok: &json-eqv, [
+        [0.1*$vw, 0.2*$vh],
+        [$vw/2, $vh],
+        [$vw-20, $vh-10],
+        [$vw+20, 10],
+    ], 'measure background-position';
 }
 
 done-testing;
