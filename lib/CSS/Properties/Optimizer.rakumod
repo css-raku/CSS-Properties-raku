@@ -11,21 +11,13 @@ my subset ZeroPoint of Associative where {
 }
 
 multi sub css-eqv(%a, %b) {
-    return True if %a ~~ ZeroPoint && %b ~~ ZeroPoint;
-    if %a.elems != %b.elems { return False }
-    for %a.kv -> $k, $v {
-        return False
-            unless %b{$k}:exists && $v.&css-eqv(%b{$k});
-    }
-    True;
+    (%a ~~ ZeroPoint && %b ~~ ZeroPoint)
+    || (%a.elems == %b.elems
+        && !%a.first({!.value.&css-eqv(%b{.key})}));
 }
 multi sub css-eqv(@a, @b) {
-    if +@a != +@b { return False }
-    for @a.kv -> $k, $v {
-        return False
-            unless $v.&css-eqv(@b[$k]);
-    }
-    True;
+    @a == @b
+    && !@a.pairs.first({!.value.&css-eqv(@b[.key])})
 }
 multi sub css-eqv(Numeric:D $a, Numeric:D $b) { $a == $b }
 multi sub css-eqv(Stringy $a, Stringy $b) { $a eq $b }
