@@ -199,9 +199,16 @@ multi method measure(:font-weight($_)!) {
     default   { %Compute<font-weight>(self, $_) }
 }
 
-multi method measure(:background-position($_)!, :@ref = ($!viewport-width, $!viewport-height)) {
-    my @layers = .isa(Bool) ?? $!css.background-position !! .List;
+multi method measure(:background-position($_)! where $!css.module.name.starts-with('Snapshot'), :@ref = ($!viewport-width, $!viewport-height) ) {
+    # Snapshot 2026 onwards has multipler layers
+    my @layers = .isa(Bool) ?? $!css.background-position.List !! .List;
     %Compute<background-position>(self, @layers, :@ref)
+}
+
+multi method measure(:background-position($_)!, :@ref = ($!viewport-width, $!viewport-height)) {
+    # css1, css21, css3 only have a single layer
+    my @layer = .isa(Bool) ?? $!css.background-position !! $_;
+    %Compute<background-position>(self, @layer, :@ref)
 }
 
 multi method measure(:$ref = $!em, *%misc where .elems == 1) {
