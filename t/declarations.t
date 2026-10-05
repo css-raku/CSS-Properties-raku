@@ -29,9 +29,11 @@ is $css.margin-left.type, 'px', 'default margin left type';
 isa-ok $css.background-color, Color, 'default background-color';
 is $css.background-color.rgba.Str, '0 0 0 0', 'default background-color';
 is ~$css, 'border-top:red;', 'basic css rewritten';
-$css.background-position.&cmp-ok: &json-eqv, [[0, 0],], 'default background position';
+# background layers introduced with CSS::Snapshot2026
+my $has-layers := $css.module.name.starts-with: 'Snapshot';
+$css.background-position.&cmp-ok: &json-eqv, ($has-layers ?? [[0, 0],] !! [0,0]), 'default background position';
 $css.background-position = <top left>;
-$css.background-position.&cmp-ok: &json-eqv, [['top','left'],], 'list parse';
+$css.background-position.&cmp-ok: &json-eqv, ($has-layers ?? [['top','left'],] !! ['top','left']), 'list parse';
 is $css.background-position[0][0].type, 'keyw', 'list parse';
 is ~$css, 'background:top left; border-top:red;', 'list parse';
 $css.background-position = Nil;

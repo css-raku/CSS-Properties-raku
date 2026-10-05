@@ -19,7 +19,7 @@ multi sub from-ast(ColorAST $v) {
     my $type = $v.key;
     if @channels == 4 {
         # alpha channel present
-        $type ~= "a" unless $type.ends-with: "a"; 
+        $type ~= "a" unless $type.ends-with: "a";
         @channels.tail *= (@channels.tail.type ~~ 'percent'
                            ?? 2.56 !! 256);
     }

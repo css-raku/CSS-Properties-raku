@@ -153,7 +153,6 @@ BEGIN %Compute = (
     'background-position' => method (@layers, :@ref!) {
         @layers.grep(* !~~ ',').map({
             my :(@x, @y) := bg-pos(|$_);
-
             my $x = self.measure(@x[0], :ref(@ref[0]));
             $x += self.measure($_, :ref(@ref[0])) with @x[1];
 
@@ -201,7 +200,8 @@ multi method measure(:font-weight($_)!) {
 }
 
 multi method measure(:background-position($_)!, :@ref = ($!viewport-width, $!viewport-height)) {
-    %Compute<background-position>(self, .isa(Bool) ??  $!css.background-position !! $_, :@ref)
+    my @layers = .isa(Bool) ?? $!css.background-position !! .List;
+    %Compute<background-position>(self, @layers, :@ref)
 }
 
 multi method measure(:$ref = $!em, *%misc where .elems == 1) {

@@ -86,7 +86,7 @@ say ~$css; # border:lime; font:italic bold 14pt/16pt Helvetica;
 =end pod
 
 use CSS::Module;
-use CSS::Module::Snapshot2026;
+use CSS::Module::CSS3;
 use CSS::Module::Property;
 use CSS::Writer;
 use CSS::Properties::Util :&from-ast, :&to-ast;
@@ -110,7 +110,7 @@ has Hash  %!struct;
 has Bool  %!important{Int};
 has Array @!background;
 has Handling %!handling{Int};
-has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::Snapshot2026.module; # associated CSS module
+has CSS::Module $.module handles <parse-property property-number property-name alias> = CSS::Module::CSS3.module; # associated CSS module
 has Exception @.warnings;
 has Bool $.warn = True;
 has Array $!properties;

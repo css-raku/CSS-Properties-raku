@@ -5,6 +5,8 @@ plan 4;
 use CSS::Properties;
 
 my $css = CSS::Properties.new( :style("color:red !important; background-repeat: repeat-x; background-position: center; border-left-style: inherit") );
+my $back-compat = $css.module.name ~~ /^CSS[1|21|3]|SVG$/;
+
 is $css.ast(:!optimize), (:declaration-list[
                    {:expr[:keyw<center>], :ident<background-position>},
                    {:expr[:keyw<repeat-x>], :ident<background-repeat>},
@@ -15,10 +17,15 @@ is $css.write(:!optimize), 'background-position:center; background-repeat:repeat
 
 my $ast = $css.ast;
 is $ast, (:declaration-list[
-                   {:expr["expr:background-position" => :keyw<center>, "expr:background-repeat" => :keyw<repeat-x>], :ident<background>},
+                   ($back-compat
+                    ?? {:expr[ "expr:background-repeat" => :keyw<repeat-x>, "expr:background-position" => :keyw<center>], :ident<background>}
+                    !! {:expr["expr:background-position" => :keyw<center>, "expr:background-repeat" => :keyw<repeat-x>], :ident<background>}
+                    ),
                    {:expr[:keyw<inherit>], :ident("border-left-style")},
                    {:expr(:rgb[:num(255), :num(0), :num(0)],), :ident("color"), :prio("important")}
          ]), 'ast';
-is $css.write , 'background:center repeat-x; border-left-style:inherit; color:red!important;', 'style optimized';
+is $css.write , ($back-compat
+                 ?? 'background:repeat-x center; border-left-style:inherit; color:red!important;'
+                 !! 'background:center repeat-x; border-left-style:inherit; color:red!important;'), 'style optimized';
 
 done-testing;

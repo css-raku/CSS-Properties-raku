@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 33;
+plan 34;
 
 use CSS::Units :pt, :px, :pc, :in, :vw, :vh, :em, :ex, :percent;
 use CSS::Properties;
@@ -90,20 +90,41 @@ is '%0.2f'.sprintf($css.measure: :opacity(70%)), '0.70';
 is '%0.2f'.sprintf($css.measure: :opacity(1.1)), '1.00';
 is '%0.2f'.sprintf($css.measure: :opacity(-1.1)), '0.00';
 
-subtest 'background-position', {
+subtest 'simple background-position', {
     my $vw := $css.viewport-width;
     my $vh := $css.viewport-height;
 
-    $css.background-position = "top left, bottom right";
-    $css.measure(:background-position).&cmp-ok: &json-eqv, [[0,0],[$vw, $vh]], 'measure background-position';
+    $css.background-position = "top center";
+    $css.measure(:background-position).&cmp-ok: &json-eqv, [[$vw/2, 0], ], 'measure background-position';
 
-    $css.background-position = "10% 20%, center 100%, bottom -10pt right -20pt, top 10pt right 20pt";
-    $css.measure(:background-position).&cmp-ok: &json-eqv, [
-        [0.1*$vw, 0.2*$vh],
-        [$vw/2, $vh],
-        [$vw-20, $vh-10],
-        [$vw+20, 10],
-    ], 'measure background-position';
+    for "10% 20%" => [0.1*$vw, 0.2*$vh], "center 100%" => [$vw/2, $vh], "10pt 20pt" => [10, 20] {
+        $css.background-position = .key;
+        $css.measure(:background-position).&cmp-ok: &json-eqv, [.value, ],
+            "measure background-position: {.key}";
+    }
+}
+
+if $css.module.name.starts-with('Snapshot') {
+    # background layers introduced with CSS Snapshot2026
+    subtest 'multi-layer background-position', {
+        my $vw := $css.viewport-width;
+        my $vh := $css.viewport-height;
+
+        $css.background-position = "top left, bottom right";
+        $css.measure(:background-position).&cmp-ok: &json-eqv, [[0,0],[$vw, $vh]], 'measure background-position';
+
+        $css.background-position = "10% 20%, center 100%, bottom -10pt right -20pt, top 10pt right 20pt";
+
+        $css.measure(:background-position).&cmp-ok: &json-eqv, [
+            [0.1*$vw, 0.2*$vh],
+            [$vw/2, $vh],
+            [$vw-20, $vh-10],
+            [$vw+20, 10],
+        ], 'measure background-position';
+    }
+}
+else {
+    skip 'multi-layer background-position';
 }
 
 done-testing;
