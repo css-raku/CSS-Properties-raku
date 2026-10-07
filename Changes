@@ -1,7 +1,14 @@
 {{$NEXT}}
 
+0.10.10  2026-10-07T18:22:43+13:00
+    - Implement background-position property measurement
+    - Upgrade to CSS::Module 0.7.8
+    - Some forward compatibility for CSS::Snapshot2026
+
 0.10.9  2026-07-16T09:54:39+12:00
     - Fix font-weight calculation
+    - Allow some CSS4 named constants in calc() expressions:
+      e, pi, infinity, Nan
 
 0.10.8  2026-06-14T10:07:54+12:00
     - Tidy extend() method default handling
