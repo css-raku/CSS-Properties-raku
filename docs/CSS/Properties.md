@@ -35,7 +35,7 @@ This class manages a list of properties. These are typically parsed from the bod
 CSS Property Accessors
 ----------------------
 
-CSS Properties provides `rw` accessors for all standard CSS3 properties.
+CSS Properties provides `rw` accessors for all standard CSS properties.
 
   * color values are converted to Color objects
 
@@ -200,7 +200,7 @@ Return all properties that have the !important attribute
 
 ```raku
 method inherit(
-    CSS::Properties:D(Any):D $css
+    CSS::Properties:D(Any) $css
 ) returns Mu
 ```
 

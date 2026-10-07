@@ -355,7 +355,7 @@ elevation | level | Yes |  | \<angle\> \| \<tilt\>
 empty-cells | show | Yes |  | show \| hide
 float | none |  |  | left \| right \| none
 font |  | Yes | hash | [ [ \<‘font-style’\> \|\| \<font-variant-css21\> \|\| \<‘font-weight’\> \|\| \<‘font-stretch’\> ]? \<‘font-size’\> [ / \<‘line-height’\> ]? \<‘font-family’\>\# ] \| caption \| icon \| menu \| message-box \| small-caption \| status-bar
-font-family | depends on user agent | Yes |  | [ \<generic-family\> \| \<family-name\> ]\#
+font-family | depends on user agent | Yes |  | [ \<family-name\> \| !\<generic-family\> ]\#
 font-feature-settings | normal | Yes |  | normal \| \<feature-tag-value\>\#
 font-kerning | auto | Yes |  | auto \| normal \| none
 font-language-override | normal | Yes |  | normal \| \<string\>
@@ -404,7 +404,7 @@ padding-top | 0 |  |  | \<padding-width\>
 page-break-after | auto |  |  | auto \| always \| avoid \| left \| right
 page-break-before | auto |  |  | auto \| always \| avoid \| left \| right
 page-break-inside | auto |  |  | avoid \| auto
-pause |  |  |  | [ [\<time\> \| \<percentage\>]{1,2} ]
+pause | see individual properties |  |  | [ [\<time\> \| \<percentage\>]{1,2} ]
 pause-after | 0 |  |  | \<time\> \| \<percentage\>
 pause-before | 0 |  |  | \<time\> \| \<percentage\>
 pitch | medium | Yes |  | \<frequency\> \| x-low \| low \| medium \| high \| x-high
@@ -441,8 +441,7 @@ z-index | auto |  |  | auto \| \<integer\>
 
 The above markdown table was produced with the following code snippet
 
-```
-use v6;
+```raku
 say <Name Default Inherit Type Synopsis>.join(' | ');
 say ('---' xx 5).join(' | ');
 
@@ -463,5 +462,4 @@ for $css.properties(:all).sort -> $name {
             ).join(' | ');
     }
 }
-
 ```
