@@ -7,7 +7,7 @@
 The CSS::Properties module is a set of related classes for parsing, manipulation and generation of CSS property sets, including inheritance, and defaults.
 
 ## Synopsis
-```
+```raku
 use CSS::Units :pt;
 use CSS::Properties;
 
@@ -52,7 +52,7 @@ See Also
 
 Processing defaults to CSS level 3 (class CSS::Module::CSS3). This can be configured via the :module option:
 
-```
+```raku
 use CSS::Properties;
 use CSS::Module;
 use CSS::Module::CSS1;
@@ -87,14 +87,14 @@ additional SVG specific properties.
 
 The [CSS::Font::Descriptor](https://css-raku.github.io/CSS-Properties-raku/CSS/Font/Descriptor) module is a class for managing `@font-face` declarations. The `css` method can be used to get the raw properties.
 
-```
+```css
 @font-face {
     font-family: myFirstFont;
     src: url(sansation_light.woff);
 }
 ```
 
-```
+```raku
 use CSS::Properties;
 use CSS::Font::Descriptor;
 
@@ -141,7 +141,7 @@ To inherit a css object or style string:
 
 - use the `inherit` method
 
-```
+```raku
 use CSS::Properties;
 
 my $parent-style = "margin-top:5pt; margin-left: 15pt; color:rgb(0,0,255) !important";
@@ -173,7 +173,7 @@ The `.write` (alias `.Str`, or .`gist`) method can be used to produce CSS. Prope
 
 - rgb masks are translated to color-names, where possible
 
-```
+```raku
 use CSS::Properties;
 my CSS::Properties $css .= new( :style("background-repeat:repeat; border-style: groove; border-width: 2pt 2pt; color: rgb(255,0,0);") );
 # - 'border-width' and 'border-style' are consolidated to the 'border' container property
@@ -204,7 +204,7 @@ See also [CSS::Properties::Optimizer](https://css-raku.github.io/CSS-Properties-
 
 The `info` method gives property specific meta-data, on all (component or container properties). It returns an object of type CSS::Properties::PropertyInfo:
 
-```
+```raku
 use CSS::Properties;
 use CSS::Properties::PropertyInfo;
 my CSS::Properties $css .= new;
@@ -219,7 +219,7 @@ say $margin-info.inherit;  # True (property is inherited)
 The `properties` method, gives a list of current properties. Only component properties
 are returned. E.g. `font-family` may be returned; but `font` never is.
 
-```
+```raku
 use CSS::Properties;
 
 my $style = "margin-top: 10%; margin-right: 5mm; margin-bottom: auto";
@@ -232,7 +232,7 @@ for $css.properties -> $prop {
 
 ```
 Gives:
-```
+```css
 margin-top: 10 percent
 margin-bottom: auto keyw
 margin-right: 5 mm
@@ -248,7 +248,7 @@ more explicit infix operators:
 
 All infix operators convert to the left-hand operand's units.
 
-```
+```raku
 use CSS::Units :ops, :pt, :px, :in, :mm;
 my CSS::Properties $css .= new: :margin[5pt, 10px, .1in, 2mm];
 
@@ -264,7 +264,7 @@ The current font-size is used for `em`, `ex` and percentage calculations.
 There are also `viewport-width` and `viewport-height` attributes
 that need to be set to enable `vw` and `vh` units.
 
-```
+```raku
 use CSS::Units :ops, :pt, :px, :in, :mm, :em, :vw, :vh, :percent;
 use CSS::Properties;
 my CSS::Properties $css .= new: :viewport-width(200);
@@ -282,7 +282,7 @@ say $css.measure: .1vw; # 20pt
 The `measure` method can also be used on specific properties. In the case
 of box measurements (borders, margins and padding) a `reference-width` also needs to be set for percentage calculations.
 
-```
+```raku
 use CSS::Units :px, :percent;
 use CSS::Properties;
 my CSS::Properties $css .= new: :margin[10%, 10px], :reference-width(120);
@@ -295,7 +295,7 @@ say $css.measure: :font-size(50%);   # 6pt
 ```
 
 The `units` attribute defaults to `pt` can be changed to any absolute length units:
-```
+```raku
 use CSS::Units :px, :mm;
 use CSS::Properties;
 my CSS::Properties $css .= new: :margin[10mm, 10px], :units<mm>;
