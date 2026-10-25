@@ -14,21 +14,36 @@ my Lock:D $lock .= new;
 
 proto sub from-ast($_) is export(:from-ast) {*}
 multi sub from-ast(ColorAST $v) {
-    my @channels = $v.value.map: {from-ast($_)};
-    my Color $color;
     my $type = $v.key;
+    my @channels = $v.value.grep({!.<op>}).map(&from-ast);
     if @channels == 4 {
         # alpha channel present
         $type ~= "a" unless $type.ends-with: "a";
         @channels.tail *= (@channels.tail.type ~~ 'percent'
                            ?? 2.56 !! 256);
+
     }
     else {
         $type .= chop if $type.ends-with: "a";
     }
 
-    $color .= new: |($type => @channels);
+    if $type.starts-with('hsl') {
+        given @channels.head -> $v is rw {
+            given $v.?type {
+                when 'rad'     { $v *= 180 / pi }
+                when 'grad'    { $v *= 0.9 }
+            }
+        }
+    }
+    elsif $type.starts-with('rgb') {
+        for @channels -> $v is rw {
+            given $v.?type {
+                when 'percent' { $v *= 2.55 }
+            }
+        }
+    }
 
+    my Color:D $color .= new: |($type => @channels>>.round);
     $color does CSS::Units[Colors, $type];
 }
 multi sub from-ast(Keyword $v) {
