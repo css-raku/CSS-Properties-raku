@@ -43,7 +43,8 @@ multi sub from-ast(ColorAST $v) {
         }
     }
 
-    my Color:D $color .= new: |($type => @channels>>.round);
+    @channels .= map(*.round);
+    my Color:D $color .= new: |($type => @channels);
     $color does CSS::Units[Colors, $type];
 }
 multi sub from-ast(Keyword $v) {
