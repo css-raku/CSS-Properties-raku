@@ -1,4 +1,7 @@
 {{$NEXT}}
+    - Fix mismatch in :api between META6 (v0.10) and class
+      (v0.9). Add test xt/release/version.t to prevent
+      future occurrences.
 
 0.10.10  2026-10-07T18:22:43+13:00
     - Implement background-position property measurement
