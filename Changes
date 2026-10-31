@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.10.11  2026-11-01T09:01:47+13:00
     - Fix mismatch in :api between META6 (v0.10) and class
       (v0.9). Add test xt/release/version.t to prevent
       future occurrences.
